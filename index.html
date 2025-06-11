@@ -287,7 +287,7 @@
   </div>
 
   <script>
-     function renderButtons(currentStep) {
+    function renderButtons(currentStep) {
       const container = document.getElementById('navigationButtons');
       container.innerHTML = '';
 
@@ -308,7 +308,8 @@
       proximo.onclick = nextStep;
       container.appendChild(proximo);
     }
-     function nextStep() {
+
+    function nextStep() {
       const steps = document.querySelectorAll(".step");
       for (let i = 0; i < steps.length; i++) {
         if (steps[i].classList.contains("active")) {
