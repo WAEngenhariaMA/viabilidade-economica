@@ -205,17 +205,25 @@
 
   <script>
     function nextStep() {
-      const step1 = document.getElementById('step1');
-      const inputs = step1.querySelectorAll('input[required], select[required]');
-      for (let i = 0; i < inputs.length; i++) {
-        if (!inputs[i].value) {
-          alert('Por favor, preencha todos os campos obrigatórios da Etapa 1.');
+  const steps = document.querySelectorAll(".step");
+  for (let i = 0; i < steps.length; i++) {
+    if (steps[i].classList.contains("active")) {
+      // Validação dos campos obrigatórios antes de avançar
+      const requiredInputs = steps[i].querySelectorAll("input[required], select[required]");
+      for (let j = 0; j < requiredInputs.length; j++) {
+        if (!requiredInputs[j].value) {
+          alert("Por favor, preencha todos os campos obrigatórios antes de continuar.");
           return;
         }
       }
-      step1.classList.remove('active');
-      document.getElementById('step2').classList.add('active');
+      steps[i].classList.remove("active");
+      if (i + 1 < steps.length) {
+        steps[i + 1].classList.add("active");
+      }
+      break;
     }
+  }
+}
 
     function prevStep() {
       document.getElementById('step2').classList.remove('active');
