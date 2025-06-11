@@ -361,7 +361,16 @@
     }
   });
 }
-    window.onload = () => renderButtons(0);
+   window.onload = () => {
+  renderButtons(0);
+
+  // Bloqueia letras em campos numéricos
+  document.querySelectorAll('input[type="number"]').forEach(input => {
+    input.addEventListener('input', function () {
+      this.value = this.value.replace(/[^0-9]/g, '');
+    });
+  });
+};
 
      document.getElementById('tipo').addEventListener('change', function () {
       const tipo = this.value;
