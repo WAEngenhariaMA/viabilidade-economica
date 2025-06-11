@@ -34,7 +34,7 @@
       margin-top: 15px;
       font-weight: bold;
     }
-    input[type="text"], input[type="email"], input[type="tel"], input[type="number"], select {
+    input[type="text"], input[type="email"], input[type="tel"], select {
       width: 100%;
       padding: 10px;
       font-size: 14px;
@@ -58,10 +58,6 @@
     button:hover {
       background-color: #0193a3;
     }
-    h4 {
-      margin-top: 20px;
-      color: #00bcd4;
-    }
   </style>
 </head>
 <body>
@@ -69,48 +65,136 @@
     <h1>WA Engenharia – Analisador de Viabilidade Econômica</h1>
     <form id="viabilidadeForm">
       <div class="step active" id="step1">
-        <!-- Etapa 1 -->
-        <!-- ... conforme descrito anteriormente ... -->
-      </div>
+        <h2>1. Dados Gerais do Projeto</h2>
+        <label for="nome">Nome do Projeto/Empresa:</label>
+        <input type="text" id="nome" name="nome" required>
 
+        <label for="tipo">Tipo de Atividade:</label>
+        <select id="tipo" name="tipo" required>
+          <option value="">Selecione...</option>
+          <option value="Construção Civil">Construção Civil</option>
+          <option value="Serviços Técnicos Profissionais">Serviços Técnicos Profissionais</option>
+          <option value="Comércio e Varejo">Comércio e Varejo</option>
+          <option value="Indústria e Produção">Indústria e Produção</option>
+          <option value="Estética, Saúde e Bem-Estar">Estética, Saúde e Bem-Estar</option>
+          <option value="Eventos, Campeonatos e Produções">Eventos, Campeonatos e Produções</option>
+          <option value="Negócios Digitais e Tecnologia">Negócios Digitais e Tecnologia</option>
+          <option value="Alimentação, Bares e Delivery">Alimentação, Bares e Delivery</option>
+          <option value="Franquias e Modelos Licenciados">Franquias e Modelos Licenciados</option>
+        </select>
+
+        <label for="local">Cidade/Estado:</label>
+        <input type="text" id="local" name="local" required>
+
+        <label for="estrutura">Estrutura:</label>
+        <select id="estrutura" name="estrutura" required>
+          <option value="">Selecione...</option>
+          <option value="Física">Física</option>
+          <option value="Virtual">Virtual</option>
+          <option value="Híbrida">Híbrida</option>
+        </select>
+
+        <label for="regime">Regime Tributário:</label>
+        <select id="regime" name="regime">
+          <option value="">Não se aplica / Não definido</option>
+          <option value="MEI">MEI</option>
+          <option value="Simples Nacional">Simples Nacional</option>
+          <option value="Lucro Presumido">Lucro Presumido</option>
+          <option value="Lucro Real">Lucro Real</option>
+        </select>
+
+        <label for="situacao">Situação Atual:</label>
+        <select id="situacao" name="situacao" required>
+          <option value="">Selecione...</option>
+          <option value="Planejamento">Planejamento</option>
+          <option value="Em operação">Em operação</option>
+          <option value="Em expansão">Em expansão</option>
+        </select>
+
+        <label for="responsavel">Responsável:</label>
+        <input type="text" id="responsavel" name="responsavel" required>
+
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="telefone">Telefone:</label>
+        <input type="tel" id="telefone" name="telefone" required>
+      </div>
+      
       <div class="step" id="step2">
-        <h2>2. Custos e Investimentos</h2>
-        <p><strong>Atividade selecionada:</strong> <span id="atividadeSelecionada">-</span></p>
-        <div id="camposEspecificos"></div>
+   <h2>2. Custos e Investimentos</h2>
+<p><strong>Atividade selecionada:</strong> <span id="atividadeSelecionada">-</span></p>
+<div id="camposEspecificos"></div>
       </div>
+<div class="step" id="step3">
+  <h2>3. Receita, Lucro e Ponto de Equilíbrio</h2>
 
-      <div class="step" id="step3">
-        <h2>3. Receita, Lucro e Ponto de Equilíbrio</h2>
-        <label for="preco_unitario">Preço Médio por Unidade (R$):</label>
-        <input type="text" id="preco_unitario" class="currency">
+  <h3 style="color:#00bcd4;">Receita Esperada</h3>
+  <label for="preco_unitario">Preço Médio por Unidade (R$):</label>
+  <input type="text" id="preco_unitario" class="currency">
 
-        <label for="quantidade_mensal">Unidades Vendidas por Mês (Estimativa):</label>
-        <input type="number" id="quantidade_mensal">
+  <label for="quantidade_mensal">Unidades Vendidas por Mês (Estimativa):</label>
+  <input type="number" id="quantidade_mensal">
 
-        <label for="receita_mensal">Receita Bruta Mensal (R$):</label>
-        <input type="text" id="receita_mensal" readonly>
+  <label for="receita_mensal">Receita Bruta Mensal (R$):</label>
+  <input type="text" id="receita_mensal" readonly>
 
-        <label for="receita_anual">Receita Anual Estimada (R$):</label>
-        <input type="text" id="receita_anual" readonly>
+  <label for="receita_anual">Receita Anual Estimada (R$):</label>
+  <input type="text" id="receita_anual" readonly>
 
-        <label for="custos_fixos_total">Total de Custos Fixos Mensais (R$):</label>
-        <input type="text" id="custos_fixos_total" readonly>
+  <h3 style="color:#00bcd4;">Projeção de Lucro</h3>
+  <label for="custos_fixos">Total de Custos Fixos Mensais (R$):</label>
+  <input type="text" id="custos_fixos" class="currency">
 
-        <label for="custos_variaveis_total">Total de Custos Variáveis Mensais (R$):</label>
-        <input type="text" id="custos_variaveis_total" readonly>
+  <label for="custos_variaveis">Total de Custos Variáveis Mensais (R$):</label>
+  <input type="text" id="custos_variaveis" class="currency">
 
-        <label for="lucro_operacional">Lucro Operacional Mensal (R$):</label>
-        <input type="text" id="lucro_operacional" readonly>
+  <label for="lucro_operacional">Lucro Operacional Mensal (R$):</label>
+  <input type="text" id="lucro_operacional" readonly>
 
-        <label for="margem_lucro">Margem de Lucro (%):</label>
-        <input type="text" id="margem_lucro" readonly>
+  <label for="margem_lucro">Margem de Lucro (%):</label>
+  <input type="text" id="margem_lucro" readonly>
 
-        <label for="custo_unitario_variavel">Custo Variável por Unidade (R$):</label>
-        <input type="text" id="custo_unitario_variavel" class="currency">
+  <h3 style="color:#00bcd4;">Ponto de Equilíbrio</h3>
+  <label for="custo_unitario_variavel">Custo Variável por Unidade (R$):</label>
+  <input type="text" id="custo_unitario_variavel" class="currency">
 
-        <label for="ponto_equilibrio">Ponto de Equilíbrio (em Unidades):</label>
-        <input type="text" id="ponto_equilibrio" readonly>
-      </div>
+  <label for="ponto_equilibrio">Ponto de Equilíbrio (em Unidades):</label>
+  <input type="text" id="ponto_equilibrio" readonly>
+</div>
+
+<script>
+  document.addEventListener("input", function () {
+    function moedaParaNumero(str) {
+      return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+    function numeroParaMoeda(num) {
+      return num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    const preco = moedaParaNumero(document.getElementById('preco_unitario').value);
+    const qtd = parseInt(document.getElementById('quantidade_mensal').value) || 0;
+    const receitaMensal = preco * qtd;
+    const receitaAnual = receitaMensal * 12;
+
+    document.getElementById('receita_mensal').value = numeroParaMoeda(receitaMensal);
+    document.getElementById('receita_anual').value = numeroParaMoeda(receitaAnual);
+
+    const fixos = moedaParaNumero(document.getElementById('custos_fixos').value);
+    const variaveis = moedaParaNumero(document.getElementById('custos_variaveis').value);
+    const lucro = receitaMensal - (fixos + variaveis);
+    const margem = receitaMensal ? (lucro / receitaMensal) * 100 : 0;
+
+    document.getElementById('lucro_operacional').value = numeroParaMoeda(lucro);
+    document.getElementById('margem_lucro').value = margem.toFixed(1).replace('.', ',') + '%';
+
+    const custoVariavelUnitario = moedaParaNumero(document.getElementById('custo_unitario_variavel').value);
+    const pontoEquilibrio = preco > custoVariavelUnitario ? (fixos / (preco - custoVariavelUnitario)) : 0;
+
+    document.getElementById('ponto_equilibrio').value = Math.ceil(pontoEquilibrio);
+  });
+</script>
+
 
       <div class="buttons">
         <button type="button" onclick="prevStep()">Voltar</button>
@@ -121,32 +205,28 @@
 
   <script>
     function nextStep() {
-      const steps = document.querySelectorAll('.step');
-      for (let i = 0; i < steps.length; i++) {
-        if (steps[i].classList.contains('active')) {
-          steps[i].classList.remove('active');
-          if (i + 1 < steps.length) steps[i + 1].classList.add('active');
-          break;
+      const step1 = document.getElementById('step1');
+      const inputs = step1.querySelectorAll('input[required], select[required]');
+      for (let i = 0; i < inputs.length; i++) {
+        if (!inputs[i].value) {
+          alert('Por favor, preencha todos os campos obrigatórios da Etapa 1.');
+          return;
         }
       }
+      step1.classList.remove('active');
+      document.getElementById('step2').classList.add('active');
     }
 
     function prevStep() {
-      const steps = document.querySelectorAll('.step');
-      for (let i = 0; i < steps.length; i++) {
-        if (steps[i].classList.contains('active')) {
-          steps[i].classList.remove('active');
-          if (i - 1 >= 0) steps[i - 1].classList.add('active');
-          break;
-        }
-      }
+      document.getElementById('step2').classList.remove('active');
+      document.getElementById('step1').classList.add('active');
     }
 
-    document.getElementById('tipo').addEventListener('change', function () {
+     document.getElementById('tipo').addEventListener('change', function () {
       const tipo = this.value;
       document.getElementById('atividadeSelecionada').innerText = tipo;
-      const camposDiv = document.getElementById('camposEspecificos');
-      camposDiv.innerHTML = '';
+const camposDiv = document.getElementById('camposEspecificos');
+  camposDiv.innerHTML = '';
       const campos = {
         'Construção Civil': {
           'Custos Fixos': ['Salários e Encargos', 'Gestão Administrativa', 'Internet e Energia', 'Contabilidade e Licenciamento'],
