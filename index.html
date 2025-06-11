@@ -34,7 +34,7 @@
       margin-top: 15px;
       font-weight: bold;
     }
-    input[type="text"], input[type="email"], input[type="tel"], select {
+    input[type="text"], input[type="email"], input[type="tel"], select, input[type="number"] {
       width: 100%;
       padding: 10px;
       font-size: 14px;
@@ -260,19 +260,18 @@
 
     document.getElementById('ponto_equilibrio').value = Math.ceil(pontoEquilibrio);
   });
-function calcularEtapa4() {
+ function calcularEtapa4() {
       const receita = moedaParaNumero(document.getElementById('receita_mensal').value);
       const fixos = moedaParaNumero(document.getElementById('custos_fixos_total').value);
       const variaveis = moedaParaNumero(document.getElementById('custos_variaveis_total').value);
       const lucro = receita - (fixos + variaveis);
-      const investimento = Array.from(document.querySelectorAll('#camposEspecificos label')).filter(l => l.textContent.includes('Investimento Inicial'))
-        .map(l => {
-          const input = l.nextElementSibling;
-          return moedaParaNumero(input?.value || '0');
-        }).reduce((a,b) => a + b, 0);
+
+      const investimento = Array.from(document.querySelectorAll('#camposEspecificos label'))
+        .filter(l => l.textContent.includes('Investimento Inicial'))
+        .map(l => moedaParaNumero(l.nextElementSibling?.value || '0'))
+        .reduce((a,b) => a + b, 0);
 
       const taxa = moedaParaNumero(document.getElementById('taxa_desconto').value) / 100;
-
       const margem = receita ? (variaveis / receita) : 0;
       const pontoEq = receita ? (fixos / (1 - margem)) : 0;
       const payback = lucro > 0 ? (investimento / lucro) : 0;
