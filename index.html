@@ -179,29 +179,28 @@
         <input type="text" id="ponto_equilibrio" readonly>
       </div>
     
-  </div>
-<!-- Etapa 4 -->
-     <div class="step" id="step4">
-        <h2>4. Indicadores Econômicos</h2>
+  <!-- Etapa 4: Indicadores Econômicos -->
+<div class="step" id="step4">
+  <h2>4. Indicadores Econômicos</h2>
 
-        <label for="taxa_desconto">Taxa de Desconto (% a.a):</label>
-        <input type="text" id="taxa_desconto" class="currency" value="10,00">
+  <label for="taxa_desconto">Taxa de Desconto (% a.a):</label>
+  <input type="text" id="taxa_desconto" class="currency" value="10,00">
 
-        <label for="ponto_equilibrio_fin">Ponto de Equilíbrio Financeiro:</label>
-        <input type="text" id="ponto_equilibrio_fin" readonly>
+  <label for="ponto_equilibrio_fin">Ponto de Equilíbrio Financeiro:</label>
+  <input type="text" id="ponto_equilibrio_fin" readonly>
 
-        <label for="payback">Payback (meses):</label>
-        <input type="text" id="payback" readonly>
+  <label for="payback">Payback (meses):</label>
+  <input type="text" id="payback" readonly>
 
-        <label for="roi">ROI (%):</label>
-        <input type="text" id="roi" readonly>
+  <label for="roi">ROI (%):</label>
+  <input type="text" id="roi" readonly>
 
-        <label for="vpl">VPL (R$):</label>
-        <input type="text" id="vpl" readonly>
+  <label for="vpl">VPL (R$):</label>
+  <input type="text" id="vpl" readonly>
 
-        <label for="tir">TIR (%):</label>
-        <input type="text" id="tir" readonly>
-      </div>
+  <label for="tir">TIR (%):</label>
+  <input type="text" id="tir" readonly>
+</div>
  <!-- Etapa 5 -->
       <div class="step" id="step5">
         <h2>4. Análise Final e Observações</h2>
@@ -433,7 +432,7 @@ const camposDiv = document.getElementById('camposEspecificos');
   const lucro = receita - (fixos + variaveis);
   const taxa = moedaParaNumero(document.getElementById('taxa_desconto').value) / 100;
 
-  // Corrigido: pegar todos os campos que contenham "Investimento Inicial" no label correspondente
+  // 🧮 Investimento Inicial (buscando todos os campos após h4 "Investimento Inicial")
   let investimento = 0;
   document.querySelectorAll('#camposEspecificos h4').forEach(h4 => {
     const categoria = h4.innerText.trim().toLowerCase();
@@ -446,13 +445,13 @@ const camposDiv = document.getElementById('camposEspecificos');
     }
   });
 
-  // Cálculos
+  // 🧠 Cálculos principais
   const margem = receita ? (variaveis / receita) : 0;
   const pontoEq = receita ? (fixos / (1 - margem)) : 0;
   const payback = lucro > 0 ? (investimento / lucro) : 0;
   const roi = investimento > 0 ? ((lucro * 12 / investimento) * 100) : 0;
 
-  // VPL e TIR para 60 meses
+  // 💰 VPL e TIR (fluxo de 60 meses)
   let vpl = 0;
   for (let t = 1; t <= 60; t++) {
     vpl += lucro / Math.pow(1 + taxa, t);
@@ -462,12 +461,14 @@ const camposDiv = document.getElementById('camposEspecificos');
   let tir = 0, step = 0.0001;
   while (tir < 1) {
     let testVPL = 0;
-    for (let t = 1; t <= 60; t++) testVPL += lucro / Math.pow(1 + tir, t);
+    for (let t = 1; t <= 60; t++) {
+      testVPL += lucro / Math.pow(1 + tir, t);
+    }
     if (testVPL < investimento) break;
     tir += step;
   }
 
-  // Preenchendo os campos
+  // 📩 Preencher os campos da etapa 4
   document.getElementById('ponto_equilibrio_fin').value = numeroParaMoeda(pontoEq);
   document.getElementById('payback').value = payback.toFixed(1).replace('.', ',');
   document.getElementById('roi').value = roi.toFixed(1).replace('.', ',') + '%';
