@@ -34,7 +34,7 @@
       margin-top: 15px;
       font-weight: bold;
     }
-    input[type="text"], select {
+    input[type="text"], input[type="email"], input[type="tel"], select {
       width: 100%;
       padding: 10px;
       font-size: 14px;
@@ -95,8 +95,8 @@
         </select>
 
         <label for="regime">Regime Tributário:</label>
-        <select id="regime" name="regime" required>
-          <option value="">Selecione...</option>
+        <select id="regime" name="regime">
+          <option value="">Não se aplica / Não definido</option>
           <option value="MEI">MEI</option>
           <option value="Simples Nacional">Simples Nacional</option>
           <option value="Lucro Presumido">Lucro Presumido</option>
@@ -113,6 +113,12 @@
 
         <label for="responsavel">Responsável:</label>
         <input type="text" id="responsavel" name="responsavel" required>
+
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="telefone">Telefone:</label>
+        <input type="tel" id="telefone" name="telefone" required>
       </div>
 
       <div class="step" id="step2">
@@ -127,10 +133,11 @@
       </div>
     </form>
   </div>
+
   <script>
     function nextStep() {
       const step1 = document.getElementById('step1');
-      const inputs = step1.querySelectorAll('input, select');
+      const inputs = step1.querySelectorAll('input[required], select[required]');
       for (let i = 0; i < inputs.length; i++) {
         if (!inputs[i].value) {
           alert('Por favor, preencha todos os campos obrigatórios da Etapa 1.');
@@ -145,6 +152,36 @@
       document.getElementById('step2').classList.remove('active');
       document.getElementById('step1').classList.add('active');
     }
+
+    document.getElementById('tipo').addEventListener('change', function () {
+      const tipo = this.value;
+      const campos = {
+        'Construção Civil': [
+          'Salários e Encargos', 'Gestão Administrativa', 'Internet e Energia', 'Contabilidade e Licenciamento',
+          'Materiais de Construção', 'Frete e Logística', 'Desperdícios e Sobras', 'Taxas por m² executado',
+          'Ferramentas e Equipamentos', 'EPIs e Sinalização', 'Projetos Técnicos e ART', 'Infraestrutura de Canteiro'
+        ]
+      };
+      const camposDiv = document.getElementById('camposEspecificos');
+      camposDiv.innerHTML = '';
+      if (campos[tipo]) {
+        campos[tipo].forEach(label => {
+          const id = label.toLowerCase().normalize("NFD").replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
+          camposDiv.innerHTML += `
+            <label for="${id}">${label} (R$):</label>
+            <input type="text" id="${id}" name="${id}" class="currency">
+          `;
+        });
+      }
+    });
+
+    document.addEventListener("input", function(e) {
+      if (e.target.classList.contains("currency")) {
+        let value = e.target.value.replace(/\D/g, "");
+        value = (parseInt(value, 10) / 100).toFixed(2);
+        e.target.value = value.replace(".", ",").replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+      }
+    });
   </script>
 </body>
 </html>
