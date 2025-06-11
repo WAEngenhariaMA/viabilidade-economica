@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -23,9 +22,6 @@
             text-align: center;
             font-size: 24px;
             color: #00bcd4;
-        }
-        h2 {
-            color: #fff;
         }
         .step {
             display: none;
@@ -66,77 +62,247 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>WA Engenharia – Analisador de Viabilidade Econômica</h1>
+<div class="container">
+    <h1>WA Engenharia – Analisador de Viabilidade Econômica</h1>
 
-        <form id="viabilidadeForm">
-            <div class="step active" id="step1">
-                <h2>1. Dados Gerais do Projeto</h2>
+    <form id="viabilidadeForm">
+        <div class="step active" id="step1">
+            <h2>1. Dados Gerais do Projeto</h2>
+            <label for="nome">Nome do Projeto/Empresa:</label>
+            <input type="text" id="nome" name="nome" required>
 
-                <label for="nome">Nome do Projeto/Empresa:</label>
-                <input type="text" id="nome" name="nome" required>
+            <label for="tipo">Tipo de Atividade:</label>
+            <select id="tipo" name="tipo">
+                <option value="">Selecione...</option>
+                <option value="Construção Civil">Construção Civil</option>
+<option value="Serviços Técnicos Profissionais">Serviços Técnicos Profissionais</option>
+<option value="Comércio e Varejo">Comércio e Varejo</option>
+<option value="Indústria e Produção">Indústria e Produção</option>
+<option value="Estética, Saúde e Bem-Estar">Estética, Saúde e Bem-Estar</option>
+<option value="Eventos, Campeonatos e Produções">Eventos, Campeonatos e Produções</option>
+<option value="Negócios Digitais e Tecnologia">Negócios Digitais e Tecnologia</option>
+<option value="Alimentação, Bares e Delivery">Alimentação, Bares e Delivery</option>
+<option value="Franquias e Modelos Licenciados">Franquias e Modelos Licenciados</option>
 
-                <label for="tipo">Tipo de Atividade:</label>
-                <select id="tipo" name="tipo">
-                    <option value="Construção Civil">Construção Civil</option>
-                    <option value="Serviços Técnicos Profissionais">Serviços Técnicos Profissionais</option>
-                    <option value="Comércio e Varejo">Comércio e Varejo</option>
-                    <option value="Indústria e Produção">Indústria e Produção</option>
-                    <option value="Estética, Saúde e Bem-Estar">Estética, Saúde e Bem-Estar</option>
-                    <option value="Eventos, Campeonatos e Produções">Eventos, Campeonatos e Produções</option>
-                    <option value="Negócios Digitais e Tecnologia">Negócios Digitais e Tecnologia</option>
-                    <option value="Alimentação, Bares e Delivery">Alimentação, Bares e Delivery</option>
-                    <option value="Franquias e Modelos Licenciados">Franquias e Modelos Licenciados</option>
-                </select>
+            </select>
 
-                <label for="local">Cidade/Estado:</label>
-                <input type="text" id="local" name="local">
+            <label for="local">Cidade/Estado:</label>
+            <input type="text" id="local" name="local">
 
-                <label for="estrutura">Estrutura:</label>
-                <select id="estrutura" name="estrutura">
-                    <option value="Física">Física</option>
-                    <option value="Virtual">Virtual</option>
-                    <option value="Híbrida">Híbrida</option>
-                </select>
+            <label for="estrutura">Estrutura:</label>
+            <select id="estrutura" name="estrutura">
+                <option value="Física">Física</option>
+                <option value="Virtual">Virtual</option>
+                <option value="Híbrida">Híbrida</option>
+            </select>
 
-                <label for="regime">Regime Tributário:</label>
-                <select id="regime" name="regime">
-                    <option value="MEI">MEI</option>
-                    <option value="Simples Nacional">Simples Nacional</option>
-                    <option value="Lucro Presumido">Lucro Presumido</option>
-                    <option value="Lucro Real">Lucro Real</option>
-                </select>
+            <label for="regime">Regime Tributário:</label>
+            <select id="regime" name="regime">
+                <option value="MEI">MEI</option>
+                <option value="Simples Nacional">Simples Nacional</option>
+                <option value="Lucro Presumido">Lucro Presumido</option>
+                <option value="Lucro Real">Lucro Real</option>
+            </select>
 
-                <label for="situacao">Situação Atual:</label>
-                <select id="situacao" name="situacao">
-                    <option value="Planejamento">Planejamento</option>
-                    <option value="Em operação">Em operação</option>
-                    <option value="Em expansão">Em expansão</option>
-                </select>
+            <label for="situacao">Situação Atual:</label>
+            <select id="situacao" name="situacao">
+                <option value="Planejamento">Planejamento</option>
+                <option value="Em operação">Em operação</option>
+                <option value="Em expansão">Em expansão</option>
+            </select>
 
-                <label for="responsavel">Responsável:</label>
-                <input type="text" id="responsavel" name="responsavel">
-            </div>
+            <label for="responsavel">Responsável:</label>
+            <input type="text" id="responsavel" name="responsavel">
+        </div>
 
-            <div class="buttons">
-                <button type="button" onclick="nextStep()">Próximo</button>
-            </div>
-        </form>
-    </div>
+        <div class="step" id="step2">
+            <h2>2. Custos e Investimentos</h2>
+            <div class="tipo-construcão_civil" style="display:none">
+<label for="material">Custo com Materiais (R$)</label>
+<input type="text" id="material" name="material" class="currency">
 
-    <script>
-        function nextStep() {
-            const steps = document.querySelectorAll(".step");
-            for (let i = 0; i < steps.length; i++) {
-                if (steps[i].classList.contains("active")) {
-                    steps[i].classList.remove("active");
-                    if (steps[i + 1]) {
-                        steps[i + 1].classList.add("active");
-                    }
-                    break;
-                }
+<label for="mao_obra">Mão de Obra (R$)</label>
+<input type="text" id="mao_obra" name="mao_obra" class="currency">
+
+<label for="licencas">Licenças e Aprovações (R$)</label>
+<input type="text" id="licencas" name="licencas" class="currency">
+
+<label for="infraestrutura">Infraestrutura e Equipamentos (R$)</label>
+<input type="text" id="infraestrutura" name="infraestrutura" class="currency">
+
+</div>
+<div class="tipo-servicos_técnicos_profissionais" style="display:none">
+<label for="softwares">Software e Ferramentas (R$)</label>
+<input type="text" id="softwares" name="softwares" class="currency">
+
+<label for="consultoria">Consultoria e Registros (R$)</label>
+<input type="text" id="consultoria" name="consultoria" class="currency">
+
+<label for="escritorio">Custo de Escritório (R$)</label>
+<input type="text" id="escritorio" name="escritorio" class="currency">
+
+<label for="marketing">Marketing e Divulgação (R$)</label>
+<input type="text" id="marketing" name="marketing" class="currency">
+
+</div>
+<div class="tipo-comércio_e_varejo" style="display:none">
+<label for="estoque">Estoque Inicial (R$)</label>
+<input type="text" id="estoque" name="estoque" class="currency">
+
+<label for="loja">Estrutura da Loja (R$)</label>
+<input type="text" id="loja" name="loja" class="currency">
+
+<label for="pessoal">Equipe Inicial (R$)</label>
+<input type="text" id="pessoal" name="pessoal" class="currency">
+
+<label for="pdv">Sistema de Vendas/PDV (R$)</label>
+<input type="text" id="pdv" name="pdv" class="currency">
+
+</div>
+<div class="tipo-indústria_e_producão" style="display:none">
+<label for="insumos">Insumos de Produção (R$)</label>
+<input type="text" id="insumos" name="insumos" class="currency">
+
+<label for="maquinas">Máquinas e Equipamentos (R$)</label>
+<input type="text" id="maquinas" name="maquinas" class="currency">
+
+<label for="industria_estrutura">Estrutura Fabril (R$)</label>
+<input type="text" id="industria_estrutura" name="industria_estrutura" class="currency">
+
+<label for="manutencao">Manutenção Inicial (R$)</label>
+<input type="text" id="manutencao" name="manutencao" class="currency">
+
+</div>
+<div class="tipo-estética_saúde_e_bem-estar" style="display:none">
+<label for="equipamentos">Equipamentos e Aparelhos (R$)</label>
+<input type="text" id="equipamentos" name="equipamentos" class="currency">
+
+<label for="espaco">Espaço Físico (R$)</label>
+<input type="text" id="espaco" name="espaco" class="currency">
+
+<label for="profissionais">Profissionais/Colaboradores (R$)</label>
+<input type="text" id="profissionais" name="profissionais" class="currency">
+
+<label for="produtos">Produtos e Insumos (R$)</label>
+<input type="text" id="produtos" name="produtos" class="currency">
+
+</div>
+<div class="tipo-eventos_campeonatos_e_producões" style="display:none">
+<label for="locacao">Locação de Espaço (R$)</label>
+<input type="text" id="locacao" name="locacao" class="currency">
+
+<label for="estrutura_evento">Estrutura de Evento (R$)</label>
+<input type="text" id="estrutura_evento" name="estrutura_evento" class="currency">
+
+<label for="divulgacao">Divulgação e Mídia (R$)</label>
+<input type="text" id="divulgacao" name="divulgacao" class="currency">
+
+<label for="premiacoes">Premiações e Brindes (R$)</label>
+<input type="text" id="premiacoes" name="premiacoes" class="currency">
+
+</div>
+<div class="tipo-negócios_digitais_e_tecnologia" style="display:none">
+<label for="desenvolvimento">Desenvolvimento (App, Site etc.) (R$)</label>
+<input type="text" id="desenvolvimento" name="desenvolvimento" class="currency">
+
+<label for="plataformas">Plataformas e Licenças (R$)</label>
+<input type="text" id="plataformas" name="plataformas" class="currency">
+
+<label for="automacoes">Automação e Integrações (R$)</label>
+<input type="text" id="automacoes" name="automacoes" class="currency">
+
+<label for="trafego">Tráfego Pago e Ads (R$)</label>
+<input type="text" id="trafego" name="trafego" class="currency">
+
+</div>
+<div class="tipo-alimentacão_bares_e_delivery" style="display:none">
+<label for="cozinha">Cozinha e Equipamentos (R$)</label>
+<input type="text" id="cozinha" name="cozinha" class="currency">
+
+<label for="estoque_alimento">Estoque Inicial (R$)</label>
+<input type="text" id="estoque_alimento" name="estoque_alimento" class="currency">
+
+<label for="equipe_cozinha">Equipe de Cozinha e Atendimento (R$)</label>
+<input type="text" id="equipe_cozinha" name="equipe_cozinha" class="currency">
+
+<label for="embalagens">Embalagens e Entrega (R$)</label>
+<input type="text" id="embalagens" name="embalagens" class="currency">
+
+</div>
+<div class="tipo-franquias_e_modelos_licenciados" style="display:none">
+<label for="taxa_franquia">Taxa de Franquia (R$)</label>
+<input type="text" id="taxa_franquia" name="taxa_franquia" class="currency">
+
+<label for="padronizacao">Padronização da Unidade (R$)</label>
+<input type="text" id="padronizacao" name="padronizacao" class="currency">
+
+<label for="treinamento">Treinamento Inicial (R$)</label>
+<input type="text" id="treinamento" name="treinamento" class="currency">
+
+<label for="marketing_franquia">Marketing de Abertura (R$)</label>
+<input type="text" id="marketing_franquia" name="marketing_franquia" class="currency">
+
+</div>
+
+        </div>
+
+        <div class="buttons">
+            <button type="button" onclick="prevStep()">Voltar</button>
+            <button type="button" onclick="nextStep()">Próximo</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function nextStep() {
+    const steps = document.querySelectorAll(".step");
+    for (let i = 0; i < steps.length; i++) {
+        if (steps[i].classList.contains("active")) {
+            steps[i].classList.remove("active");
+            if (steps[i + 1]) {
+                steps[i + 1].classList.add("active");
             }
+            break;
         }
-    </script>
+    }
+    showFields();
+}
+
+function prevStep() {
+    const steps = document.querySelectorAll(".step");
+    for (let i = steps.length - 1; i > 0; i--) {
+        if (steps[i].classList.contains("active")) {
+            steps[i].classList.remove("active");
+            steps[i - 1].classList.add("active");
+            break;
+        }
+    }
+}
+
+function showFields() {
+  const tipo = document.getElementById('tipo').value;
+  document.querySelector('.tipo-construcão_civil').style.display = (tipo === 'Construção Civil') ? 'block' : 'none';
+  document.querySelector('.tipo-servicos_técnicos_profissionais').style.display = (tipo === 'Serviços Técnicos Profissionais') ? 'block' : 'none';
+  document.querySelector('.tipo-comércio_e_varejo').style.display = (tipo === 'Comércio e Varejo') ? 'block' : 'none';
+  document.querySelector('.tipo-indústria_e_producão').style.display = (tipo === 'Indústria e Produção') ? 'block' : 'none';
+  document.querySelector('.tipo-estética_saúde_e_bem-estar').style.display = (tipo === 'Estética, Saúde e Bem-Estar') ? 'block' : 'none';
+  document.querySelector('.tipo-eventos_campeonatos_e_producões').style.display = (tipo === 'Eventos, Campeonatos e Produções') ? 'block' : 'none';
+  document.querySelector('.tipo-negócios_digitais_e_tecnologia').style.display = (tipo === 'Negócios Digitais e Tecnologia') ? 'block' : 'none';
+  document.querySelector('.tipo-alimentacão_bares_e_delivery').style.display = (tipo === 'Alimentação, Bares e Delivery') ? 'block' : 'none';
+  document.querySelector('.tipo-franquias_e_modelos_licenciados').style.display = (tipo === 'Franquias e Modelos Licenciados') ? 'block' : 'none';
+}
+
+
+// Máscara de moeda
+document.addEventListener("input", function(e) {
+    if (e.target.classList.contains("currency")) {
+        let value = e.target.value.replace(/\D/g, "");
+        value = (parseInt(value, 10) / 100).toFixed(2);
+        e.target.value = value
+            .replace(".", ",")
+            .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+    }
+});
+</script>
 </body>
 </html>
