@@ -153,8 +153,9 @@
       document.getElementById('step1').classList.add('active');
     }
 
-    document.getElementById('tipo').addEventListener('change', function () {
+     document.getElementById('tipo').addEventListener('change', function () {
       const tipo = this.value;
+      document.getElementById('atividadeSelecionada').innerText = tipo;
       const campos = {
         'Construção Civil': {
           'Custos Fixos': ['Salários e Encargos', 'Gestão Administrativa', 'Internet e Energia', 'Contabilidade e Licenciamento'],
