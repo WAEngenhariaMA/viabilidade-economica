@@ -156,24 +156,69 @@
     document.getElementById('tipo').addEventListener('change', function () {
       const tipo = this.value;
       const campos = {
-        'Construção Civil': [
-          'Salários e Encargos', 'Gestão Administrativa', 'Internet e Energia', 'Contabilidade e Licenciamento',
-          'Materiais de Construção', 'Frete e Logística', 'Desperdícios e Sobras', 'Taxas por m² executado',
-          'Ferramentas e Equipamentos', 'EPIs e Sinalização', 'Projetos Técnicos e ART', 'Infraestrutura de Canteiro'
-        ]
+        'Construção Civil': {
+          'Custos Fixos': ['Salários e Encargos', 'Gestão Administrativa', 'Internet e Energia', 'Contabilidade e Licenciamento'],
+          'Custos Variáveis': ['Materiais de Construção', 'Frete e Logística', 'Desperdícios e Sobras', 'Taxas por m² executado'],
+          'Investimento Inicial': ['Ferramentas e Equipamentos', 'EPIs e Sinalização', 'Projetos Técnicos e ART', 'Infraestrutura de Canteiro']
+        },
+        'Serviços Técnicos Profissionais': {
+          'Custos Fixos': ['Aluguel do Escritório', 'Internet e Softwares', 'Contabilidade', 'Equipe de Apoio'],
+          'Custos Variáveis': ['Deslocamentos', 'Materiais de Apresentação', 'Comissões', 'Taxas de Documentação'],
+          'Investimento Inicial': ['Notebook e Equipamentos', 'Identidade Visual e Branding', 'Site/Portfólio Profissional', 'Reformas no Escritório']
+        },
+        'Comércio e Varejo': {
+          'Custos Fixos': ['Aluguel e Condomínio', 'Equipe de Atendimento', 'Sistema PDV e Internet', 'Contabilidade'],
+          'Custos Variáveis': ['Estoque de Produtos', 'Frete de Fornecedores', 'Comissões sobre vendas', 'Sacos, etiquetas, embalagens'],
+          'Investimento Inicial': ['Estrutura da Loja', 'Vitrine, Móveis, Balcão', 'Marketing de Lançamento', 'Softwares de Gestão']
+        },
+        'Indústria e Produção': {
+          'Custos Fixos': ['Energia Elétrica', 'Equipe de Produção', 'Manutenção Preventiva', 'Supervisão e Qualidade'],
+          'Custos Variáveis': ['Matéria-prima', 'Perdas Operacionais', 'Logística de Distribuição', 'Subcontratações'],
+          'Investimento Inicial': ['Máquinas e Equipamentos', 'Layout de Produção', 'Controle de Qualidade', 'Licenciamento Industrial']
+        },
+        'Estética, Saúde e Bem-Estar': {
+          'Custos Fixos': ['Aluguel da Clínica', 'Recepcionista / Secretária', 'Internet e Software Médico', 'Contabilidade e Vigilância Sanitária'],
+          'Custos Variáveis': ['Insumos Descartáveis', 'Luvas, máscaras, uniformes', 'Reposição de Produtos', 'Comissões Profissionais'],
+          'Investimento Inicial': ['Aparelhos Estéticos', 'Consultório e Mobiliário', 'Reformas e Decorativo', 'Publicidade Inicial']
+        },
+        'Eventos, Campeonatos e Produções': {
+          'Custos Fixos': ['Equipe Organizadora', 'Internet e Suporte', 'Coordenação Técnica', 'Deslocamentos'],
+          'Custos Variáveis': ['Estrutura de Palco/Tendas', 'Alimentação e Logística', 'Contratação de Serviços', 'Segurança e Limpeza'],
+          'Investimento Inicial': ['Premiações', 'Identidade Visual e Mídia', 'Site/App do Evento', 'Kit Atleta/Participante']
+        },
+        'Negócios Digitais e Tecnologia': {
+          'Custos Fixos': ['Plataformas e Ferramentas', 'Equipe Técnica/Atendimento', 'Domínio e Hospedagem', 'Gestão e Monitoramento'],
+          'Custos Variáveis': ['Tráfego Pago (Meta, Google)', 'Comissões de Afiliados', 'Suporte e SaaS Variáveis', 'Impostos por Faturamento'],
+          'Investimento Inicial': ['Desenvolvimento de App/Site', 'Branding e Posicionamento', 'Captação de Leads', 'Produção de Conteúdo']
+        },
+        'Alimentação, Bares e Delivery': {
+          'Custos Fixos': ['Aluguel do Estabelecimento', 'Equipe de Cozinha e Garçons', 'Água, Gás, Energia', 'Licenças e Taxas Municipais'],
+          'Custos Variáveis': ['Ingredientes e Bebidas', 'Perdas e Validades', 'Embalagens e Delivery', 'Comissões de Apps'],
+          'Investimento Inicial': ['Cozinha Industrial', 'Balcões, Mesas, Freezers', 'Sistema de Pedido e Entrega', 'Marketing de Abertura']
+        },
+        'Franquias e Modelos Licenciados': {
+          'Custos Fixos': ['Royalties Mensais', 'Equipe Local', 'Despesas de Loja/Unidade', 'Sistema do Franqueador'],
+          'Custos Variáveis': ['Materiais e Produtos', 'Marketing Local', 'Reposição de Estoque', 'Taxas Operacionais'],
+          'Investimento Inicial': ['Taxa de Franquia', 'Padronização da Unidade', 'Treinamento Inicial', 'Implementação Técnica']
+        }
       };
+
       const camposDiv = document.getElementById('camposEspecificos');
       camposDiv.innerHTML = '';
       if (campos[tipo]) {
-        campos[tipo].forEach(label => {
-          const id = label.toLowerCase().normalize("NFD").replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
-          camposDiv.innerHTML += `
-            <label for="${id}">${label} (R$):</label>
-            <input type="text" id="${id}" name="${id}" class="currency">
-          `;
-        });
+        for (const categoria in campos[tipo]) {
+          camposDiv.innerHTML += `<h4 style="margin-top:20px; color:#00bcd4;">${categoria}</h4>`;
+          campos[tipo][categoria].forEach(label => {
+            const id = label.toLowerCase().normalize("NFD").replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
+            camposDiv.innerHTML += `
+              <label for="${id}">${label} (R$):</label>
+              <input type="text" id="${id}" name="${id}" class="currency">
+            `;
+          });
+        }
       }
     });
+
 
     document.addEventListener("input", function(e) {
       if (e.target.classList.contains("currency")) {
