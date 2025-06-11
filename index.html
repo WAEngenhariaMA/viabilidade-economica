@@ -12,9 +12,9 @@
       color: #fff;
     }
     .container {
-      max-width: 1000px;
+      max-width: 800px;
       margin: 50px auto;
-      background-color: rgba(0, 0, 0, 0.85);
+      background-color: rgba(0, 0, 0, 0.8);
       padding: 30px;
       border-radius: 12px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
@@ -22,7 +22,6 @@
     h1 {
       text-align: center;
       color: #00bcd4;
-      margin-bottom: 30px;
     }
     .step {
       display: none;
@@ -35,19 +34,12 @@
       margin-top: 15px;
       font-weight: bold;
     }
-    .form-row {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    .form-group {
-      flex: 1;
-      min-width: 200px;
-    }
-    .full-width {
-      flex: 1 0 100%;
-    }
-    input[type="text"], input[type="email"], input[type="tel"], select {
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="number"],
+    select,
+    textarea {
       width: 100%;
       padding: 10px;
       font-size: 14px;
@@ -56,7 +48,7 @@
       margin-top: 5px;
     }
     .buttons {
-      margin-top: 30px;
+      margin-top: 20px;
       text-align: right;
     }
     button {
@@ -72,34 +64,29 @@
       background-color: #0193a3;
     }
     .row {
-  display: flex;
-  gap: 20px;
-  margin-top: 15px;
-}
-
-.form-group.half {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
+      display: flex;
+      gap: 20px;
+      margin-top: 15px;
+    }
+    .form-group.half {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>WA Engenharia – Analisador de Viabilidade Econômica</h1>
     <form id="viabilidadeForm">
+      <!-- Etapa 1 -->
       <div class="step active" id="step1">
         <h2>1. Dados Gerais do Projeto</h2>
+        <label for="nome">Nome do Projeto/Empresa:</label>
+        <input type="text" id="nome" name="nome" required>
 
-        <div class="form-row">
-          <div class="form-group full-width">
-            <label for="nome">Nome do Projeto/Empresa:</label>
-            <input type="text" id="nome" name="nome" required>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
+        <div class="row">
+          <div class="form-group half">
             <label for="tipo">Tipo de Atividade:</label>
             <select id="tipo" name="tipo" required>
               <option value="">Selecione...</option>
@@ -115,25 +102,24 @@
             </select>
           </div>
 
-          <div class="row">
-  <div class="form-group half">
-    <label for="cidade">Cidade/Estado:</label>
-    <input type="text" id="cidade" name="cidade" required>
-  </div>
+          <div class="form-group half">
+            <label for="cidade">Cidade/Estado:</label>
+            <input type="text" id="cidade" name="cidade" required>
+          </div>
+        </div>
 
-  <div class="form-group half">
-    <label for="estrutura">Estrutura:</label>
-    <select id="estrutura" name="estrutura" required>
-      <option value="">Selecione...</option>
-      <option value="Física">Física</option>
-      <option value="Virtual">Virtual</option>
-      <option value="Híbrida">Híbrida</option>
-    </select>
-  </div>
-</div>
+        <div class="row">
+          <div class="form-group half">
+            <label for="estrutura">Estrutura:</label>
+            <select id="estrutura" name="estrutura" required>
+              <option value="">Selecione...</option>
+              <option value="Física">Física</option>
+              <option value="Virtual">Virtual</option>
+              <option value="Híbrida">Híbrida</option>
+            </select>
+          </div>
 
-        <div class="form-row">
-          <div class="form-group">
+          <div class="form-group half">
             <label for="regime">Regime Tributário:</label>
             <select id="regime" name="regime">
               <option value="">Não se aplica / Não definido</option>
@@ -143,8 +129,10 @@
               <option value="Lucro Real">Lucro Real</option>
             </select>
           </div>
+        </div>
 
-          <div class="form-group">
+        <div class="row">
+          <div class="form-group half">
             <label for="situacao">Situação Atual:</label>
             <select id="situacao" name="situacao" required>
               <option value="">Selecione...</option>
@@ -155,22 +143,15 @@
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group full-width">
-            <label for="responsavel">Responsável:</label>
-            <input type="text" id="responsavel" name="responsavel" required>
-          </div>
+        <label for="responsavel">Responsável:</label>
+        <input type="text" id="responsavel" name="responsavel" required>
 
-          <div class="form-group full-width">
-            <label for="email">E-mail:</label>
-            <input type="email" id="email" name="email" required>
-          </div>
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" name="email" required>
 
-          <div class="form-group">
-            <label for="telefone">Telefone:</label>
-            <input type="tel" id="telefone" name="telefone" required>
-          </div>
-        </div>
+        <label for="telefone">Telefone:</label>
+        <input type="tel" id="telefone" name="telefone" required>
+      </div>
       
       <div class="step" id="step2">
    <h2>Custos e Investimentos</h2>
