@@ -1,189 +1,150 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>WA Engenharia – Analisador de Viabilidade Econômica</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-            color: #fff;
-        }
-        .container {
-            max-width: 700px;
-            margin: 50px auto;
-            background-color: rgba(0,0,0,0.75);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.6);
-        }
-        h1 {
-            text-align: center;
-            font-size: 24px;
-            color: #00bcd4;
-        }
-        .step {
-            display: none;
-        }
-        .step.active {
-            display: block;
-        }
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-        input[type="text"], select {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 10px;
-            font-size: 14px;
-            border-radius: 6px;
-            border: none;
-            margin-top: 5px;
-        }
-        .buttons {
-            margin-top: 20px;
-            text-align: right;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #00bcd4;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-        button:hover {
-            background-color: #0193a3;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>WA Engenharia – Analisador de Viabilidade Econômica</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #fff;
+    }
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+    }
+    h1 {
+      text-align: center;
+      color: #00bcd4;
+    }
+    .step {
+      display: none;
+    }
+    .step.active {
+      display: block;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input[type="text"], select {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: none;
+      margin-top: 5px;
+    }
+    .buttons {
+      margin-top: 20px;
+      text-align: right;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #00bcd4;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    button:hover {
+      background-color: #0193a3;
+    }
+  </style>
 </head>
 <body>
-<div class="container">
+  <div class="container">
     <h1>WA Engenharia – Analisador de Viabilidade Econômica</h1>
     <form id="viabilidadeForm">
-        <div class="step active" id="step1">
-            <h2>1. Dados Gerais do Projeto</h2>
-            <label for="nome">Nome do Projeto/Empresa:</label>
-            <input type="text" id="nome" name="nome" required>
+      <div class="step active" id="step1">
+        <h2>1. Dados Gerais do Projeto</h2>
+        <label for="nome">Nome do Projeto/Empresa:</label>
+        <input type="text" id="nome" name="nome" required>
 
-            <label for="tipo">Tipo de Atividade:</label>
-            <select id="tipo" name="tipo" onchange="showFields()" required>
-                <option value="">Selecione...</option>
-                <option value="Construção Civil">Construção Civil</option>
-                <option value="Serviços Técnicos Profissionais">Serviços Técnicos Profissionais</option>
-                <option value="Comércio e Varejo">Comércio e Varejo</option>
-                <option value="Indústria e Produção">Indústria e Produção</option>
-                <option value="Estética, Saúde e Bem-Estar">Estética, Saúde e Bem-Estar</option>
-                <option value="Eventos, Campeonatos e Produções">Eventos, Campeonatos e Produções</option>
-                <option value="Negócios Digitais e Tecnologia">Negócios Digitais e Tecnologia</option>
-                <option value="Alimentação, Bares e Delivery">Alimentação, Bares e Delivery</option>
-                <option value="Franquias e Modelos Licenciados">Franquias e Modelos Licenciados</option>
-            </select>
+        <label for="tipo">Tipo de Atividade:</label>
+        <select id="tipo" name="tipo" required>
+          <option value="">Selecione...</option>
+          <option value="Construção Civil">Construção Civil</option>
+          <option value="Serviços Técnicos Profissionais">Serviços Técnicos Profissionais</option>
+          <option value="Comércio e Varejo">Comércio e Varejo</option>
+          <option value="Indústria e Produção">Indústria e Produção</option>
+          <option value="Estética, Saúde e Bem-Estar">Estética, Saúde e Bem-Estar</option>
+          <option value="Eventos, Campeonatos e Produções">Eventos, Campeonatos e Produções</option>
+          <option value="Negócios Digitais e Tecnologia">Negócios Digitais e Tecnologia</option>
+          <option value="Alimentação, Bares e Delivery">Alimentação, Bares e Delivery</option>
+          <option value="Franquias e Modelos Licenciados">Franquias e Modelos Licenciados</option>
+        </select>
 
-            <label for="local">Cidade/Estado:</label>
-            <input type="text" id="local" name="local" required>
+        <label for="local">Cidade/Estado:</label>
+        <input type="text" id="local" name="local" required>
 
-            <label for="estrutura">Estrutura:</label>
-            <select id="estrutura" name="estrutura" required>
-                <option value="">Selecione...</option>
-                <option value="Física">Física</option>
-                <option value="Virtual">Virtual</option>
-                <option value="Híbrida">Híbrida</option>
-            </select>
+        <label for="estrutura">Estrutura:</label>
+        <select id="estrutura" name="estrutura" required>
+          <option value="">Selecione...</option>
+          <option value="Física">Física</option>
+          <option value="Virtual">Virtual</option>
+          <option value="Híbrida">Híbrida</option>
+        </select>
 
-            <label for="regime">Regime Tributário:</label>
-            <select id="regime" name="regime" required>
-                <option value="">Selecione...</option>
-                <option value="MEI">MEI</option>
-                <option value="Simples Nacional">Simples Nacional</option>
-                <option value="Lucro Presumido">Lucro Presumido</option>
-                <option value="Lucro Real">Lucro Real</option>
-            </select>
+        <label for="regime">Regime Tributário:</label>
+        <select id="regime" name="regime" required>
+          <option value="">Selecione...</option>
+          <option value="MEI">MEI</option>
+          <option value="Simples Nacional">Simples Nacional</option>
+          <option value="Lucro Presumido">Lucro Presumido</option>
+          <option value="Lucro Real">Lucro Real</option>
+        </select>
 
-            <label for="situacao">Situação Atual:</label>
-            <select id="situacao" name="situacao" required>
-                <option value="">Selecione...</option>
-                <option value="Planejamento">Planejamento</option>
-                <option value="Em operação">Em operação</option>
-                <option value="Em expansão">Em expansão</option>
-            </select>
+        <label for="situacao">Situação Atual:</label>
+        <select id="situacao" name="situacao" required>
+          <option value="">Selecione...</option>
+          <option value="Planejamento">Planejamento</option>
+          <option value="Em operação">Em operação</option>
+          <option value="Em expansão">Em expansão</option>
+        </select>
 
-            <label for="responsavel">Responsável:</label>
-            <input type="text" id="responsavel" name="responsavel" required>
-        </div>
+        <label for="responsavel">Responsável:</label>
+        <input type="text" id="responsavel" name="responsavel" required>
+      </div>
 
-        <div class="step" id="step2">
-            <h2>2. Custos e Investimentos</h2>
-            <!-- Campos dinâmicos são injetados aqui via JS -->
-        </div>
+      <div class="step" id="step2">
+        <h2>2. Custos e Investimentos</h2>
+        <p>Selecione o tipo de atividade acima para exibir os campos personalizados.</p>
+        <div id="camposEspecificos"></div>
+      </div>
 
-        <div class="buttons">
-            <button type="button" onclick="prevStep()">Voltar</button>
-            <button type="button" onclick="nextStep()">Próximo</button>
-        </div>
+      <div class="buttons">
+        <button type="button" onclick="prevStep()">Voltar</button>
+        <button type="button" onclick="nextStep()">Próximo</button>
+      </div>
     </form>
-</div>
-
-<script>
-function nextStep() {
-    const nome = document.getElementById("nome").value.trim();
-    const tipo = document.getElementById("tipo").value.trim();
-    const local = document.getElementById("local").value.trim();
-    const estrutura = document.getElementById("estrutura").value.trim();
-    const regime = document.getElementById("regime").value.trim();
-    const situacao = document.getElementById("situacao").value.trim();
-    const responsavel = document.getElementById("responsavel").value.trim();
-
-    if (!nome || !tipo || !local || !estrutura || !regime || !situacao || !responsavel) {
-        alert("Por favor, preencha todos os campos da Etapa 1 antes de continuar.");
-        return;
-    }
-
-    const steps = document.querySelectorAll(".step");
-    for (let i = 0; i < steps.length; i++) {
-        if (steps[i].classList.contains("active")) {
-            steps[i].classList.remove("active");
-            if (steps[i + 1]) {
-                steps[i + 1].classList.add("active");
-            }
-            break;
+  </div>
+  <script>
+    function nextStep() {
+      const step1 = document.getElementById('step1');
+      const inputs = step1.querySelectorAll('input, select');
+      for (let i = 0; i < inputs.length; i++) {
+        if (!inputs[i].value) {
+          alert('Por favor, preencha todos os campos obrigatórios da Etapa 1.');
+          return;
         }
+      }
+      step1.classList.remove('active');
+      document.getElementById('step2').classList.add('active');
     }
-}
 
-function prevStep() {
-    const steps = document.querySelectorAll(".step");
-    for (let i = steps.length - 1; i > 0; i--) {
-        if (steps[i].classList.contains("active")) {
-            steps[i].classList.remove("active");
-            steps[i - 1].classList.add("active");
-            break;
-        }
+    function prevStep() {
+      document.getElementById('step2').classList.remove('active');
+      document.getElementById('step1').classList.add('active');
     }
-}
-
-function showFields() {
-    const tipo = document.getElementById('tipo').value;
-    const allTypes = document.querySelectorAll('[class^="tipo-"]');
-    allTypes.forEach(div => div.style.display = 'none');
-    const selectedDiv = document.querySelector(`.tipo-${tipo.toLowerCase().replace(/,| /g, '_')}`);
-    if (selectedDiv) selectedDiv.style.display = 'block';
-}
-
-// Máscara de moeda
-document.addEventListener("input", function(e) {
-    if (e.target.classList.contains("currency")) {
-        let value = e.target.value.replace(/\D/g, "");
-        value = (parseInt(value, 10) / 100).toFixed(2);
-        e.target.value = value
-            .replace(".", ",")
-            .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-    }
-});
-</script>
+  </script>
 </body>
 </html>
