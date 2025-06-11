@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -65,7 +64,6 @@
 <body>
 <div class="container">
     <h1>WA Engenharia – Analisador de Viabilidade Econômica</h1>
-
     <form id="viabilidadeForm">
         <div class="step active" id="step1">
             <h2>1. Dados Gerais do Projeto</h2>
@@ -73,32 +71,33 @@
             <input type="text" id="nome" name="nome" required>
 
             <label for="tipo">Tipo de Atividade:</label>
-            <select id="tipo" name="tipo" onchange="showFields()">
+            <select id="tipo" name="tipo" onchange="showFields()" required>
                 <option value="">Selecione...</option>
-<option value="Construção Civil">Construção Civil</option>
-<option value="Serviços Técnicos Profissionais">Serviços Técnicos Profissionais</option>
-<option value="Comércio e Varejo">Comércio e Varejo</option>
-<option value="Indústria e Produção">Indústria e Produção</option>
-<option value="Estética, Saúde e Bem-Estar">Estética, Saúde e Bem-Estar</option>
-<option value="Eventos, Campeonatos e Produções">Eventos, Campeonatos e Produções</option>
-<option value="Negócios Digitais e Tecnologia">Negócios Digitais e Tecnologia</option>
-<option value="Alimentação, Bares e Delivery">Alimentação, Bares e Delivery</option>
-<option value="Franquias e Modelos Licenciados">Franquias e Modelos Licenciados</option>
-
+                <option value="Construção Civil">Construção Civil</option>
+                <option value="Serviços Técnicos Profissionais">Serviços Técnicos Profissionais</option>
+                <option value="Comércio e Varejo">Comércio e Varejo</option>
+                <option value="Indústria e Produção">Indústria e Produção</option>
+                <option value="Estética, Saúde e Bem-Estar">Estética, Saúde e Bem-Estar</option>
+                <option value="Eventos, Campeonatos e Produções">Eventos, Campeonatos e Produções</option>
+                <option value="Negócios Digitais e Tecnologia">Negócios Digitais e Tecnologia</option>
+                <option value="Alimentação, Bares e Delivery">Alimentação, Bares e Delivery</option>
+                <option value="Franquias e Modelos Licenciados">Franquias e Modelos Licenciados</option>
             </select>
 
             <label for="local">Cidade/Estado:</label>
-            <input type="text" id="local" name="local">
+            <input type="text" id="local" name="local" required>
 
             <label for="estrutura">Estrutura:</label>
-            <select id="estrutura" name="estrutura">
+            <select id="estrutura" name="estrutura" required>
+                <option value="">Selecione...</option>
                 <option value="Física">Física</option>
                 <option value="Virtual">Virtual</option>
                 <option value="Híbrida">Híbrida</option>
             </select>
 
             <label for="regime">Regime Tributário:</label>
-            <select id="regime" name="regime">
+            <select id="regime" name="regime" required>
+                <option value="">Selecione...</option>
                 <option value="MEI">MEI</option>
                 <option value="Simples Nacional">Simples Nacional</option>
                 <option value="Lucro Presumido">Lucro Presumido</option>
@@ -106,397 +105,20 @@
             </select>
 
             <label for="situacao">Situação Atual:</label>
-            <select id="situacao" name="situacao">
+            <select id="situacao" name="situacao" required>
+                <option value="">Selecione...</option>
                 <option value="Planejamento">Planejamento</option>
                 <option value="Em operação">Em operação</option>
                 <option value="Em expansão">Em expansão</option>
             </select>
 
             <label for="responsavel">Responsável:</label>
-            <input type="text" id="responsavel" name="responsavel">
+            <input type="text" id="responsavel" name="responsavel" required>
         </div>
 
         <div class="step" id="step2">
             <h2>2. Custos e Investimentos</h2>
-<div class="tipo-construcão_civil" style="display:none">
-<h3 style="margin-top: 20px;">Construção Civil</h3>
-<h4 style="color:#00bcd4;">Custos Fixos</h4>
-<label for="salários_e_encargos">Salários e Encargos (R$):</label>
-<input type="text" id="salários_e_encargos" name="salários_e_encargos" class="currency">
-
-<label for="gestao_administrativa">Gestão Administrativa (R$):</label>
-<input type="text" id="gestao_administrativa" name="gestao_administrativa" class="currency">
-
-<label for="internet_e_energia">Internet e Energia (R$):</label>
-<input type="text" id="internet_e_energia" name="internet_e_energia" class="currency">
-
-<label for="contabilidade_e_licenciamento">Contabilidade e Licenciamento (R$):</label>
-<input type="text" id="contabilidade_e_licenciamento" name="contabilidade_e_licenciamento" class="currency">
-
-<h4 style="color:#00bcd4;">Custos Variáveis</h4>
-<label for="materiais_de_construcao">Materiais de Construção (R$):</label>
-<input type="text" id="materiais_de_construcao" name="materiais_de_construcao" class="currency">
-
-<label for="frete_e_logística">Frete e Logística (R$):</label>
-<input type="text" id="frete_e_logística" name="frete_e_logística" class="currency">
-
-<label for="desperdícios_e_sobras">Desperdícios e Sobras (R$):</label>
-<input type="text" id="desperdícios_e_sobras" name="desperdícios_e_sobras" class="currency">
-
-<label for="taxas_por_m²_executado">Taxas por m² executado (R$):</label>
-<input type="text" id="taxas_por_m²_executado" name="taxas_por_m²_executado" class="currency">
-
-<h4 style="color:#00bcd4;">Investimento Inicial</h4>
-<label for="ferramentas_e_equipamentos">Ferramentas e Equipamentos (R$):</label>
-<input type="text" id="ferramentas_e_equipamentos" name="ferramentas_e_equipamentos" class="currency">
-
-<label for="epis_e_sinalizacao">EPIs e Sinalização (R$):</label>
-<input type="text" id="epis_e_sinalizacao" name="epis_e_sinalizacao" class="currency">
-
-<label for="projetos_técnicos_e_art">Projetos Técnicos e ART (R$):</label>
-<input type="text" id="projetos_técnicos_e_art" name="projetos_técnicos_e_art" class="currency">
-
-<label for="infraestrutura_de_canteiro">Infraestrutura de Canteiro (R$):</label>
-<input type="text" id="infraestrutura_de_canteiro" name="infraestrutura_de_canteiro" class="currency">
-
-</div>
-<div class="tipo-servicos_técnicos_profissionais" style="display:none">
-<h3 style="margin-top: 20px;">Serviços Técnicos Profissionais</h3>
-<h4 style="color:#00bcd4;">Custos Fixos</h4>
-<label for="aluguel_do_escritório">Aluguel do Escritório (R$):</label>
-<input type="text" id="aluguel_do_escritório" name="aluguel_do_escritório" class="currency">
-
-<label for="internet_e_softwares">Internet e Softwares (R$):</label>
-<input type="text" id="internet_e_softwares" name="internet_e_softwares" class="currency">
-
-<label for="contabilidade">Contabilidade (R$):</label>
-<input type="text" id="contabilidade" name="contabilidade" class="currency">
-
-<label for="equipe_de_apoio">Equipe de Apoio (R$):</label>
-<input type="text" id="equipe_de_apoio" name="equipe_de_apoio" class="currency">
-
-<h4 style="color:#00bcd4;">Custos Variáveis</h4>
-<label for="deslocamentos">Deslocamentos (R$):</label>
-<input type="text" id="deslocamentos" name="deslocamentos" class="currency">
-
-<label for="materiais_de_apresentacao">Materiais de Apresentação (R$):</label>
-<input type="text" id="materiais_de_apresentacao" name="materiais_de_apresentacao" class="currency">
-
-<label for="comissões">Comissões (R$):</label>
-<input type="text" id="comissões" name="comissões" class="currency">
-
-<label for="taxas_de_documentacao">Taxas de Documentação (R$):</label>
-<input type="text" id="taxas_de_documentacao" name="taxas_de_documentacao" class="currency">
-
-<h4 style="color:#00bcd4;">Investimento Inicial</h4>
-<label for="notebook_e_equipamentos">Notebook e Equipamentos (R$):</label>
-<input type="text" id="notebook_e_equipamentos" name="notebook_e_equipamentos" class="currency">
-
-<label for="identidade_visual_e_branding">Identidade Visual e Branding (R$):</label>
-<input type="text" id="identidade_visual_e_branding" name="identidade_visual_e_branding" class="currency">
-
-<label for="site_portfólio_profissional">Site/Portfólio Profissional (R$):</label>
-<input type="text" id="site_portfólio_profissional" name="site_portfólio_profissional" class="currency">
-
-<label for="reformas_no_escritório">Reformas no Escritório (R$):</label>
-<input type="text" id="reformas_no_escritório" name="reformas_no_escritório" class="currency">
-
-</div>
-<div class="tipo-comércio_e_varejo" style="display:none">
-<h3 style="margin-top: 20px;">Comércio e Varejo</h3>
-<h4 style="color:#00bcd4;">Custos Fixos</h4>
-<label for="aluguel_e_condomínio">Aluguel e Condomínio (R$):</label>
-<input type="text" id="aluguel_e_condomínio" name="aluguel_e_condomínio" class="currency">
-
-<label for="equipe_de_atendimento">Equipe de Atendimento (R$):</label>
-<input type="text" id="equipe_de_atendimento" name="equipe_de_atendimento" class="currency">
-
-<label for="sistema_pdv_e_internet">Sistema PDV e Internet (R$):</label>
-<input type="text" id="sistema_pdv_e_internet" name="sistema_pdv_e_internet" class="currency">
-
-<label for="contabilidade">Contabilidade (R$):</label>
-<input type="text" id="contabilidade" name="contabilidade" class="currency">
-
-<h4 style="color:#00bcd4;">Custos Variáveis</h4>
-<label for="estoque_de_produtos">Estoque de Produtos (R$):</label>
-<input type="text" id="estoque_de_produtos" name="estoque_de_produtos" class="currency">
-
-<label for="frete_de_fornecedores">Frete de Fornecedores (R$):</label>
-<input type="text" id="frete_de_fornecedores" name="frete_de_fornecedores" class="currency">
-
-<label for="comissões_sobre_vendas">Comissões sobre vendas (R$):</label>
-<input type="text" id="comissões_sobre_vendas" name="comissões_sobre_vendas" class="currency">
-
-<label for="sacos_etiquetas_embalagens">Sacos, etiquetas, embalagens (R$):</label>
-<input type="text" id="sacos_etiquetas_embalagens" name="sacos_etiquetas_embalagens" class="currency">
-
-<h4 style="color:#00bcd4;">Investimento Inicial</h4>
-<label for="estrutura_da_loja">Estrutura da Loja (R$):</label>
-<input type="text" id="estrutura_da_loja" name="estrutura_da_loja" class="currency">
-
-<label for="vitrine_móveis_balcao">Vitrine, Móveis, Balcão (R$):</label>
-<input type="text" id="vitrine_móveis_balcao" name="vitrine_móveis_balcao" class="currency">
-
-<label for="marketing_de_lancamento">Marketing de Lançamento (R$):</label>
-<input type="text" id="marketing_de_lancamento" name="marketing_de_lancamento" class="currency">
-
-<label for="softwares_de_gestao">Softwares de Gestão (R$):</label>
-<input type="text" id="softwares_de_gestao" name="softwares_de_gestao" class="currency">
-
-</div>
-<div class="tipo-indústria_e_producão" style="display:none">
-<h3 style="margin-top: 20px;">Indústria e Produção</h3>
-<h4 style="color:#00bcd4;">Custos Fixos</h4>
-<label for="energia_elétrica">Energia Elétrica (R$):</label>
-<input type="text" id="energia_elétrica" name="energia_elétrica" class="currency">
-
-<label for="equipe_de_producao">Equipe de Produção (R$):</label>
-<input type="text" id="equipe_de_producao" name="equipe_de_producao" class="currency">
-
-<label for="manutencao_preventiva">Manutenção Preventiva (R$):</label>
-<input type="text" id="manutencao_preventiva" name="manutencao_preventiva" class="currency">
-
-<label for="supervisao_e_qualidade">Supervisão e Qualidade (R$):</label>
-<input type="text" id="supervisao_e_qualidade" name="supervisao_e_qualidade" class="currency">
-
-<h4 style="color:#00bcd4;">Custos Variáveis</h4>
-<label for="matéria-prima">Matéria-prima (R$):</label>
-<input type="text" id="matéria-prima" name="matéria-prima" class="currency">
-
-<label for="perdas_operacionais">Perdas Operacionais (R$):</label>
-<input type="text" id="perdas_operacionais" name="perdas_operacionais" class="currency">
-
-<label for="logística_de_distribuicao">Logística de Distribuição (R$):</label>
-<input type="text" id="logística_de_distribuicao" name="logística_de_distribuicao" class="currency">
-
-<label for="subcontratacões">Subcontratações (R$):</label>
-<input type="text" id="subcontratacões" name="subcontratacões" class="currency">
-
-<h4 style="color:#00bcd4;">Investimento Inicial</h4>
-<label for="máquinas_e_equipamentos">Máquinas e Equipamentos (R$):</label>
-<input type="text" id="máquinas_e_equipamentos" name="máquinas_e_equipamentos" class="currency">
-
-<label for="layout_de_producao">Layout de Produção (R$):</label>
-<input type="text" id="layout_de_producao" name="layout_de_producao" class="currency">
-
-<label for="controle_de_qualidade">Controle de Qualidade (R$):</label>
-<input type="text" id="controle_de_qualidade" name="controle_de_qualidade" class="currency">
-
-<label for="licenciamento_industrial">Licenciamento Industrial (R$):</label>
-<input type="text" id="licenciamento_industrial" name="licenciamento_industrial" class="currency">
-
-</div>
-<div class="tipo-estética_saúde_e_bem-estar" style="display:none">
-<h3 style="margin-top: 20px;">Estética, Saúde e Bem-Estar</h3>
-<h4 style="color:#00bcd4;">Custos Fixos</h4>
-<label for="aluguel_da_clínica">Aluguel da Clínica (R$):</label>
-<input type="text" id="aluguel_da_clínica" name="aluguel_da_clínica" class="currency">
-
-<label for="recepcionista__secretária">Recepcionista / Secretária (R$):</label>
-<input type="text" id="recepcionista__secretária" name="recepcionista__secretária" class="currency">
-
-<label for="internet_e_software_médico">Internet e Software Médico (R$):</label>
-<input type="text" id="internet_e_software_médico" name="internet_e_software_médico" class="currency">
-
-<label for="contabilidade_e_vigilância_sanitária">Contabilidade e Vigilância Sanitária (R$):</label>
-<input type="text" id="contabilidade_e_vigilância_sanitária" name="contabilidade_e_vigilância_sanitária" class="currency">
-
-<h4 style="color:#00bcd4;">Custos Variáveis</h4>
-<label for="insumos_descartáveis">Insumos Descartáveis (R$):</label>
-<input type="text" id="insumos_descartáveis" name="insumos_descartáveis" class="currency">
-
-<label for="luvas_máscaras_uniformes">Luvas, máscaras, uniformes (R$):</label>
-<input type="text" id="luvas_máscaras_uniformes" name="luvas_máscaras_uniformes" class="currency">
-
-<label for="reposicao_de_produtos">Reposição de Produtos (R$):</label>
-<input type="text" id="reposicao_de_produtos" name="reposicao_de_produtos" class="currency">
-
-<label for="comissões_profissionais">Comissões Profissionais (R$):</label>
-<input type="text" id="comissões_profissionais" name="comissões_profissionais" class="currency">
-
-<h4 style="color:#00bcd4;">Investimento Inicial</h4>
-<label for="aparelhos_estéticos">Aparelhos Estéticos (R$):</label>
-<input type="text" id="aparelhos_estéticos" name="aparelhos_estéticos" class="currency">
-
-<label for="consultório_e_mobiliário">Consultório e Mobiliário (R$):</label>
-<input type="text" id="consultório_e_mobiliário" name="consultório_e_mobiliário" class="currency">
-
-<label for="reformas_e_decorativo">Reformas e Decorativo (R$):</label>
-<input type="text" id="reformas_e_decorativo" name="reformas_e_decorativo" class="currency">
-
-<label for="publicidade_inicial">Publicidade Inicial (R$):</label>
-<input type="text" id="publicidade_inicial" name="publicidade_inicial" class="currency">
-
-</div>
-<div class="tipo-eventos_campeonatos_e_producões" style="display:none">
-<h3 style="margin-top: 20px;">Eventos, Campeonatos e Produções</h3>
-<h4 style="color:#00bcd4;">Custos Fixos</h4>
-<label for="equipe_organizadora">Equipe Organizadora (R$):</label>
-<input type="text" id="equipe_organizadora" name="equipe_organizadora" class="currency">
-
-<label for="internet_e_suporte">Internet e Suporte (R$):</label>
-<input type="text" id="internet_e_suporte" name="internet_e_suporte" class="currency">
-
-<label for="coordenacao_técnica">Coordenação Técnica (R$):</label>
-<input type="text" id="coordenacao_técnica" name="coordenacao_técnica" class="currency">
-
-<label for="deslocamentos">Deslocamentos (R$):</label>
-<input type="text" id="deslocamentos" name="deslocamentos" class="currency">
-
-<h4 style="color:#00bcd4;">Custos Variáveis</h4>
-<label for="estrutura_de_palco_tendas">Estrutura de Palco/Tendas (R$):</label>
-<input type="text" id="estrutura_de_palco_tendas" name="estrutura_de_palco_tendas" class="currency">
-
-<label for="alimentacao_e_logística">Alimentação e Logística (R$):</label>
-<input type="text" id="alimentacao_e_logística" name="alimentacao_e_logística" class="currency">
-
-<label for="contratacao_de_servicos">Contratação de Serviços (R$):</label>
-<input type="text" id="contratacao_de_servicos" name="contratacao_de_servicos" class="currency">
-
-<label for="seguranca_e_limpeza">Segurança e Limpeza (R$):</label>
-<input type="text" id="seguranca_e_limpeza" name="seguranca_e_limpeza" class="currency">
-
-<h4 style="color:#00bcd4;">Investimento Inicial</h4>
-<label for="premiacões">Premiações (R$):</label>
-<input type="text" id="premiacões" name="premiacões" class="currency">
-
-<label for="identidade_visual_e_mídia">Identidade Visual e Mídia (R$):</label>
-<input type="text" id="identidade_visual_e_mídia" name="identidade_visual_e_mídia" class="currency">
-
-<label for="site_app_do_evento">Site/App do Evento (R$):</label>
-<input type="text" id="site_app_do_evento" name="site_app_do_evento" class="currency">
-
-<label for="kit_atleta_participante">Kit Atleta/Participante (R$):</label>
-<input type="text" id="kit_atleta_participante" name="kit_atleta_participante" class="currency">
-
-</div>
-<div class="tipo-negócios_digitais_e_tecnologia" style="display:none">
-<h3 style="margin-top: 20px;">Negócios Digitais e Tecnologia</h3>
-<h4 style="color:#00bcd4;">Custos Fixos</h4>
-<label for="plataformas_e_ferramentas">Plataformas e Ferramentas (R$):</label>
-<input type="text" id="plataformas_e_ferramentas" name="plataformas_e_ferramentas" class="currency">
-
-<label for="equipe_técnica_atendimento">Equipe Técnica/Atendimento (R$):</label>
-<input type="text" id="equipe_técnica_atendimento" name="equipe_técnica_atendimento" class="currency">
-
-<label for="domínio_e_hospedagem">Domínio e Hospedagem (R$):</label>
-<input type="text" id="domínio_e_hospedagem" name="domínio_e_hospedagem" class="currency">
-
-<label for="gestao_e_monitoramento">Gestão e Monitoramento (R$):</label>
-<input type="text" id="gestao_e_monitoramento" name="gestao_e_monitoramento" class="currency">
-
-<h4 style="color:#00bcd4;">Custos Variáveis</h4>
-<label for="tráfego_pago_(meta_google)">Tráfego Pago (Meta, Google) (R$):</label>
-<input type="text" id="tráfego_pago_(meta_google)" name="tráfego_pago_(meta_google)" class="currency">
-
-<label for="comissões_de_afiliados">Comissões de Afiliados (R$):</label>
-<input type="text" id="comissões_de_afiliados" name="comissões_de_afiliados" class="currency">
-
-<label for="suporte_e_saas_variáveis">Suporte e SaaS Variáveis (R$):</label>
-<input type="text" id="suporte_e_saas_variáveis" name="suporte_e_saas_variáveis" class="currency">
-
-<label for="impostos_por_faturamento">Impostos por Faturamento (R$):</label>
-<input type="text" id="impostos_por_faturamento" name="impostos_por_faturamento" class="currency">
-
-<h4 style="color:#00bcd4;">Investimento Inicial</h4>
-<label for="desenvolvimento_de_app_site">Desenvolvimento de App/Site (R$):</label>
-<input type="text" id="desenvolvimento_de_app_site" name="desenvolvimento_de_app_site" class="currency">
-
-<label for="branding_e_posicionamento">Branding e Posicionamento (R$):</label>
-<input type="text" id="branding_e_posicionamento" name="branding_e_posicionamento" class="currency">
-
-<label for="captacao_de_leads">Captação de Leads (R$):</label>
-<input type="text" id="captacao_de_leads" name="captacao_de_leads" class="currency">
-
-<label for="producao_de_conteúdo">Produção de Conteúdo (R$):</label>
-<input type="text" id="producao_de_conteúdo" name="producao_de_conteúdo" class="currency">
-
-</div>
-<div class="tipo-alimentacão_bares_e_delivery" style="display:none">
-<h3 style="margin-top: 20px;">Alimentação, Bares e Delivery</h3>
-<h4 style="color:#00bcd4;">Custos Fixos</h4>
-<label for="aluguel_do_estabelecimento">Aluguel do Estabelecimento (R$):</label>
-<input type="text" id="aluguel_do_estabelecimento" name="aluguel_do_estabelecimento" class="currency">
-
-<label for="equipe_de_cozinha_e_garcons">Equipe de Cozinha e Garçons (R$):</label>
-<input type="text" id="equipe_de_cozinha_e_garcons" name="equipe_de_cozinha_e_garcons" class="currency">
-
-<label for="água_gás_energia">Água, Gás, Energia (R$):</label>
-<input type="text" id="água_gás_energia" name="água_gás_energia" class="currency">
-
-<label for="licencas_e_taxas_municipais">Licenças e Taxas Municipais (R$):</label>
-<input type="text" id="licencas_e_taxas_municipais" name="licencas_e_taxas_municipais" class="currency">
-
-<h4 style="color:#00bcd4;">Custos Variáveis</h4>
-<label for="ingredientes_e_bebidas">Ingredientes e Bebidas (R$):</label>
-<input type="text" id="ingredientes_e_bebidas" name="ingredientes_e_bebidas" class="currency">
-
-<label for="perdas_e_validades">Perdas e Validades (R$):</label>
-<input type="text" id="perdas_e_validades" name="perdas_e_validades" class="currency">
-
-<label for="embalagens_e_delivery">Embalagens e Delivery (R$):</label>
-<input type="text" id="embalagens_e_delivery" name="embalagens_e_delivery" class="currency">
-
-<label for="comissões_de_apps">Comissões de Apps (R$):</label>
-<input type="text" id="comissões_de_apps" name="comissões_de_apps" class="currency">
-
-<h4 style="color:#00bcd4;">Investimento Inicial</h4>
-<label for="cozinha_industrial">Cozinha Industrial (R$):</label>
-<input type="text" id="cozinha_industrial" name="cozinha_industrial" class="currency">
-
-<label for="balcões_mesas_freezers">Balcões, Mesas, Freezers (R$):</label>
-<input type="text" id="balcões_mesas_freezers" name="balcões_mesas_freezers" class="currency">
-
-<label for="sistema_de_pedido_e_entrega">Sistema de Pedido e Entrega (R$):</label>
-<input type="text" id="sistema_de_pedido_e_entrega" name="sistema_de_pedido_e_entrega" class="currency">
-
-<label for="marketing_de_abertura">Marketing de Abertura (R$):</label>
-<input type="text" id="marketing_de_abertura" name="marketing_de_abertura" class="currency">
-
-</div>
-<div class="tipo-franquias_e_modelos_licenciados" style="display:none">
-<h3 style="margin-top: 20px;">Franquias e Modelos Licenciados</h3>
-<h4 style="color:#00bcd4;">Custos Fixos</h4>
-<label for="royalties_mensais">Royalties Mensais (R$):</label>
-<input type="text" id="royalties_mensais" name="royalties_mensais" class="currency">
-
-<label for="equipe_local">Equipe Local (R$):</label>
-<input type="text" id="equipe_local" name="equipe_local" class="currency">
-
-<label for="despesas_de_loja_unidade">Despesas de Loja/Unidade (R$):</label>
-<input type="text" id="despesas_de_loja_unidade" name="despesas_de_loja_unidade" class="currency">
-
-<label for="sistema_do_franqueador">Sistema do Franqueador (R$):</label>
-<input type="text" id="sistema_do_franqueador" name="sistema_do_franqueador" class="currency">
-
-<h4 style="color:#00bcd4;">Custos Variáveis</h4>
-<label for="materiais_e_produtos">Materiais e Produtos (R$):</label>
-<input type="text" id="materiais_e_produtos" name="materiais_e_produtos" class="currency">
-
-<label for="marketing_local">Marketing Local (R$):</label>
-<input type="text" id="marketing_local" name="marketing_local" class="currency">
-
-<label for="reposicao_de_estoque">Reposição de Estoque (R$):</label>
-<input type="text" id="reposicao_de_estoque" name="reposicao_de_estoque" class="currency">
-
-<label for="taxas_operacionais">Taxas Operacionais (R$):</label>
-<input type="text" id="taxas_operacionais" name="taxas_operacionais" class="currency">
-
-<h4 style="color:#00bcd4;">Investimento Inicial</h4>
-<label for="taxa_de_franquia">Taxa de Franquia (R$):</label>
-<input type="text" id="taxa_de_franquia" name="taxa_de_franquia" class="currency">
-
-<label for="padronizacao_da_unidade">Padronização da Unidade (R$):</label>
-<input type="text" id="padronizacao_da_unidade" name="padronizacao_da_unidade" class="currency">
-
-<label for="treinamento_inicial">Treinamento Inicial (R$):</label>
-<input type="text" id="treinamento_inicial" name="treinamento_inicial" class="currency">
-
-<label for="implementacao_técnica">Implementação Técnica (R$):</label>
-<input type="text" id="implementacao_técnica" name="implementacao_técnica" class="currency">
-
-</div>
-
+            <!-- Campos dinâmicos são injetados aqui via JS -->
         </div>
 
         <div class="buttons">
@@ -508,6 +130,19 @@
 
 <script>
 function nextStep() {
+    const nome = document.getElementById("nome").value.trim();
+    const tipo = document.getElementById("tipo").value.trim();
+    const local = document.getElementById("local").value.trim();
+    const estrutura = document.getElementById("estrutura").value.trim();
+    const regime = document.getElementById("regime").value.trim();
+    const situacao = document.getElementById("situacao").value.trim();
+    const responsavel = document.getElementById("responsavel").value.trim();
+
+    if (!nome || !tipo || !local || !estrutura || !regime || !situacao || !responsavel) {
+        alert("Por favor, preencha todos os campos da Etapa 1 antes de continuar.");
+        return;
+    }
+
     const steps = document.querySelectorAll(".step");
     for (let i = 0; i < steps.length; i++) {
         if (steps[i].classList.contains("active")) {
@@ -532,18 +167,12 @@ function prevStep() {
 }
 
 function showFields() {
-  const tipo = document.getElementById('tipo').value;
-  document.querySelector('.tipo-construcão_civil').style.display = (tipo === 'Construção Civil') ? 'block' : 'none';
-  document.querySelector('.tipo-servicos_técnicos_profissionais').style.display = (tipo === 'Serviços Técnicos Profissionais') ? 'block' : 'none';
-  document.querySelector('.tipo-comércio_e_varejo').style.display = (tipo === 'Comércio e Varejo') ? 'block' : 'none';
-  document.querySelector('.tipo-indústria_e_producão').style.display = (tipo === 'Indústria e Produção') ? 'block' : 'none';
-  document.querySelector('.tipo-estética_saúde_e_bem-estar').style.display = (tipo === 'Estética, Saúde e Bem-Estar') ? 'block' : 'none';
-  document.querySelector('.tipo-eventos_campeonatos_e_producões').style.display = (tipo === 'Eventos, Campeonatos e Produções') ? 'block' : 'none';
-  document.querySelector('.tipo-negócios_digitais_e_tecnologia').style.display = (tipo === 'Negócios Digitais e Tecnologia') ? 'block' : 'none';
-  document.querySelector('.tipo-alimentacão_bares_e_delivery').style.display = (tipo === 'Alimentação, Bares e Delivery') ? 'block' : 'none';
-  document.querySelector('.tipo-franquias_e_modelos_licenciados').style.display = (tipo === 'Franquias e Modelos Licenciados') ? 'block' : 'none';
+    const tipo = document.getElementById('tipo').value;
+    const allTypes = document.querySelectorAll('[class^="tipo-"]');
+    allTypes.forEach(div => div.style.display = 'none');
+    const selectedDiv = document.querySelector(`.tipo-${tipo.toLowerCase().replace(/,| /g, '_')}`);
+    if (selectedDiv) selectedDiv.style.display = 'block';
 }
-
 
 // Máscara de moeda
 document.addEventListener("input", function(e) {
