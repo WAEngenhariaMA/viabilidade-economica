@@ -282,7 +282,7 @@
 </script>
 
 
-     <div id="navigationButtons" class="buttons"></div>
+    <div class="buttons" id="navigationButtons"></div>
     </form>
   </div>
 
@@ -292,11 +292,12 @@
       container.innerHTML = '';
 
       if (currentStep === 0) {
-        const limpar = document.createElement('button');
-        limpar.textContent = 'Limpar';
-        limpar.onclick = limparEtapa1;
-        container.appendChild(limpar);
-      } else {
+  const limpar = document.createElement('button');
+  limpar.textContent = 'Limpar';
+  limpar.type = 'button';
+  limpar.onclick = limparCamposEtapa; // ✅ função correta já definida
+  container.appendChild(limpar);
+} else {
         const voltar = document.createElement('button');
         voltar.textContent = 'Voltar';
         voltar.onclick = prevStep;
@@ -344,12 +345,18 @@
       }
     }
 
-    function limparEtapa1() {
-      const etapa1 = document.getElementById("step1");
-      const inputs = etapa1.querySelectorAll("input, select");
-      inputs.forEach(input => input.value = "");
-    }
+   function limparCamposEtapa() {
+  const etapaAtual = document.querySelector('.step.active');
+  const inputs = etapaAtual.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], input[type="tel"], textarea, select');
 
+  inputs.forEach(input => {
+    if (input.tagName.toLowerCase() === 'select') {
+      input.selectedIndex = 0;
+    } else {
+      input.value = '';
+    }
+  });
+}
     window.onload = () => renderButtons(0);
 
      document.getElementById('tipo').addEventListener('change', function () {
