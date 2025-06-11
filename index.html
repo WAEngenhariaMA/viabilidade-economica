@@ -288,27 +288,31 @@
 
   <script>
     function renderButtons(currentStep) {
-      const container = document.getElementById('navigationButtons');
-      container.innerHTML = '';
+  const container = document.getElementById('navigationButtons');
+  container.innerHTML = '';
 
-      if (currentStep === 0) {
   const limpar = document.createElement('button');
   limpar.textContent = 'Limpar';
   limpar.type = 'button';
-  limpar.onclick = limparCamposEtapa; // ✅ função correta já definida
+  limpar.onclick = limparCamposEtapa;
   container.appendChild(limpar);
-} else {
-        const voltar = document.createElement('button');
-        voltar.textContent = 'Voltar';
-        voltar.onclick = prevStep;
-        container.appendChild(voltar);
-      }
 
-      const proximo = document.createElement('button');
-      proximo.textContent = 'Próximo';
-      proximo.onclick = nextStep;
-      container.appendChild(proximo);
-    }
+  if (currentStep > 0) {
+    const voltar = document.createElement('button');
+    voltar.textContent = 'Voltar';
+    voltar.type = 'button';
+    voltar.onclick = prevStep;
+    container.appendChild(voltar);
+  }
+
+  if (currentStep < document.querySelectorAll('.step').length - 1) {
+    const proximo = document.createElement('button');
+    proximo.textContent = 'Próximo';
+    proximo.type = 'button';
+    proximo.onclick = nextStep;
+    container.appendChild(proximo);
+  }
+}
 
     function nextStep() {
       const steps = document.querySelectorAll(".step");
