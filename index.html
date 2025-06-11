@@ -180,8 +180,30 @@
       </div>
     </form>
   </div>
- <!-- Etapa 4 -->
-      <div class="step" id="step4">
+<!-- Etapa 4 -->
+     <div class="step" id="step4">
+        <h2>4. Indicadores Econômicos</h2>
+
+        <label for="taxa_desconto">Taxa de Desconto (% a.a):</label>
+        <input type="text" id="taxa_desconto" class="currency" value="10,00">
+
+        <label for="ponto_equilibrio_fin">Ponto de Equilíbrio Financeiro:</label>
+        <input type="text" id="ponto_equilibrio_fin" readonly>
+
+        <label for="payback">Payback (meses):</label>
+        <input type="text" id="payback" readonly>
+
+        <label for="roi">ROI (%):</label>
+        <input type="text" id="roi" readonly>
+
+        <label for="vpl">VPL (R$):</label>
+        <input type="text" id="vpl" readonly>
+
+        <label for="tir">TIR (%):</label>
+        <input type="text" id="tir" readonly>
+      </div>
+ <!-- Etapa 5 -->
+      <div class="step" id="step5">
         <h2>4. Análise Final e Observações</h2>
         <label for="observacoes">Observações Finais, Comentários ou Estratégias:</label>
         <textarea id="observacoes" name="observacoes" rows="6" style="width: 100%; padding: 10px; font-size: 14px; border-radius: 6px; border: none;"></textarea>
@@ -238,6 +260,45 @@
 
     document.getElementById('ponto_equilibrio').value = Math.ceil(pontoEquilibrio);
   });
+function calcularEtapa4() {
+      const receita = moedaParaNumero(document.getElementById('receita_mensal').value);
+      const fixos = moedaParaNumero(document.getElementById('custos_fixos_total').value);
+      const variaveis = moedaParaNumero(document.getElementById('custos_variaveis_total').value);
+      const lucro = receita - (fixos + variaveis);
+      const investimento = Array.from(document.querySelectorAll('#camposEspecificos label')).filter(l => l.textContent.includes('Investimento Inicial'))
+        .map(l => {
+          const input = l.nextElementSibling;
+          return moedaParaNumero(input?.value || '0');
+        }).reduce((a,b) => a + b, 0);
+
+      const taxa = moedaParaNumero(document.getElementById('taxa_desconto').value) / 100;
+
+      const margem = receita ? (variaveis / receita) : 0;
+      const pontoEq = receita ? (fixos / (1 - margem)) : 0;
+      const payback = lucro > 0 ? (investimento / lucro) : 0;
+      const roi = investimento > 0 ? ((lucro * 12 / investimento) * 100) : 0;
+
+      let vpl = 0;
+      for (let t = 1; t <= 60; t++) {
+        vpl += lucro / Math.pow(1 + taxa, t);
+      }
+
+      let tir = 0, step = 0.0001;
+      while (tir < 1) {
+        let testVPL = 0;
+        for (let t = 1; t <= 60; t++) testVPL += lucro / Math.pow(1 + tir, t);
+        if (testVPL < investimento) break;
+        tir += step;
+      }
+
+      document.getElementById('ponto_equilibrio_fin').value = numeroParaMoeda(pontoEq);
+      document.getElementById('payback').value = payback.toFixed(1).replace('.', ',');
+      document.getElementById('roi').value = roi.toFixed(1).replace('.', ',') + '%';
+      document.getElementById('vpl').value = numeroParaMoeda(vpl);
+      document.getElementById('tir').value = (tir * 100).toFixed(2).replace('.', ',') + '%';
+    }
+
+    document.addEventListener("input", calcularEtapa4);
 </script>
 
 
