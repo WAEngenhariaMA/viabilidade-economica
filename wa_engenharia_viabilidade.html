@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>WA Engenharia – Analisador de Viabilidade Econômica</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+        }
+        .container {
+            max-width: 700px;
+            margin: 50px auto;
+            background-color: rgba(0,0,0,0.75);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.6);
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            color: #00bcd4;
+        }
+        .step {
+            display: none;
+        }
+        .step.active {
+            display: block;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: none;
+        }
+        .buttons {
+            margin-top: 20px;
+            text-align: right;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #00bcd4;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        button:hover {
+            background-color: #0193a3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WA Engenharia – Analisador de Viabilidade Econômica</h1>
+
+        <form id="viabilidadeForm">
+            <div class="step active" id="step1">
+                <h2>1. Dados Gerais do Projeto</h2>
+                <label for="nome">Nome do Projeto:</label>
+                <input type="text" id="nome" name="nome" required>
+
+                <label for="tipo">Tipo de Atividade:</label>
+                <select id="tipo" name="tipo">
+                    <option value="Construção Civil">Construção Civil</option>
+                    <option value="Serviço">Serviço</option>
+                    <option value="Comércio">Comércio</option>
+                    <option value="Indústria">Indústria</option>
+                    <option value="Evento">Evento</option>
+                </select>
+
+                <label for="local">Cidade/Estado:</label>
+                <input type="text" id="local" name="local">
+
+                <label for="estrutura">Estrutura Operacional:</label>
+                <select id="estrutura" name="estrutura">
+                    <option value="Física">Física</option>
+                    <option value="Virtual">Virtual</option>
+                    <option value="Híbrida">Híbrida</option>
+                </select>
+            </div>
+
+            <div class="buttons">
+                <button type="button" onclick="nextStep()">Próximo</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function nextStep() {
+            const steps = document.querySelectorAll(".step");
+            for (let i = 0; i < steps.length; i++) {
+                if (steps[i].classList.contains("active")) {
+                    steps[i].classList.remove("active");
+                    if (steps[i + 1]) {
+                        steps[i + 1].classList.add("active");
+                    }
+                    break;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
