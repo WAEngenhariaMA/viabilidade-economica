@@ -130,38 +130,56 @@
   <h2>3. Receita, Lucro e Ponto de Equilíbrio</h2>
 
   <h3 style="color:#00bcd4;">Receita Esperada</h3>
-  <label for="preco_unitario">Preço Médio por Unidade (R$):</label>
-  <input type="text" id="preco_unitario" class="currency">
+        <label for="preco_unitario">Preço Médio por Unidade (R$):</label>
+        <input type="text" id="preco_unitario" class="currency">
 
-  <label for="quantidade_mensal">Unidades Vendidas por Mês (Estimativa):</label>
-  <input type="number" id="quantidade_mensal">
+        <label for="quantidade_mensal">Unidades Vendidas por Mês (Estimativa):</label>
+        <input type="number" id="quantidade_mensal">
 
-  <label for="receita_mensal">Receita Bruta Mensal (R$):</label>
-  <input type="text" id="receita_mensal" readonly>
+        <label for="receita_mensal">Receita Bruta Mensal (R$):</label>
+        <input type="text" id="receita_mensal" readonly>
 
-  <label for="receita_anual">Receita Anual Estimada (R$):</label>
-  <input type="text" id="receita_anual" readonly>
+        <label for="receita_anual">Receita Anual Estimada (R$):</label>
+        <input type="text" id="receita_anual" readonly>
 
-  <h3 style="color:#00bcd4;">Projeção de Lucro</h3>
-<label for="custos_fixos_total">Total de Custos Fixos Mensais (R$):</label>
-<input type="text" id="custos_fixos_total" readonly>
+        <h3 style="color:#00bcd4;">Receita por Cenários</h3>
+        <label for="qtd_pessimista">Unidades Vendidas - Cenário Pessimista:</label>
+        <input type="number" id="qtd_pessimista">
+        <label for="receita_pessimista">Receita Pessimista (R$):</label>
+        <input type="text" id="receita_pessimista" readonly>
 
-<label for="custos_variaveis_total">Total de Custos Variáveis Mensais (R$):</label>
-<input type="text" id="custos_variaveis_total" readonly>
+        <label for="qtd_realista">Unidades Vendidas - Cenário Realista:</label>
+        <input type="number" id="qtd_realista">
+        <label for="receita_realista">Receita Realista (R$):</label>
+        <input type="text" id="receita_realista" readonly>
 
-<label for="lucro_operacional">Lucro Operacional Mensal (R$):</label>
-<input type="text" id="lucro_operacional" readonly>
+        <label for="qtd_otimista">Unidades Vendidas - Cenário Otimista:</label>
+        <input type="number" id="qtd_otimista">
+        <label for="receita_otimista">Receita Otimista (R$):</label>
+        <input type="text" id="receita_otimista" readonly>
 
-<label for="margem_lucro">Margem de Lucro (%):</label>
-<input type="text" id="margem_lucro" readonly>
+        <h3 style="color:#00bcd4;">Projeção de Lucro</h3>
+        <label for="custos_fixos_total">Total de Custos Fixos Mensais (R$):</label>
+        <input type="text" id="custos_fixos_total" readonly>
 
-  <h3 style="color:#00bcd4;">Ponto de Equilíbrio</h3>
-  <label for="custo_unitario_variavel">Custo Variável por Unidade (R$):</label>
-  <input type="text" id="custo_unitario_variavel" class="currency">
+        <label for="custos_variaveis_total">Total de Custos Variáveis Mensais (R$):</label>
+        <input type="text" id="custos_variaveis_total" readonly>
 
-  <label for="ponto_equilibrio">Ponto de Equilíbrio (em Unidades):</label>
-  <input type="text" id="ponto_equilibrio" readonly>
-</div>
+        <label for="lucro_operacional">Lucro Operacional Mensal (R$):</label>
+        <input type="text" id="lucro_operacional" readonly>
+
+        <label for="margem_lucro">Margem de Lucro (%):</label>
+        <input type="text" id="margem_lucro" readonly>
+
+        <h3 style="color:#00bcd4;">Ponto de Equilíbrio</h3>
+        <label for="custo_unitario_variavel">Custo Variável por Unidade (R$):</label>
+        <input type="text" id="custo_unitario_variavel" class="currency">
+
+        <label for="ponto_equilibrio">Ponto de Equilíbrio (em Unidades):</label>
+        <input type="text" id="ponto_equilibrio" readonly>
+      </div>
+    </form>
+  </div>
  <!-- Etapa 4 -->
       <div class="step" id="step4">
         <h2>4. Análise Final e Observações</h2>
@@ -196,6 +214,16 @@
 
     document.getElementById('receita_mensal').value = numeroParaMoeda(receitaMensal);
     document.getElementById('receita_anual').value = numeroParaMoeda(receitaAnual);
+
+    // Receita por Cenários
+    const pess = parseInt(document.getElementById('qtd_pessimista').value) || 0;
+    const real = parseInt(document.getElementById('qtd_realista').value) || 0;
+    const otim = parseInt(document.getElementById('qtd_otimista').value) || 0;
+
+    document.getElementById('receita_pessimista').value = numeroParaMoeda(pess * preco);
+    document.getElementById('receita_realista').value = numeroParaMoeda(real * preco);
+    document.getElementById('receita_otimista').value = numeroParaMoeda(otim * preco);
+
 
     const fixos = moedaParaNumero(document.getElementById('custos_fixos').value);
     const variaveis = moedaParaNumero(document.getElementById('custos_variaveis').value);
