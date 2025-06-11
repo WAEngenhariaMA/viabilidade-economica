@@ -424,41 +424,56 @@ const camposDiv = document.getElementById('camposEspecificos');
     }
 
     function calcularEtapa4() {
-      const receita = moedaParaNumero(document.getElementById('receita_mensal')?.value || '0');
-      const fixos = moedaParaNumero(document.getElementById('custos_fixos_total')?.value || '0');
-      const variaveis = moedaParaNumero(document.getElementById('custos_variaveis_total')?.value || '0');
-      const lucro = receita - (fixos + variaveis);
+  const moedaParaNumero = str => parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+  const numeroParaMoeda = num => num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
-      const investimento = Array.from(document.querySelectorAll('#camposEspecificos label'))
-        .filter(l => l.textContent.includes('Investimento Inicial'))
-        .map(l => moedaParaNumero(l.nextElementSibling?.value || '0'))
-        .reduce((a, b) => a + b, 0);
+  const receita = moedaParaNumero(document.getElementById('receita_mensal').value);
+  const fixos = moedaParaNumero(document.getElementById('custos_fixos_total').value);
+  const variaveis = moedaParaNumero(document.getElementById('custos_variaveis_total').value);
+  const lucro = receita - (fixos + variaveis);
+  const taxa = moedaParaNumero(document.getElementById('taxa_desconto').value) / 100;
 
-      const taxa = moedaParaNumero(document.getElementById('taxa_desconto').value) / 100;
-      const margem = receita ? (variaveis / receita) : 0;
-      const pontoEq = receita ? (fixos / (1 - margem)) : 0;
-      const payback = lucro > 0 ? (investimento / lucro) : 0;
-      const roi = investimento > 0 ? ((lucro * 12 / investimento) * 100) : 0;
-
-      let vpl = 0;
-      for (let t = 1; t <= 60; t++) {
-        vpl += lucro / Math.pow(1 + taxa, t);
+  // Corrigido: pegar todos os campos que contenham "Investimento Inicial" no label correspondente
+  let investimento = 0;
+  document.querySelectorAll('#camposEspecificos h4').forEach(h4 => {
+    const categoria = h4.innerText.trim().toLowerCase();
+    if (categoria.includes('investimento')) {
+      let el = h4.nextElementSibling;
+      while (el && el.tagName !== 'H4') {
+        if (el.tagName === 'INPUT') investimento += moedaParaNumero(el.value);
+        el = el.nextElementSibling;
       }
-
-      let tir = 0, step = 0.0001;
-      while (tir < 1) {
-        let testVPL = 0;
-        for (let t = 1; t <= 60; t++) testVPL += lucro / Math.pow(1 + tir, t);
-        if (testVPL < investimento) break;
-        tir += step;
-      }
-
-      document.getElementById('ponto_equilibrio_fin').value = numeroParaMoeda(pontoEq);
-      document.getElementById('payback').value = payback.toFixed(1).replace('.', ',');
-      document.getElementById('roi').value = roi.toFixed(1).replace('.', ',') + '%';
-      document.getElementById('vpl').value = numeroParaMoeda(vpl);
-      document.getElementById('tir').value = (tir * 100).toFixed(2).replace('.', ',') + '%';
     }
+  });
+
+  // Cálculos
+  const margem = receita ? (variaveis / receita) : 0;
+  const pontoEq = receita ? (fixos / (1 - margem)) : 0;
+  const payback = lucro > 0 ? (investimento / lucro) : 0;
+  const roi = investimento > 0 ? ((lucro * 12 / investimento) * 100) : 0;
+
+  // VPL e TIR para 60 meses
+  let vpl = 0;
+  for (let t = 1; t <= 60; t++) {
+    vpl += lucro / Math.pow(1 + taxa, t);
+  }
+  vpl -= investimento;
+
+  let tir = 0, step = 0.0001;
+  while (tir < 1) {
+    let testVPL = 0;
+    for (let t = 1; t <= 60; t++) testVPL += lucro / Math.pow(1 + tir, t);
+    if (testVPL < investimento) break;
+    tir += step;
+  }
+
+  // Preenchendo os campos
+  document.getElementById('ponto_equilibrio_fin').value = numeroParaMoeda(pontoEq);
+  document.getElementById('payback').value = payback.toFixed(1).replace('.', ',');
+  document.getElementById('roi').value = roi.toFixed(1).replace('.', ',') + '%';
+  document.getElementById('vpl').value = numeroParaMoeda(vpl);
+  document.getElementById('tir').value = (tir * 100).toFixed(2).replace('.', ',') + '%';
+}
 
     document.addEventListener("input", calcularEtapa4);
   </script>
