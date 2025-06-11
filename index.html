@@ -12,9 +12,9 @@
       color: #fff;
     }
     .container {
-      max-width: 800px;
+      max-width: 1000px;
       margin: 50px auto;
-      background-color: rgba(0, 0, 0, 0.8);
+      background-color: rgba(0, 0, 0, 0.85);
       padding: 30px;
       border-radius: 12px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
@@ -22,6 +22,7 @@
     h1 {
       text-align: center;
       color: #00bcd4;
+      margin-bottom: 30px;
     }
     .step {
       display: none;
@@ -34,7 +35,19 @@
       margin-top: 15px;
       font-weight: bold;
     }
-    input[type="text"], input[type="email"], input[type="tel"], select, input[type="number"] {
+    .form-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .form-group {
+      flex: 1;
+      min-width: 200px;
+    }
+    .full-width {
+      flex: 1 0 100%;
+    }
+    input[type="text"], input[type="email"], input[type="tel"], select {
       width: 100%;
       padding: 10px;
       font-size: 14px;
@@ -42,16 +55,8 @@
       border: none;
       margin-top: 5px;
     }
-    .row-group {
-      display: flex;
-      gap: 20px;
-      justify-content: space-between;
-    }
-    .half-width {
-      flex: 1;
-    }
     .buttons {
-      margin-top: 20px;
+      margin-top: 30px;
       text-align: right;
     }
     button {
@@ -66,12 +71,6 @@
     button:hover {
       background-color: #0193a3;
     }
-    small {
-      display: block;
-      font-size: 12px;
-      color: #ccc;
-      margin-top: 5px;
-    }
   </style>
 </head>
 <body>
@@ -79,61 +78,87 @@
     <h1>WA Engenharia – Analisador de Viabilidade Econômica</h1>
     <form id="viabilidadeForm">
       <div class="step active" id="step1">
-        <h2>Dados Gerais do Projeto</h2>
-        <label for="nome">Nome do Projeto/Empresa:</label>
-        <input type="text" id="nome" name="nome" required>
+        <h2>1. Dados Gerais do Projeto</h2>
 
-        <label for="tipo">Tipo de Atividade:</label>
-        <select id="tipo" name="tipo" required>
-          <option value="">Selecione...</option>
-          <option value="Construção Civil">Construção Civil</option>
-          <option value="Serviços Técnicos Profissionais">Serviços Técnicos Profissionais</option>
-          <option value="Comércio e Varejo">Comércio e Varejo</option>
-          <option value="Indústria e Produção">Indústria e Produção</option>
-          <option value="Estética, Saúde e Bem-Estar">Estética, Saúde e Bem-Estar</option>
-          <option value="Eventos, Campeonatos e Produções">Eventos, Campeonatos e Produções</option>
-          <option value="Negócios Digitais e Tecnologia">Negócios Digitais e Tecnologia</option>
-          <option value="Alimentação, Bares e Delivery">Alimentação, Bares e Delivery</option>
-          <option value="Franquias e Modelos Licenciados">Franquias e Modelos Licenciados</option>
-        </select>
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label for="nome">Nome do Projeto/Empresa:</label>
+            <input type="text" id="nome" name="nome" required>
+          </div>
+        </div>
 
-        <label for="local">Cidade/Estado:</label>
-        <input type="text" id="local" name="local" required>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tipo">Tipo de Atividade:</label>
+            <select id="tipo" name="tipo" required>
+              <option value="">Selecione...</option>
+              <option value="Construção Civil">Construção Civil</option>
+              <option value="Serviços Técnicos Profissionais">Serviços Técnicos Profissionais</option>
+              <option value="Comércio e Varejo">Comércio e Varejo</option>
+              <option value="Indústria e Produção">Indústria e Produção</option>
+              <option value="Estética, Saúde e Bem-Estar">Estética, Saúde e Bem-Estar</option>
+              <option value="Eventos, Campeonatos e Produções">Eventos, Campeonatos e Produções</option>
+              <option value="Negócios Digitais e Tecnologia">Negócios Digitais e Tecnologia</option>
+              <option value="Alimentação, Bares e Delivery">Alimentação, Bares e Delivery</option>
+              <option value="Franquias e Modelos Licenciados">Franquias e Modelos Licenciados</option>
+            </select>
+          </div>
 
-        <label for="estrutura">Estrutura:</label>
-        <select id="estrutura" name="estrutura" required>
-          <option value="">Selecione...</option>
-          <option value="Física">Física</option>
-          <option value="Virtual">Virtual</option>
-          <option value="Híbrida">Híbrida</option>
-        </select>
+          <div class="form-group">
+            <label for="local">Cidade/Estado:</label>
+            <input type="text" id="local" name="local" required>
+          </div>
 
-        <label for="regime">Regime Tributário:</label>
-        <select id="regime" name="regime">
-          <option value="">Não se aplica / Não definido</option>
-          <option value="MEI">MEI</option>
-          <option value="Simples Nacional">Simples Nacional</option>
-          <option value="Lucro Presumido">Lucro Presumido</option>
-          <option value="Lucro Real">Lucro Real</option>
-        </select>
+          <div class="form-group">
+            <label for="estrutura">Estrutura:</label>
+            <select id="estrutura" name="estrutura" required>
+              <option value="">Selecione...</option>
+              <option value="Física">Física</option>
+              <option value="Virtual">Virtual</option>
+              <option value="Híbrida">Híbrida</option>
+            </select>
+          </div>
+        </div>
 
-        <label for="situacao">Situação Atual:</label>
-        <select id="situacao" name="situacao" required>
-          <option value="">Selecione...</option>
-          <option value="Planejamento">Planejamento</option>
-          <option value="Em operação">Em operação</option>
-          <option value="Em expansão">Em expansão</option>
-        </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="regime">Regime Tributário:</label>
+            <select id="regime" name="regime">
+              <option value="">Não se aplica / Não definido</option>
+              <option value="MEI">MEI</option>
+              <option value="Simples Nacional">Simples Nacional</option>
+              <option value="Lucro Presumido">Lucro Presumido</option>
+              <option value="Lucro Real">Lucro Real</option>
+            </select>
+          </div>
 
-        <label for="responsavel">Responsável:</label>
-        <input type="text" id="responsavel" name="responsavel" required>
+          <div class="form-group">
+            <label for="situacao">Situação Atual:</label>
+            <select id="situacao" name="situacao" required>
+              <option value="">Selecione...</option>
+              <option value="Planejamento">Planejamento</option>
+              <option value="Em operação">Em operação</option>
+              <option value="Em expansão">Em expansão</option>
+            </select>
+          </div>
+        </div>
 
-        <label for="email">E-mail:</label>
-        <input type="email" id="email" name="email" required>
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label for="responsavel">Responsável:</label>
+            <input type="text" id="responsavel" name="responsavel" required>
+          </div>
 
-        <label for="telefone">Telefone:</label>
-        <input type="tel" id="telefone" name="telefone" required>
-      </div>
+          <div class="form-group full-width">
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+
+          <div class="form-group">
+            <label for="telefone">Telefone:</label>
+            <input type="tel" id="telefone" name="telefone" required>
+          </div>
+        </div>
       
       <div class="step" id="step2">
    <h2>Custos e Investimentos</h2>
