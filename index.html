@@ -489,18 +489,20 @@ const camposDiv = document.getElementById('camposEspecificos');
       };
 
       if (campos[tipo]) {
-        for (const categoria in campos[tipo]) {
-          camposDiv.innerHTML += `<h4>${categoria}</h4>`;
-          campos[tipo][categoria].forEach(label => {
-            const id = label.toLowerCase().normalize("NFD").replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
-            camposDiv.innerHTML += `
-              <label for="${id}">${label} (R$):</label>
-              <input type="text" id="${id}" class="currency">
-            `;
-          });
-        }
-      }
-    });
+    for (const categoria in campos[tipo]) {
+      camposDiv.innerHTML += `<h3 style="color:#00bcd4;">${categoria}</h3>`;
+      campos[tipo][categoria].forEach(label => {
+        const id = label.toLowerCase().normalize("NFD").replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
+        camposDiv.innerHTML += `
+          <div class="form-group col-50">
+            <label for="${id}">${label} (R$):</label>
+            <input type="text" id="${id}" class="currency">
+          </div>
+        `;
+      });
+    }
+  }
+});
 
     document.addEventListener("input", function(e) {
       if (e.target.classList.contains("currency")) {
