@@ -71,6 +71,17 @@
     button:hover {
       background-color: #0193a3;
     }
+    .row {
+  display: flex;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.form-group.half {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
   </style>
 </head>
 <body>
@@ -104,21 +115,22 @@
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="local">Cidade/Estado:</label>
-            <input type="text" id="local" name="local" required>
-          </div>
+          <div class="row">
+  <div class="form-group half">
+    <label for="cidade">Cidade/Estado:</label>
+    <input type="text" id="cidade" name="cidade" required>
+  </div>
 
-          <div class="form-group">
-            <label for="estrutura">Estrutura:</label>
-            <select id="estrutura" name="estrutura" required>
-              <option value="">Selecione...</option>
-              <option value="Física">Física</option>
-              <option value="Virtual">Virtual</option>
-              <option value="Híbrida">Híbrida</option>
-            </select>
-          </div>
-        </div>
+  <div class="form-group half">
+    <label for="estrutura">Estrutura:</label>
+    <select id="estrutura" name="estrutura" required>
+      <option value="">Selecione...</option>
+      <option value="Física">Física</option>
+      <option value="Virtual">Virtual</option>
+      <option value="Híbrida">Híbrida</option>
+    </select>
+  </div>
+</div>
 
         <div class="form-row">
           <div class="form-group">
