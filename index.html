@@ -24,6 +24,9 @@
             font-size: 24px;
             color: #00bcd4;
         }
+        h2 {
+            color: #fff;
+        }
         .step {
             display: none;
         }
@@ -33,13 +36,16 @@
         label {
             display: block;
             margin-top: 15px;
+            font-weight: bold;
         }
-        input, select {
+        input[type="text"], select {
             width: 100%;
-            padding: 8px;
-            margin-top: 5px;
+            box-sizing: border-box;
+            padding: 10px;
+            font-size: 14px;
             border-radius: 6px;
             border: none;
+            margin-top: 5px;
         }
         .buttons {
             margin-top: 20px;
@@ -66,7 +72,8 @@
         <form id="viabilidadeForm">
             <div class="step active" id="step1">
                 <h2>1. Dados Gerais do Projeto</h2>
-                <label for="nome">Nome do Projeto:</label>
+
+                <label for="nome">Nome do Projeto/Empresa:</label>
                 <input type="text" id="nome" name="nome" required>
 
                 <label for="tipo">Tipo de Atividade:</label>
@@ -85,6 +92,21 @@
                 <label for="local">Cidade/Estado:</label>
                 <input type="text" id="local" name="local">
 
+                <label for="estrutura">Estrutura:</label>
+                <select id="estrutura" name="estrutura">
+                    <option value="Física">Física</option>
+                    <option value="Virtual">Virtual</option>
+                    <option value="Híbrida">Híbrida</option>
+                </select>
+
+                <label for="regime">Regime Tributário:</label>
+                <select id="regime" name="regime">
+                    <option value="MEI">MEI</option>
+                    <option value="Simples Nacional">Simples Nacional</option>
+                    <option value="Lucro Presumido">Lucro Presumido</option>
+                    <option value="Lucro Real">Lucro Real</option>
+                </select>
+
                 <label for="situacao">Situação Atual:</label>
                 <select id="situacao" name="situacao">
                     <option value="Planejamento">Planejamento</option>
@@ -92,7 +114,7 @@
                     <option value="Em expansão">Em expansão</option>
                 </select>
 
-                <label for="responsavel">Responsável:</label>
+                <label for="responsavel">Responsável Financeiro:</label>
                 <input type="text" id="responsavel" name="responsavel">
             </div>
 
