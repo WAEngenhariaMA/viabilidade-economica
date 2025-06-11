@@ -415,16 +415,24 @@ const camposDiv = document.getElementById('camposEspecificos');
       const pontoEquilibrio = preco > custoVariavelUnitario ? (fixos / (preco - custoVariavelUnitario)) : 0;
       document.getElementById('ponto_equilibrio').value = Math.ceil(pontoEquilibrio);
     });
+     function moedaParaNumero(str) {
+      return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+
+    function numeroParaMoeda(num) {
+      return num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
     function calcularEtapa4() {
-      const receita = moedaParaNumero(document.getElementById('receita_mensal').value);
-      const fixos = moedaParaNumero(document.getElementById('custos_fixos_total').value);
-      const variaveis = moedaParaNumero(document.getElementById('custos_variaveis_total').value);
+      const receita = moedaParaNumero(document.getElementById('receita_mensal')?.value || '0');
+      const fixos = moedaParaNumero(document.getElementById('custos_fixos_total')?.value || '0');
+      const variaveis = moedaParaNumero(document.getElementById('custos_variaveis_total')?.value || '0');
       const lucro = receita - (fixos + variaveis);
 
       const investimento = Array.from(document.querySelectorAll('#camposEspecificos label'))
         .filter(l => l.textContent.includes('Investimento Inicial'))
         .map(l => moedaParaNumero(l.nextElementSibling?.value || '0'))
-        .reduce((a,b) => a + b, 0);
+        .reduce((a, b) => a + b, 0);
 
       const taxa = moedaParaNumero(document.getElementById('taxa_desconto').value) / 100;
       const margem = receita ? (variaveis / receita) : 0;
