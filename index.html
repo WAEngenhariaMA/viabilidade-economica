@@ -226,9 +226,17 @@
 }
 
     function prevStep() {
-      document.getElementById('step2').classList.remove('active');
-      document.getElementById('step1').classList.add('active');
+  const steps = document.querySelectorAll(".step");
+  for (let i = 0; i < steps.length; i++) {
+    if (steps[i].classList.contains("active")) {
+      steps[i].classList.remove("active");
+      if (i - 1 >= 0) {
+        steps[i - 1].classList.add("active");
+      }
+      break;
     }
+  }
+}
 
      document.getElementById('tipo').addEventListener('change', function () {
       const tipo = this.value;
