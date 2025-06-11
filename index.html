@@ -142,21 +142,40 @@
         <label for="receita_anual">Receita Anual Estimada (R$):</label>
         <input type="text" id="receita_anual" readonly>
 
-        <h3 style="color:#00bcd4;">Receita por Cenários</h3>
-        <label for="qtd_pessimista">Unidades Vendidas - Cenário Pessimista:</label>
-        <input type="number" id="qtd_pessimista">
-        <label for="receita_pessimista">Receita Pessimista (R$):</label>
-        <input type="text" id="receita_pessimista" readonly>
+       <h3 style="color:#00bcd4;">Receita por Cenários</h3>
 
-        <label for="qtd_realista">Unidades Vendidas - Cenário Realista:</label>
-        <input type="number" id="qtd_realista">
-        <label for="receita_realista">Receita Realista (R$):</label>
-        <input type="text" id="receita_realista" readonly>
+<div class="row-group">
+  <div>
+    <label for="qtd_pessimista">Unidades - Pessimista:</label>
+    <input type="number" id="qtd_pessimista" min="0">
+  </div>
+  <div>
+    <label for="receita_pessimista">Receita Pessimista (R$):</label>
+    <input type="text" id="receita_pessimista" readonly>
+  </div>
+</div>
 
-        <label for="qtd_otimista">Unidades Vendidas - Cenário Otimista:</label>
-        <input type="number" id="qtd_otimista">
-        <label for="receita_otimista">Receita Otimista (R$):</label>
-        <input type="text" id="receita_otimista" readonly>
+<div class="row-group">
+  <div>
+    <label for="qtd_realista">Unidades - Realista:</label>
+    <input type="number" id="qtd_realista" min="0">
+  </div>
+  <div>
+    <label for="receita_realista">Receita Realista (R$):</label>
+    <input type="text" id="receita_realista" readonly>
+  </div>
+</div>
+
+<div class="row-group">
+  <div>
+    <label for="qtd_otimista">Unidades - Otimista:</label>
+    <input type="number" id="qtd_otimista" min="0">
+  </div>
+  <div>
+    <label for="receita_otimista">Receita Otimista (R$):</label>
+    <input type="text" id="receita_otimista" readonly>
+  </div>
+</div>
 
         <h3 style="color:#00bcd4;">Projeção de Lucro</h3>
         <label for="custos_fixos_total">Total de Custos Fixos Mensais (R$):</label>
