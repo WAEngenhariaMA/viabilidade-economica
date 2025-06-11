@@ -126,6 +126,75 @@
 <p><strong>Atividade selecionada:</strong> <span id="atividadeSelecionada">-</span></p>
 <div id="camposEspecificos"></div>
       </div>
+<div class="step" id="step3">
+  <h2>3. Receita, Lucro e Ponto de Equilíbrio</h2>
+
+  <h3 style="color:#00bcd4;">Receita Esperada</h3>
+  <label for="preco_unitario">Preço Médio por Unidade (R$):</label>
+  <input type="text" id="preco_unitario" class="currency">
+
+  <label for="quantidade_mensal">Unidades Vendidas por Mês (Estimativa):</label>
+  <input type="number" id="quantidade_mensal">
+
+  <label for="receita_mensal">Receita Bruta Mensal (R$):</label>
+  <input type="text" id="receita_mensal" readonly>
+
+  <label for="receita_anual">Receita Anual Estimada (R$):</label>
+  <input type="text" id="receita_anual" readonly>
+
+  <h3 style="color:#00bcd4;">Projeção de Lucro</h3>
+  <label for="custos_fixos">Total de Custos Fixos Mensais (R$):</label>
+  <input type="text" id="custos_fixos" class="currency">
+
+  <label for="custos_variaveis">Total de Custos Variáveis Mensais (R$):</label>
+  <input type="text" id="custos_variaveis" class="currency">
+
+  <label for="lucro_operacional">Lucro Operacional Mensal (R$):</label>
+  <input type="text" id="lucro_operacional" readonly>
+
+  <label for="margem_lucro">Margem de Lucro (%):</label>
+  <input type="text" id="margem_lucro" readonly>
+
+  <h3 style="color:#00bcd4;">Ponto de Equilíbrio</h3>
+  <label for="custo_unitario_variavel">Custo Variável por Unidade (R$):</label>
+  <input type="text" id="custo_unitario_variavel" class="currency">
+
+  <label for="ponto_equilibrio">Ponto de Equilíbrio (em Unidades):</label>
+  <input type="text" id="ponto_equilibrio" readonly>
+</div>
+
+<script>
+  document.addEventListener("input", function () {
+    function moedaParaNumero(str) {
+      return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+    function numeroParaMoeda(num) {
+      return num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    const preco = moedaParaNumero(document.getElementById('preco_unitario').value);
+    const qtd = parseInt(document.getElementById('quantidade_mensal').value) || 0;
+    const receitaMensal = preco * qtd;
+    const receitaAnual = receitaMensal * 12;
+
+    document.getElementById('receita_mensal').value = numeroParaMoeda(receitaMensal);
+    document.getElementById('receita_anual').value = numeroParaMoeda(receitaAnual);
+
+    const fixos = moedaParaNumero(document.getElementById('custos_fixos').value);
+    const variaveis = moedaParaNumero(document.getElementById('custos_variaveis').value);
+    const lucro = receitaMensal - (fixos + variaveis);
+    const margem = receitaMensal ? (lucro / receitaMensal) * 100 : 0;
+
+    document.getElementById('lucro_operacional').value = numeroParaMoeda(lucro);
+    document.getElementById('margem_lucro').value = margem.toFixed(1).replace('.', ',') + '%';
+
+    const custoVariavelUnitario = moedaParaNumero(document.getElementById('custo_unitario_variavel').value);
+    const pontoEquilibrio = preco > custoVariavelUnitario ? (fixos / (preco - custoVariavelUnitario)) : 0;
+
+    document.getElementById('ponto_equilibrio').value = Math.ceil(pontoEquilibrio);
+  });
+</script>
+
 
       <div class="buttons">
         <button type="button" onclick="prevStep()">Voltar</button>
