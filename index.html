@@ -315,7 +315,6 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-
 async function carregarImagemBase64(url) {
   const response = await fetch(url);
   const blob = await response.blob();
@@ -326,6 +325,7 @@ async function carregarImagemBase64(url) {
   });
 }
 
+
 async function gerarPDFPersonalizado() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'mm', 'a4');
@@ -334,19 +334,24 @@ async function gerarPDFPersonalizado() {
   doc.addImage(imgBase64, 'PNG', 0, 0, 210, 297);
 
   let y = 30;
-  doc.setFontSize(20);
+  doc.setFontSize(18);
   doc.setTextColor(0, 188, 212);
+  doc.setFont('helvetica', 'bold');
   doc.text('Relatório de Viabilidade Econômica', 15, y);
   y += 10;
 
-  doc.setFontSize(16);
+  doc.setFontSize(14);
   doc.setTextColor(0);
+  doc.setFont('helvetica', 'bold');
   doc.text(`Projeto: ${document.getElementById('nome').value}`, 15, y);
   y += 8;
 
   doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
   doc.text('📌 Dados Gerais:', 15, y);
   y += 6;
+
+  doc.setFont('helvetica', 'normal');
   const dados = [
     ['Tipo de Atividade', 'tipo'],
     ['Cidade/Estado', 'local'],
@@ -363,10 +368,10 @@ async function gerarPDFPersonalizado() {
   });
 
   y += 4;
-  doc.setFontSize(12);
-  doc.setTextColor(0);
+  doc.setFont('helvetica', 'bold');
   doc.text('💰 Indicadores Financeiros:', 15, y);
   y += 6;
+  doc.setFont('helvetica', 'normal');
 
   const indicadores = [
     ['Receita Mensal', 'receita_mensal'],
@@ -390,9 +395,10 @@ async function gerarPDFPersonalizado() {
   });
 
   y += 6;
-  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
   doc.text('✅ Checklist de Viabilidade:', 15, y);
   y += 6;
+  doc.setFont('helvetica', 'normal');
 
   const checklist = [
     ['Receita cobre os custos fixos?', 'check_receita'],
@@ -405,12 +411,14 @@ async function gerarPDFPersonalizado() {
     y += 6;
   });
 
-  y += 4;
+  y += 6;
+  doc.setFont('helvetica', 'bold');
   doc.text(`📊 Avaliação Final: ${document.getElementById('avaliacao_final').value}`, 15, y);
 
   doc.save('Relatorio_Viabilidade_Economica.pdf');
 }
 </script>
+
 
 <script>
 function atualizarChecklistAnalise() {
