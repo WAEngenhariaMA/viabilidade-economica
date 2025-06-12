@@ -621,8 +621,8 @@ const camposDiv = document.getElementById('camposEspecificos');
   // 🧠 Cálculos principais
   const margem = receita ? (variaveis / receita) : 0;
   const pontoEq = receita ? (fixos / (1 - margem)) : 0;
-  const payback = lucro > 0 ? (investimento / lucro) : 0;
-  const roi = investimento > 0 ? ((lucro * 12 / investimento) * 100) : 0;
+  const payback = lucro > 0 ? (Math.abs(investimento) / lucro) : 0;
+  const roi = investimento > 0 ? ((lucro * 12 / Math.abs(investimento)) * 100) : 0;
 
   // 💰 VPL e TIR (fluxo de 60 meses)
   let vpl = 0;
