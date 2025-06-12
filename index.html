@@ -165,8 +165,8 @@
         <input type="tel" id="telefone" name="telefone" required>
       </div>
       </div>
-   <div class="step" id="step2">
-  <h2>Custos e Investimentos</h2>
+  <div class="step" id="step2">
+  <h2>Etapa 02 – Custos e Investimentos (Comércio e Varejo)</h2>
 
   <!-- Cadastro de Produtos -->
   <div class="form-group col-100">
@@ -175,48 +175,45 @@
     <button type="button" onclick="adicionarProduto()">➕ Cadastrar Novo Produto</button>
   </div>
 
-  <!-- Container de produtos adicionados -->
-<template id="produtoTemplate">
-  <div class="produto-box" style="border: 1px solid #00bcd4; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-    <div class="form-group col-100">
-      <label>Nome do Produto:</label>
-      <input type="text" class="nomeProduto" required>
-    </div>
+  <template id="templateProduto">
+    <div class="produto-box" style="border:1px solid #00bcd4; padding:10px; margin-bottom:15px; border-radius:6px;">
+      <div class="form-group col-100">
+        <label>Nome do Produto:</label>
+        <input type="text" class="nomeProduto" placeholder="Ex: Produto A">
+      </div>
 
-    <div class="row">
-      <div class="form-group col-50">
-        <label>1.2. Custo de Produção Direto:</label>
-        <div style="display: flex; gap: 10px;">
-          <select class="tipoCusto" onchange="alternarCusto(this)" style="flex: 1;">
-            <option value="monetario">Valor Monetário</option>
-            <option value="percentual">Percentual (%)</option>
-          </select>
-          <input type="text" class="valorCusto currency" placeholder="R$ ou %" style="flex: 1;">
+      <label>1.2. Custo de Produção Direto:</label>
+      <div class="row">
+        <div class="form-group col-50">
+          <label>Valor Monetário (R$):</label>
+          <input type="text" class="custoMonetario currency">
+        </div>
+        <div class="form-group col-50">
+          <label>Valor Percentual (%):</label>
+          <input type="text" class="custoPercentual currency">
         </div>
       </div>
 
-      <div class="form-group col-50">
-        <label>1.3. Preço de Venda Pretendido (R$):</label>
-        <input type="text" class="precoVenda currency">
-        <button type="button" onclick="mostrarCalculo(this)">🧮 Calcular Preço de Venda</button>
+      <label>1.3. Preço de Venda Pretendido (R$):</label>
+      <input type="text" class="precoVenda currency">
+
+      <div class="form-group col-100" style="margin:10px 0;">
+        <button type="button" onclick="abrirCalculoVenda(this)">🧮 Calcular Preço de Venda</button>
+        <button type="button" onclick="removerProduto(this)" style="margin-left:10px; background-color:red; color:#fff">🗑️ Excluir Produto</button>
+        <button type="button" onclick="salvarProduto(this)" style="margin-left:10px; background-color:#4caf50; color:#fff">💾 Salvar Produto</button>
+      </div>
+
+      <div class="box-calc" style="display:none; margin-top:10px; background:#222; padding:10px; border-radius:6px;">
+        <label>Custo Total (R$):</label>
+        <input type="text" class="calc-custo currency">
+        <label>Margem de Lucro Desejada (%):</label>
+        <input type="text" class="calc-lucro currency">
+        <label>Preço Concorrência (R$):</label>
+        <input type="text" class="calc-concorrencia currency">
+        <button type="button" onclick="calcularPrecoVenda(this)" style="margin-top:10px;">✔️ Aplicar Preço</button>
       </div>
     </div>
-
-    <div class="form-group col-100 boxCalculo" style="display:none; margin-top:10px; border-top:1px solid #ccc; padding-top:10px;">
-      <label>Cálculo do Preço de Venda</label>
-      <input type="text" class="custoBase currency" placeholder="Custo Base (R$)">
-      <input type="text" class="margemLucro currency" placeholder="Margem de Lucro (%)">
-      <input type="text" class="precoConcorrencia currency" placeholder="Preço da Concorrência (R$)">
-      <button type="button" onclick="calcularPreco(this)">📌 Usar no campo 1.3</button>
-      <button type="button" onclick="this.closest('.boxCalculo').style.display='none'" style="background-color: #757575; color: white; margin-top: 5px;">❌ Fechar Cálculo</button>
-    </div>
-
-    <div style="margin-top: 10px; display: flex; gap: 10px;">
-      <button type="button" onclick="salvarProduto(this)" style="background-color:#4caf50;">💾 Salvar Produto</button>
-      <button type="button" onclick="removerProduto(this)" style="background-color:#e53935;">🗑 Excluir Produto</button>
-    </div>
-  </div>
-</template>
+  </template>
 
   <!-- Investimento Inicial -->
   <h3 style="color:#00bcd4;">2. Investimento Inicial</h3>
@@ -231,7 +228,7 @@
 
   <!-- Custos Variáveis -->
   <h3 style="color:#00bcd4;">3. Custos Variáveis</h3>
-  <div class="form-group col-100"><label>3.1. Custos com Produção (valor ou %):</label><input type="text" class="currency" id="campoCustoProducaoTotal"></div>
+  <div class="form-group col-100"><label>3.1. Custos com Produção (valor ou %):</label><input type="text" id="resumoCustoProducao" class="currency" readonly></div>
   <div class="form-group col-50"><label>3.2. Impostos (%):</label><input type="text" class="currency"></div>
   <div class="form-group col-50"><label>3.3. Comissão de Vendas (%):</label><input type="text" class="currency"></div>
   <div class="form-group col-50"><label>3.4. Tarifas de Cartão (%):</label><input type="text" class="currency"></div>
