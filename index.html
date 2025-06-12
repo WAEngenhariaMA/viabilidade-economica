@@ -311,10 +311,22 @@ function calcularPreco(btn) {
 
   bloco.querySelector('.precoVenda').value = precoFinal.toFixed(2).replace('.', ',');
 
-  // Fecha o campo de cálculo após aplicar
+  // Fecha o cálculo
   bloco.querySelector('.boxCalculo').style.display = 'none';
 }
 
+  function mostrarCalculo(btn) {
+  const bloco = btn.closest('.produto-box');
+  bloco.querySelector('.boxCalculo').style.display = 'block';
+}
+function salvarProduto(btn) {
+  const bloco = btn.closest('.produto-box');
+  const nome = bloco.querySelector('.nomeProduto').value;
+  const custo = bloco.querySelector('.valorCusto').value;
+  const preco = bloco.querySelector('.precoVenda').value;
+  alert(`✅ Produto "${nome}" salvo!\nCusto: ${custo} | Preço: ${preco}`);
+}
+  
 function aplicarPrecoCalculado(idx) {
   const custo = parseFloat(document.getElementById(`custo_base_${idx}`).value.replace(/\./g, '').replace(',', '.')) || 0;
   const margem = parseFloat(document.getElementById(`margem_${idx}`).value.replace(',', '.')) || 0;
