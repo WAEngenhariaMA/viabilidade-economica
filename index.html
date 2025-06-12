@@ -187,7 +187,7 @@
     <label>Custo Direto (R$):</label>
     <input type="text" id="novoCustoMonetario" class="currency"  placeholder="R$">
     <label>Custo Direto (%):</label>
-    <input type="text" id="novoCustoPercentual" placeholder="%">
+    <input type="text" id="novoCustoPercentual" class="percent" placeholder="%">
     <label>Preço de Venda Pretendido (R$):</label>
     <input type="text" id="novoPrecoVenda" class="currency" placeholder="R$">
     <button type="button" onclick="abrirModalPreco()">Calcular Preço de Venda</button>
@@ -203,7 +203,7 @@
     <label>Custos Totais (R$):</label>
     <input type="text" id="preco_custo_calc" class="currency"  placeholder="R$">
     <label>Margem de Lucro Desejada (%):</label>
-    <input type="text" id="margem_lucro_calc" placeholder="%">
+    <input type="text" id="margem_lucro_calc" class="percent" placeholder="%">
     <label>Preço da Concorrência (R$):</label>
     <input type="text" id="concorrencia_calc" class="currency" placeholder="R$">
     <div style="text-align:right;margin-top:10px;">
@@ -229,10 +229,10 @@
   <h3 style="color:#00bcd4;">3. Custos Variáveis</h3>
   <div class="row">
     <div class="form-group col-50"><label>Custos com Produção (%):</label><input type="text" id="auto_custo_prod" placeholder="%" readonly></div>
-    <div class="form-group col-50"><label>Impostos (%):</label><input type="text" class="currency" placeholder="%"></div>
-    <div class="form-group col-50"><label>Comissão de Vendas (%):</label><input type="text" class="currency" placeholder="%"></div>
-    <div class="form-group col-50"><label>Tarifas de Cartão (%):</label><input type="text" class="currency" placeholder="%"></div>
-    <div class="form-group col-50"><label>Outros (%):</label><input type="text" class="currency" placeholder="%"></div>
+    <div class="form-group col-50"><label>Impostos (%):</label><input type="text" class="percent" placeholder="%"></div>
+    <div class="form-group col-50"><label>Comissão de Vendas (%):</label><input type="text" class="percent" placeholder="%"></div>
+    <div class="form-group col-50"><label>Tarifas de Cartão (%):</label><input type="text" class="percent" placeholder="%"></div>
+    <div class="form-group col-50"><label>Outros (%):</label><input type="text" class="percent" placeholder="%"></div>
   </div>
 
   <!-- CUSTOS FIXOS -->
