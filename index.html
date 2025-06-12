@@ -369,40 +369,38 @@
     const pontoEquilibrio = preco > custoVariavelUnitario ? (fixos / (preco - custoVariavelUnitario)) : 0;
 
     document.getElementById('ponto_equilibrio').value = Math.ceil(pontoEquilibrio);
-  });
- 
+  }); 
 </script>
+  <div class="buttons" id="navigationButtons"></div>
+  </form> <!-- Fechamento correto do formulário -->
 
-
-    <div class="buttons" id="navigationButtons"></div>
-     </form>
   <script>
     function renderButtons(currentStep) {
-  const container = document.getElementById('navigationButtons');
-  container.innerHTML = '';
+      const container = document.getElementById('navigationButtons');
+      container.innerHTML = '';
 
-  const limpar = document.createElement('button');
-  limpar.textContent = 'Limpar';
-  limpar.type = 'button';
-  limpar.onclick = limparCamposEtapa;
-  container.appendChild(limpar);
+      const limpar = document.createElement('button');
+      limpar.textContent = 'Limpar';
+      limpar.type = 'button';
+      limpar.onclick = limparCamposEtapa;
+      container.appendChild(limpar);
 
-  if (currentStep > 0) {
-    const voltar = document.createElement('button');
-    voltar.textContent = 'Voltar';
-    voltar.type = 'button';
-    voltar.onclick = prevStep;
-    container.appendChild(voltar);
-  }
+      if (currentStep > 0) {
+        const voltar = document.createElement('button');
+        voltar.textContent = 'Voltar';
+        voltar.type = 'button';
+        voltar.onclick = prevStep;
+        container.appendChild(voltar);
+      }
 
-  if (currentStep < document.querySelectorAll('.step').length - 1) {
-    const proximo = document.createElement('button');
-    proximo.textContent = 'Próximo';
-    proximo.type = 'button';
-    proximo.onclick = nextStep;
-    container.appendChild(proximo);
-  }
-}
+      if (currentStep < document.querySelectorAll('.step').length - 1) {
+        const proximo = document.createElement('button');
+        proximo.textContent = 'Próximo';
+        proximo.type = 'button';
+        proximo.onclick = nextStep;
+        container.appendChild(proximo);
+      }
+    }
 
     function nextStep() {
       const steps = document.querySelectorAll(".step");
@@ -439,21 +437,21 @@
       }
     }
 
-   function limparCamposEtapa() {
-  const etapaAtual = document.querySelector('.step.active');
-  const inputs = etapaAtual.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], input[type="tel"], textarea, select');
+    function limparCamposEtapa() {
+      const etapaAtual = document.querySelector('.step.active');
+      const inputs = etapaAtual.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], input[type="tel"], textarea, select');
 
-  inputs.forEach(input => {
-    if (input.tagName.toLowerCase() === 'select') {
-      input.selectedIndex = 0;
-    } else {
-      input.value = '';
+      inputs.forEach(input => {
+        if (input.tagName.toLowerCase() === 'select') {
+          input.selectedIndex = 0;
+        } else {
+          input.value = '';
+        }
+      });
     }
-  });
-}
-   window.onload = () => {
-  renderButtons(0);
 
+    window.onload = () => {
+      renderButtons(0);
   // Bloqueia letras em campos numéricos
   document.querySelectorAll('input[type="number"]').forEach(input => {
     input.addEventListener('input', function () {
