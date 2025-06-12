@@ -308,69 +308,66 @@
   </div>
 
   <div class="form-group col-100" style="margin-top: 20px; text-align: center;">
-    <button type="button" onclick="gerarPDF()" style="background-color:#00bcd4; color:#fff; border:none; padding:10px 20px; border-radius:6px; font-size:16px; cursor:pointer;">
-      📄 Gerar Relatório em PDF
-    </button>
+    <button type="button" onclick="gerarPDFCanva()">📄 Gerar PDF com Layout</button>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-function gerarPDF() {
+async function gerarPDFCanva() {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const imgBase64 = await carregarImagemBase64('./img/layout_canva.png');
 
-  let y = 10;
-  doc.setFontSize(16);
-  doc.text('WA Engenharia – Relatório de Viabilidade Econômica', 10, y);
-  y += 10;
+  // 🖼️ Aplica imagem de fundo
+  doc.addImage(imgBase64, 'PNG', 0, 0, 210, 297);
 
-  doc.setFontSize(12);
-  doc.text('Checklist de Viabilidade:', 10, y);
-  y += 8;
+  // 🎯 Coleta de dados
+  const get = id => document.getElementById(id)?.value || '';
 
-  const checklist = [
-    ['Receita cobre os custos fixos?', document.getElementById('check_receita').textContent],
-    ['Projeto tem ROI acima de 20%?', document.getElementById('check_roi').textContent],
-    ['Payback abaixo de 12 meses?', document.getElementById('check_payback').textContent],
-    ['Fluxo de caixa positivo nos 6 primeiros meses?', document.getElementById('check_fluxo').textContent],
-  ];
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
 
-  checklist.forEach(([label, valor]) => {
-    doc.text(`${label}: ${valor}`, 10, y);
-    y += 7;
+  // 📝 Exemplo de campos posicionados manualmente
+  doc.text(`Projeto: ${get('nome')}`, 20, 40);
+  doc.text(`Atividade: ${get('tipo')}`, 20, 47);
+  doc.text(`Cidade/UF: ${get('local')}`, 20, 54);
+  doc.text(`Responsável: ${get('responsavel')}`, 20, 61);
+
+  doc.text(`Receita Mensal: R$ ${get('receita_mensal')}`, 20, 75);
+  doc.text(`Lucro Operacional: R$ ${get('lucro_operacional')}`, 20, 82);
+  doc.text(`Ponto de Equilíbrio: ${get('ponto_equilibrio')} un`, 20, 89);
+  doc.text(`ROI: ${get('roi')}`, 20, 96);
+  doc.text(`Payback: ${get('payback')} meses`, 20, 103);
+  doc.text(`VPL: R$ ${get('vpl')}`, 20, 110);
+  doc.text(`TIR: ${get('tir')}`, 20, 117);
+
+  // ✅ Checklist final
+  doc.text(`Receita cobre os custos fixos? ${document.getElementById('check_receita').textContent}`, 20, 130);
+  doc.text(`ROI acima de 20%? ${document.getElementById('check_roi').textContent}`, 20, 137);
+  doc.text(`Payback abaixo de 12 meses? ${document.getElementById('check_payback').textContent}`, 20, 144);
+  doc.text(`Fluxo de caixa positivo? ${document.getElementById('check_fluxo').textContent}`, 20, 151);
+
+  // Resultado final
+  doc.text(`Avaliação Final: ${get('avaliacao_final')}`, 20, 165);
+
+  doc.save('Relatorio_WA_Viabilidade.pdf');
+}
+
+function carregarImagemBase64(url) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.src = url;
   });
-
-  y += 5;
-  doc.text(`Avaliação Final: ${document.getElementById('avaliacao_final').value}`, 10, y);
-  y += 10;
-
-  doc.text('Resumo Financeiro:', 10, y);
-  y += 8;
-
-  const camposResumo = [
-    ['Receita Bruta Mensal', 'receita_mensal'],
-    ['Receita Anual Estimada', 'receita_anual'],
-    ['Custo Fixo Mensal', 'custos_fixos_total'],
-    ['Custo Variável Mensal', 'custos_variaveis_total'],
-    ['Lucro Operacional', 'lucro_operacional'],
-    ['Margem de Lucro (%)', 'margem_lucro'],
-    ['Custo Unitário Variável', 'custo_unitario_variavel'],
-    ['Ponto de Equilíbrio (Unidades)', 'ponto_equilibrio'],
-    ['Ponto de Equilíbrio Financeiro', 'ponto_equilibrio_fin'],
-    ['Payback (meses)', 'payback'],
-    ['ROI (%)', 'roi'],
-    ['VPL (R$)', 'vpl'],
-    ['TIR (%)', 'tir'],
-  ];
-
-  camposResumo.forEach(([label, id]) => {
-    const valor = document.getElementById(id)?.value || '-';
-    doc.text(`${label}: ${valor}`, 10, y);
-    y += 6;
-  });
-
-  doc.save('Relatorio_Viabilidade_Economica.pdf');
 }
 </script>
 <script>
