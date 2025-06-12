@@ -343,11 +343,36 @@ function gerarPDF() {
 
   y += 5;
   doc.text(`Avaliação Final: ${document.getElementById('avaliacao_final').value}`, 10, y);
+  y += 10;
+
+  doc.text('Resumo Financeiro:', 10, y);
+  y += 8;
+
+  const camposResumo = [
+    ['Receita Bruta Mensal', 'receita_mensal'],
+    ['Receita Anual Estimada', 'receita_anual'],
+    ['Custo Fixo Mensal', 'custos_fixos_total'],
+    ['Custo Variável Mensal', 'custos_variaveis_total'],
+    ['Lucro Operacional', 'lucro_operacional'],
+    ['Margem de Lucro (%)', 'margem_lucro'],
+    ['Custo Unitário Variável', 'custo_unitario_variavel'],
+    ['Ponto de Equilíbrio (Unidades)', 'ponto_equilibrio'],
+    ['Ponto de Equilíbrio Financeiro', 'ponto_equilibrio_fin'],
+    ['Payback (meses)', 'payback'],
+    ['ROI (%)', 'roi'],
+    ['VPL (R$)', 'vpl'],
+    ['TIR (%)', 'tir'],
+  ];
+
+  camposResumo.forEach(([label, id]) => {
+    const valor = document.getElementById(id)?.value || '-';
+    doc.text(`${label}: ${valor}`, 10, y);
+    y += 6;
+  });
 
   doc.save('Relatorio_Viabilidade_Economica.pdf');
 }
 </script>
-
 <script>
 function atualizarChecklistAnalise() {
   const receita = parseFloat(document.getElementById('receita_mensal').value.replace(/\./g, '').replace(',', '.')) || 0;
