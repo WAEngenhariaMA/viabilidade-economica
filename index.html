@@ -165,11 +165,159 @@
         <input type="tel" id="telefone" name="telefone" required>
       </div>
       </div>
-      <div class="step" id="step2">
-        <h2>Custos e Investimentos</h2>
-        <p><strong>Atividade selecionada:</strong> <span id="atividadeSelecionada">-</span></p>
-        <div id="camposEspecificos" class="form-group"></div>
-      </div>
+     <!-- ETAPA 02 COMPLETA (HTML + JS) -->
+<div class="step" id="step2">
+  <h2>Custos e Investimentos</h2>
+
+  <!-- PRODUTOS -->
+  <h3 style="color:#00bcd4;">1.1 Produto – Descrição do Produto</h3>
+  <button type="button" onclick="abrirModalProduto()">+ Cadastrar Novo Produto</button>
+  <table id="tabelaProdutos" style="margin-top:10px;width:100%;color:#fff;">
+    <thead>
+      <tr><th>Produto</th><th>Custo Direto (R$)</th><th>Custo Direto (%)</th><th>Ações</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- MODAL PRODUTO -->
+  <div id="modalProduto" style="display:none;position:fixed;top:20%;left:50%;transform:translateX(-50%);background:#222;padding:20px;border-radius:10px;z-index:1000;width:90%;max-width:500px;">
+    <h3 style="color:#00bcd4;">Novo Produto</h3>
+    <label>Nome do Produto:</label>
+    <input type="text" id="novoProdutoNome">
+    <label>Custo Direto (R$):</label>
+    <input type="text" class="currency" id="novoCustoMonetario">
+    <label>Custo Direto (%):</label>
+    <input type="text" class="currency" id="novoCustoPercentual">
+    <div style="text-align:right;margin-top:10px;">
+      <button onclick="salvarProduto()">Salvar</button>
+      <button onclick="fecharModalProduto()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- PREÇO DE VENDA -->
+  <h3 style="color:#00bcd4;">1.3 Preço de Venda Pretendido</h3>
+  <input type="text" id="preco_venda" class="currency">
+  <button type="button" onclick="abrirModalPreco()">Calcular Preço de Venda</button>
+
+  <!-- MODAL PREÇO VENDA -->
+  <div id="modalPreco" style="display:none;position:fixed;top:20%;left:50%;transform:translateX(-50%);background:#222;padding:20px;border-radius:10px;z-index:1000;width:90%;max-width:500px;">
+    <h3 style="color:#00bcd4;">Cálculo do Preço de Venda</h3>
+    <label>Custos Totais (R$):</label>
+    <input type="text" id="preco_custo_calc" class="currency">
+    <label>Margem de Lucro Desejada (%):</label>
+    <input type="text" id="margem_lucro_calc" class="currency">
+    <label>Preço da Concorrência:</label>
+    <input type="text" id="concorrencia_calc" class="currency">
+    <div style="text-align:right;margin-top:10px;">
+      <button onclick="calcularPrecoVenda()">Calcular</button>
+      <button onclick="fecharModalPreco()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- VOLUME DE VENDAS AUTOMÁTICO -->
+  <div id="volumeProdutos"></div>
+
+  <!-- INVESTIMENTO INICIAL -->
+  <h3 style="color:#00bcd4;">2. Investimento Inicial</h3>
+  <div class="row">
+    <div class="form-group col-50"><label>Criação de Marca e Registro:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Abertura de Empresa e Licenças:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Consultorias:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Estoque Inicial:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Equipamentos:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Imobilizados:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Capital de Giro:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Outros:</label><input type="text" class="currency"></div>
+  </div>
+
+  <!-- CUSTOS VARIÁVEIS -->
+  <h3 style="color:#00bcd4;">3. Custos Variáveis</h3>
+  <div class="row">
+    <div class="form-group col-50"><label>Custos com Produção (automático):</label><input type="text" id="auto_custo_prod" class="currency" readonly></div>
+    <div class="form-group col-50"><label>Impostos (%):</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Comissão de Vendas (%):</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Tarifas de Cartão (%):</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Outros (%):</label><input type="text" class="currency"></div>
+  </div>
+
+  <!-- CUSTOS FIXOS -->
+  <h3 style="color:#00bcd4;">4. Custos Mensais Fixos</h3>
+  <h4>Despesas Administrativas</h4>
+  <div class="row">
+    <div class="form-group col-50"><label>Aluguel:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Energia:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Salários:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Internet:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Outros:</label><input type="text" class="currency"></div>
+  </div>
+  <h4>Despesas Comerciais</h4>
+  <div class="row">
+    <div class="form-group col-50"><label>Combustível (vendedores):</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Salários Equipe Comercial:</label><input type="text" class="currency"></div>
+  </div>
+  <h4>Despesas Operacionais</h4>
+  <div class="row">
+    <div class="form-group col-50"><label>Despesa 1:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Despesa 2:</label><input type="text" class="currency"></div>
+  </div>
+
+  <!-- PLANO COMERCIAL -->
+  <h3 style="color:#00bcd4;">5. Plano Comercial</h3>
+  <label>Público-Alvo:</label><textarea rows="2" style="width:100%;"></textarea>
+  <label>Diferenciais do Produto:</label><textarea rows="2" style="width:100%;"></textarea>
+  <label>Possíveis Concorrentes:</label><textarea rows="2" style="width:100%;"></textarea>
+  <label>Volume de Vendas (por Produto):</label><div id="volumeProdutos"></div>
+  <label>Taxa de Crescimento Mensal (%):</label><input type="text" class="currency">
+</div>
+
+<script>
+let produtos = [];
+function abrirModalProduto() {
+  document.getElementById("modalProduto").style.display = 'block';
+}
+function fecharModalProduto() {
+  document.getElementById("modalProduto").style.display = 'none';
+  document.getElementById("novoProdutoNome").value = '';
+  document.getElementById("novoCustoMonetario").value = '';
+  document.getElementById("novoCustoPercentual").value = '';
+}
+function salvarProduto() {
+  const nome = document.getElementById("novoProdutoNome").value;
+  const custoR = document.getElementById("novoCustoMonetario").value;
+  const custoP = document.getElementById("novoCustoPercentual").value;
+  produtos.push({ nome, custoR, custoP });
+  atualizarTabelaProdutos();
+  fecharModalProduto();
+}
+function atualizarTabelaProdutos() {
+  const tbody = document.querySelector("#tabelaProdutos tbody");
+  const volumeDiv = document.getElementById("volumeProdutos");
+  tbody.innerHTML = '';
+  volumeDiv.innerHTML = '';
+  produtos.forEach((p, index) => {
+    tbody.innerHTML += `<tr><td>${p.nome}</td><td>${p.custoR}</td><td>${p.custoP}</td><td><button onclick="removerProduto(${index})">Excluir</button></td></tr>`;
+    volumeDiv.innerHTML += `<div class='form-group col-50'><label>Volume: ${p.nome}</label><input type='number' /></div>`;
+  });
+}
+function removerProduto(index) {
+  produtos.splice(index, 1);
+  atualizarTabelaProdutos();
+}
+function abrirModalPreco() {
+  document.getElementById("modalPreco").style.display = 'block';
+}
+function fecharModalPreco() {
+  document.getElementById("modalPreco").style.display = 'none';
+}
+function calcularPrecoVenda() {
+  const custo = parseFloat(document.getElementById("preco_custo_calc").value.replace(',', '.')) || 0;
+  const margem = parseFloat(document.getElementById("margem_lucro_calc").value.replace(',', '.')) || 0;
+  const concorrente = parseFloat(document.getElementById("concorrencia_calc").value.replace(',', '.')) || 0;
+  const precoCalculado = custo * (1 + margem / 100);
+  document.getElementById("preco_venda").value = precoCalculado.toFixed(2).replace('.', ',');
+  fecharModalPreco();
+}
+</script>
 <div class="step" id="step3">
   <h2>Receita, Lucro e Ponto de Equilíbrio</h2>
 
