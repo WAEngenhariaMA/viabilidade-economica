@@ -283,7 +283,7 @@
   </small>
 </div>
  <!-- Etapa 5 -->
-      <div class="step" id="step5">
+     <div class="step" id="step5">
   <h2>Análise Final e Observações</h2>
   <table>
     <thead>
@@ -298,17 +298,11 @@
   </table>
   <div class="form-group col-100">
     <label for="avaliacao_final">Avaliação de Viabilidade Econômica:</label>
-    <select id="avaliacao_final">
-      <option value="">Selecione...</option>
-      <option>Viável com Alta Rentabilidade</option>
-      <option>Viável com Ajustes</option>
-      <option>Pouco Viável no Momento</option>
-      <option>Não Recomendado</option>
-    </select>
+    <input type="text" id="avaliacao_final" readonly>
   </div>
 </div>
 
-   <script>
+<script>
 function atualizarChecklistAnalise() {
   const receita = parseFloat(document.getElementById('receita_mensal').value.replace(/\./g, '').replace(',', '.')) || 0;
   const fixos = parseFloat(document.getElementById('custos_fixos_total').value.replace(/\./g, '').replace(',', '.')) || 0;
