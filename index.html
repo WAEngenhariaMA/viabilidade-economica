@@ -291,11 +291,12 @@ function atualizarTabelaProdutos() {
   const tbody = document.querySelector("#tabelaProdutos tbody");
   const volumeDiv = document.getElementById("volumeProdutos");
   tbody.innerHTML = '';
-  volumeDiv.innerHTML = '';
+  volumeDiv.innerHTML = '<table style="width:100%;margin-top:10px;color:#fff;text-align:center;"><thead><tr><th>Produto</th><th>Volume (unid.)</th></tr></thead><tbody>';
   produtos.forEach((p, index) => {
-    tbody.innerHTML += `<tr><td>${p.nome}</td><td>${p.custoR}</td><td>${p.custoP}</td><td>${p.precoVenda}</td><td><button onclick="removerProduto(${index})">Excluir</button></td></tr>`;
-    volumeDiv.innerHTML += `<div class='form-group col-50'><label>Volume: ${p.nome}</label><input type='number' /></div>`;
+    tbody.innerHTML += `<tr><td>${p.nome}</td><td>${p.custoR}</td><td>${p.custoP}</td><td>${p.precoVenda}</td><td><button type='button' onclick="removerProduto(${index})">Excluir</button></td></tr>`;
+    volumeDiv.innerHTML += `<tr><td>${p.nome}</td><td><input type='number' style='width:80px;text-align:center;' /></td></tr>`;
   });
+  volumeDiv.innerHTML += '</tbody></table>';
 }
 function removerProduto(index) {
   produtos.splice(index, 1);
