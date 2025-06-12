@@ -185,11 +185,11 @@
     <label>Nome do Produto:</label>
     <input type="text" id="novoProdutoNome">
     <label>Custo Direto (R$):</label>
-    <input type="text" id="novoCustoMonetario">
+    <input type="text" id="novoCustoMonetario" placeholder="R$">
     <label>Custo Direto (%):</label>
-    <input type="text" id="novoCustoPercentual">
+    <input type="text" id="novoCustoPercentual" placeholder="%">
     <label>Preço de Venda Pretendido (R$):</label>
-    <input type="text" id="novoPrecoVenda">
+    <input type="text" id="novoPrecoVenda" placeholder="R$">
     <button type="button" onclick="abrirModalPreco()">Calcular Preço de Venda</button>
     <div style="text-align:right;margin-top:10px;">
       <button type="button" onclick="salvarProduto()">Salvar</button>
@@ -201,61 +201,59 @@
   <div id="modalPreco" style="display:none;position:fixed;top:10%;left:50%;transform:translateX(-50%);background:#222;padding:30px;border-radius:12px;z-index:2000;width:95%;max-width:700px;">
     <h3 style="color:#00bcd4;">Cálculo do Preço de Venda</h3>
     <label>Custos Totais (R$):</label>
-    <input type="text" id="preco_custo_calc">
+    <input type="text" id="preco_custo_calc" placeholder="R$">
     <label>Margem de Lucro Desejada (%):</label>
-    <input type="text" id="margem_lucro_calc">
+    <input type="text" id="margem_lucro_calc" placeholder="%">
     <label>Preço da Concorrência (R$):</label>
-    <input type="text" id="concorrencia_calc">
+    <input type="text" id="concorrencia_calc" placeholder="R$">
     <div style="text-align:right;margin-top:10px;">
       <button type="button" onclick="calcularPrecoVenda()">Calcular</button>
       <button type="button" onclick="fecharModalPreco()">Cancelar</button>
     </div>
   </div>
+
   <!-- INVESTIMENTO INICIAL -->
   <h3 style="color:#00bcd4;">2. Investimento Inicial</h3>
   <div class="row">
-    <div class="form-group col-50"><label>Criação de Marca e Registro (R$):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Abertura de Empresa e Licenças (R$):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Consultorias (R$):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Estoque Inicial (R$):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Equipamentos (R$):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Imobilizados (R$):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Capital de Giro (R$):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Outros (R$):</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Criação de Marca e Registro (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-50"><label>Abertura de Empresa e Licenças (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-50"><label>Consultorias (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-50"><label>Estoque Inicial (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-50"><label>Equipamentos (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-50"><label>Imobilizados (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-50"><label>Capital de Giro (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-50"><label>Outros (R$):</label><input type="text" class="currency" placeholder="R$"></div>
   </div>
 
   <!-- CUSTOS VARIÁVEIS -->
   <h3 style="color:#00bcd4;">3. Custos Variáveis</h3>
   <div class="row">
-   <div class="form-group col-50">
-  <label>Custos com Produção (%) :</label>
-  <input type="text" id="auto_custo_prod" readonly>
-</div>
-    <div class="form-group col-50"><label>Impostos (%):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Comissão de Vendas (%):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Tarifas de Cartão (%):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Outros (%):</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Custos com Produção (%):</label><input type="text" id="auto_custo_prod" placeholder="%" readonly></div>
+    <div class="form-group col-50"><label>Impostos (%):</label><input type="text" class="currency" placeholder="%"></div>
+    <div class="form-group col-50"><label>Comissão de Vendas (%):</label><input type="text" class="currency" placeholder="%"></div>
+    <div class="form-group col-50"><label>Tarifas de Cartão (%):</label><input type="text" class="currency" placeholder="%"></div>
+    <div class="form-group col-50"><label>Outros (%):</label><input type="text" class="currency" placeholder="%"></div>
   </div>
 
   <!-- CUSTOS FIXOS -->
   <h3 style="color:#00bcd4;">4. Custos Mensais Fixos</h3>
   <h4>Despesas Administrativas</h4>
   <div class="row">
-    <div class="form-group col-50"><label>Aluguel (R$):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Energia (R$):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Salários (R$):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Internet (R$):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Outros (R$):</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Aluguel (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-50"><label>Energia (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-50"><label>Salários (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-50"><label>Internet (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-50"><label>Outros (R$):</label><input type="text" class="currency" placeholder="R$"></div>
   </div>
   <h4>Despesas Comerciais</h4>
   <div class="row">
-    <div class="form-group col-50"><label>Combustível (R$):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Salários Equipe Comercial (R$):</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Combustível (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-50"><label>Salários Equipe Comercial (R$):</label><input type="text" class="currency" placeholder="R$"></div>
   </div>
   <h4>Despesas Operacionais</h4>
   <div class="row">
-    <div class="form-group col-50"><label>Despesa 1 (R$):</label><input type="text" class="currency"></div>
-    <div class="form-group col-50"><label>Despesa 2 (R$):</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Despesa 1 (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-50"><label>Despesa 2 (R$):</label><input type="text" class="currency" placeholder="R$"></div>
   </div>
 
   <!-- PLANO COMERCIAL -->
@@ -263,9 +261,9 @@
   <label>Público-Alvo:</label><textarea rows="2" style="width:100%;"></textarea>
   <label>Diferenciais do Produto:</label><textarea rows="2" style="width:100%;"></textarea>
   <label>Possíveis Concorrentes:</label><textarea rows="2" style="width:100%;"></textarea>
- <label>Volume de Vendas (por Produto):</label>
-<div id="volumeProdutos"></div>
-  <label>Taxa de Crescimento Mensal (%):</label><input type="text" class="currency">
+  <label>Volume de Vendas (por Produto):</label>
+  <div id="volumeProdutos"></div>
+  <label>Taxa de Crescimento Mensal (%):</label><input type="text" class="currency" placeholder="%">
 </div>
 <script>
 let produtos = [];
@@ -1013,5 +1011,27 @@ document.querySelectorAll('#camposEspecificos h3').forEach(h3 => {
 
     document.addEventListener("input", calcularEtapa4);
   </script>
+<script>
+// Máscara para moeda (R$)
+document.querySelectorAll('input.currency[placeholder="R$"]').forEach(input => {
+  input.addEventListener('input', () => {
+    let val = input.value.replace(/\D/g, '');
+    val = (parseInt(val) / 100).toFixed(2) + '';
+    val = val.replace('.', ',');
+    val = val.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+    input.value = 'R$ ' + val;
+  });
+});
+
+// Máscara para percentual (%)
+document.querySelectorAll('input.currency[placeholder="%"]').forEach(input => {
+  input.addEventListener('input', () => {
+    let val = input.value.replace(/\D/g, '');
+    val = (parseInt(val) / 100).toFixed(2) + '';
+    val = val.replace('.', ',');
+    input.value = val + ' %';
+  });
+});
+</script>
 </body>
 </html>
