@@ -370,8 +370,8 @@ document.addEventListener("input", atualizarChecklistAnalise);
     document.getElementById('receita_otimista').value = numeroParaMoeda(otim * preco);
 
 
-    const fixos = moedaParaNumero(document.getElementById('custos_fixos').value);
-    const variaveis = moedaParaNumero(document.getElementById('custos_variaveis').value);
+    const fixos = moedaParaNumero(document.getElementById('custos_fixos_total').value);
+    const variaveis = moedaParaNumero(document.getElementById('custos_variaveis_total').value);
     const lucro = receitaMensal - (fixos + variaveis);
     const margem = receitaMensal ? (lucro / receitaMensal) * 100 : 0;
 
