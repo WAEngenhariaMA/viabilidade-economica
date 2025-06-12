@@ -176,41 +176,47 @@
   </div>
 
   <!-- Container de produtos adicionados -->
-  <template id="produtoTemplate">
-    <div class="produto-box" style="border: 1px solid #00bcd4; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-      <div class="form-group col-100">
-        <label>Nome do Produto:</label>
-        <input type="text" class="nomeProduto" required>
-      </div>
+<template id="produtoTemplate">
+  <div class="produto-box" style="border: 1px solid #00bcd4; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+    <div class="form-group col-100">
+      <label>Nome do Produto:</label>
+      <input type="text" class="nomeProduto" required>
+    </div>
 
-      <div class="row">
-        <div class="form-group col-50">
-          <label>1.2. Custo de Produção Direto:</label>
-          <select class="tipoCusto" onchange="alternarCusto(this)">
+    <div class="row">
+      <div class="form-group col-50">
+        <label>1.2. Custo de Produção Direto:</label>
+        <div style="display: flex; gap: 10px;">
+          <select class="tipoCusto" onchange="alternarCusto(this)" style="flex: 1;">
             <option value="monetario">Valor Monetário</option>
             <option value="percentual">Percentual (%)</option>
           </select>
-          <input type="text" class="valorCusto currency" placeholder="R$ ou %">
-        </div>
-
-        <div class="form-group col-50">
-          <label>1.3. Preço de Venda Pretendido (R$):</label>
-          <input type="text" class="precoVenda currency">
-          <button type="button" onclick="mostrarCalculo(this)">🧮 Calcular Preço de Venda</button>
+          <input type="text" class="valorCusto currency" placeholder="R$ ou %" style="flex: 1;">
         </div>
       </div>
 
-      <div class="form-group col-100 boxCalculo" style="display:none; margin-top:10px; border-top:1px solid #ccc; padding-top:10px;">
-        <label>Cálculo do Preço de Venda</label>
-        <input type="text" class="custoBase currency" placeholder="Custo Base (R$)">
-        <input type="text" class="margemLucro currency" placeholder="Margem de Lucro (%)">
-        <input type="text" class="precoConcorrencia currency" placeholder="Preço da Concorrência (R$)">
-        <button type="button" onclick="calcularPreco(this)">📌 Usar no campo 1.3</button>
+      <div class="form-group col-50">
+        <label>1.3. Preço de Venda Pretendido (R$):</label>
+        <input type="text" class="precoVenda currency">
+        <button type="button" onclick="mostrarCalculo(this)">🧮 Calcular Preço de Venda</button>
       </div>
-
-      <button type="button" onclick="removerProduto(this)" style="margin-top:10px; background-color:#e53935;">🗑 Excluir Produto</button>
     </div>
-  </template>
+
+    <div class="form-group col-100 boxCalculo" style="display:none; margin-top:10px; border-top:1px solid #ccc; padding-top:10px;">
+      <label>Cálculo do Preço de Venda</label>
+      <input type="text" class="custoBase currency" placeholder="Custo Base (R$)">
+      <input type="text" class="margemLucro currency" placeholder="Margem de Lucro (%)">
+      <input type="text" class="precoConcorrencia currency" placeholder="Preço da Concorrência (R$)">
+      <button type="button" onclick="calcularPreco(this)">📌 Usar no campo 1.3</button>
+      <button type="button" onclick="this.closest('.boxCalculo').style.display='none'" style="background-color: #757575; color: white; margin-top: 5px;">❌ Fechar Cálculo</button>
+    </div>
+
+    <div style="margin-top: 10px; display: flex; gap: 10px;">
+      <button type="button" onclick="salvarProduto(this)" style="background-color:#4caf50;">💾 Salvar Produto</button>
+      <button type="button" onclick="removerProduto(this)" style="background-color:#e53935;">🗑 Excluir Produto</button>
+    </div>
+  </div>
+</template>
 
   <!-- Investimento Inicial -->
   <h3 style="color:#00bcd4;">2. Investimento Inicial</h3>
@@ -305,6 +311,13 @@ function aplicarPrecoCalculado(idx) {
   const preco = custo + (custo * margem / 100);
   const precoFinal = concorrente > 0 ? (preco + concorrente) / 2 : preco;
   document.getElementById(`preco_venda_${idx}`).value = precoFinal.toFixed(2).replace('.', ',');
+}
+  function salvarProduto(btn) {
+  const bloco = btn.closest('.produto-box');
+  const nome = bloco.querySelector('.nomeProduto').value;
+  const custo = bloco.querySelector('.valorCusto').value;
+  const preco = bloco.querySelector('.precoVenda').value;
+  alert(`✅ Produto "${nome}" salvo!\nCusto: ${custo} | Preço: ${preco}`);
 }
 </script>
 
