@@ -263,7 +263,8 @@
   <label>Público-Alvo:</label><textarea rows="2" style="width:100%;"></textarea>
   <label>Diferenciais do Produto:</label><textarea rows="2" style="width:100%;"></textarea>
   <label>Possíveis Concorrentes:</label><textarea rows="2" style="width:100%;"></textarea>
-  <label>Volume de Vendas (por Produto):</label><div id="volumeProdutos"></div>
+ <label>Volume de Vendas (por Produto):</label>
+<div id="volumeProdutos"></div>
   <label>Taxa de Crescimento Mensal (%):</label><input type="text" class="currency">
 </div>
 <script>
@@ -291,12 +292,28 @@ function atualizarTabelaProdutos() {
   const tbody = document.querySelector("#tabelaProdutos tbody");
   const volumeDiv = document.getElementById("volumeProdutos");
   tbody.innerHTML = '';
-  volumeDiv.innerHTML = '<table style="width:100%;margin-top:10px;color:#fff;text-align:center;"><thead><tr><th>Produto</th><th>Volume (unid.)</th></tr></thead><tbody>';
+  volumeDiv.innerHTML = '';
+
   produtos.forEach((p, index) => {
-    tbody.innerHTML += `<tr><td>${p.nome}</td><td>${p.custoR}</td><td>${p.custoP}</td><td>${p.precoVenda}</td><td><button type='button' onclick="removerProduto(${index})">Excluir</button></td></tr>`;
-    volumeDiv.innerHTML += `<tr><td>${p.nome}</td><td><input type='number' style='width:80px;text-align:center;' /></td></tr>`;
+    // Tabela principal de produtos
+    tbody.innerHTML += `
+      <tr>
+        <td>${p.nome}</td>
+        <td>${p.custoR}</td>
+        <td>${p.custoP}</td>
+        <td>${p.precoVenda}</td>
+        <td><button onclick="removerProduto(${index})">Excluir</button></td>
+      </tr>
+    `;
+
+    // Tabela de volume de vendas (em outra seção)
+    volumeDiv.innerHTML += `
+      <div class="row" style="margin-bottom: 10px; align-items: center;">
+        <div class="col-50"><label>${p.nome}</label></div>
+        <div class="col-50"><input type="number" class="volumeProdutoInput" data-index="${index}" min="0" style="width: 100%; padding: 6px;" /></div>
+      </div>
+    `;
   });
-  volumeDiv.innerHTML += '</tbody></table>';
 }
 function removerProduto(index) {
   produtos.splice(index, 1);
