@@ -310,9 +310,7 @@
             <option>Não Recomendado</option>
           </select>
         </div>
-     
       </div>      
-  </div>  
       <script>
     function atualizarChecklistAnalise() {
       const receita = parseFloat(document.getElementById('receita_mensal').value.replace(/\./g, '').replace(',', '.')) || 0;
@@ -373,7 +371,7 @@
 </script>
   <div class="buttons" id="navigationButtons"></div>
   </form> <!-- Fechamento correto do formulário -->
-
+</div> 
   <script>
     function renderButtons(currentStep) {
       const container = document.getElementById('navigationButtons');
