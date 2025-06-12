@@ -166,10 +166,85 @@
       </div>
       </div>
       <div class="step" id="step2">
-        <h2>Custos e Investimentos</h2>
-        <p><strong>Atividade selecionada:</strong> <span id="atividadeSelecionada">-</span></p>
-        <div id="camposEspecificos" class="form-group"></div>
+  <h2>Custos e Investimentos (Comércio e Varejo)</h2>
+  
+  <h3 style="color:#00bcd4;">1. Produto e Custos Diretos</h3>
+
+  <div id="produtos">
+    <div class="form-group col-100">
+      <label for="descricao_produto">1.1. Produto – Descrição do Produto:</label>
+      <input type="text" id="descricao_produto" name="descricao_produto">
+    </div>
+    <div class="form-group col-100">
+      <label for="custo_direto">1.2. Custo de Produção Direto (R$):</label>
+      <input type="text" id="custo_direto" class="currency">
+    </div>
+    <div class="form-group col-100">
+      <label for="preco_venda">1.3. Preço de Venda Pretendido (R$):</label>
+      <input type="text" id="preco_venda" class="currency">
+    </div>
+    <div class="form-group col-100">
+      <button type="button" onclick="toggleCalculoPreco()">🔍 Calcular Preço de Venda</button>
+    </div>
+    <div id="calculo_preco" style="display:none;">
+      <div class="form-group col-50">
+        <label for="custo_unitario">• Considerando Custos (R$):</label>
+        <input type="text" id="custo_unitario" class="currency">
       </div>
+      <div class="form-group col-50">
+        <label for="margem_desejada">• Margem de Lucro Desejada (%):</label>
+        <input type="text" id="margem_desejada">
+      </div>
+      <div class="form-group col-50">
+        <label for="preco_concorrencia">• Preço da Concorrência (R$):</label>
+        <input type="text" id="preco_concorrencia" class="currency">
+      </div>
+    </div>
+  </div>
+  
+  <h3 style="color:#00bcd4;">2. Investimento Inicial</h3>
+  <div class="form-group col-50"><label>2.1. Criação de Marca e Registro:</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>2.2. Abertura de Empresa e Licenças:</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>2.3. Consultorias (Marketing, Comercial, Financeira):</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>2.4. Estoque Inicial:</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>2.5. Equipamentos:</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>2.6. Imobilizados:</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>2.7. Capital de Giro:</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>2.8. Outros:</label><input type="text" class="currency"></div>
+
+  <h3 style="color:#00bcd4;">3. Custos Variáveis</h3>
+  <div class="form-group col-50"><label>3.1. Custos com Produção (auto):</label><input type="text" id="custo_prod_auto" readonly></div>
+  <div class="form-group col-50"><label>3.2. Impostos (%):</label><input type="text"></div>
+  <div class="form-group col-50"><label>3.3. Comissão de Vendas (%):</label><input type="text"></div>
+  <div class="form-group col-50"><label>3.4. Tarifas de Cartão (%):</label><input type="text"></div>
+  <div class="form-group col-50"><label>3.5. Outros (%):</label><input type="text"></div>
+
+  <h3 style="color:#00bcd4;">4. Custos Fixos Mensais</h3>
+  <div class="form-group col-50"><label>4.1.1. Aluguel:</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>4.1.2. Energia:</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>4.1.3. Salários:</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>4.1.4. Internet:</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>4.1.5. Outros:</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>4.2.1. Combustível (para vendedores):</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>4.2.2. Salários Equipe Comercial:</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>4.3.1. Despesa Operacional 1:</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>4.3.2. Despesa Operacional 2:</label><input type="text" class="currency"></div>
+
+  <h3 style="color:#00bcd4;">5. Plano Comercial</h3>
+  <div class="form-group col-100"><label>5.1. Público Alvo:</label><textarea rows="2"></textarea></div>
+  <div class="form-group col-100"><label>5.2. Diferenciais do Produto:</label><textarea rows="2"></textarea></div>
+  <div class="form-group col-100"><label>5.3. Possíveis Concorrentes:</label><textarea rows="2"></textarea></div>
+  <div class="form-group col-100"><label>5.4. Volume de Vendas (mês 1):</label><input type="number"></div>
+  <div class="form-group col-100"><label>5.5. Taxa de Crescimento Mensal (%):</label><input type="text"></div>
+</div>
+
+<script>
+function toggleCalculoPreco() {
+  const box = document.getElementById('calculo_preco');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+
 <div class="step" id="step3">
   <h2>Receita, Lucro e Ponto de Equilíbrio</h2>
 
