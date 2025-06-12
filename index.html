@@ -417,7 +417,7 @@ function calcularPrecoVenda() {
         <input type="text" id="ponto_equilibrio" readonly>
       </div>
     
- <!-- ETAPA 04 - MÓDULO 02: ANÁLISE -->
+<!-- ETAPA 04 - MÓDULO 02: ANÁLISE -->
 <div class="step" id="step4">
   <h2>Etapa 04 – Módulo 02: Análise</h2>
 
@@ -434,7 +434,7 @@ function calcularPrecoVenda() {
     <!-- 6.2 Total -->
     <div class="subbloco">
       <h4>6.2. Margem de Contribuição Total</h4>
-      <input type="text" id="margemTotal" class="currency" readonly>
+      <input type="text" id="margem_contribuicao_total" class="currency" readonly>
     </div>
 
     <!-- 6.3 Ponderada -->
@@ -449,7 +449,7 @@ function calcularPrecoVenda() {
     <h3>7. Ponto de Equilíbrio</h3>
     <div class="form-group col-50">
       <label>Ponto de Equilíbrio (R$):</label>
-      <input type="text" id="pontoEquilibrio" class="currency" readonly>
+      <input type="text" id="ponto_equilibrio" class="currency" readonly>
     </div>
   </div>
 
@@ -473,71 +473,65 @@ function calcularPrecoVenda() {
 </div>
 
 <script>
-function calcularModulo02() {
-  const moedaParaNumero = str => parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
-  const numeroParaMoeda = num => num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+function atualizarMargemUnitTable() {
+  const tableDiv = document.getElementById("margemUnitTable");
+  tableDiv.innerHTML = "";
 
-  let margemTotal = 0;
-  let custoFixos = 0;
-  let investimentoInicial = 0;
+  if (produtos.length === 0) {
+    tableDiv.innerHTML = "<p style='color:#ccc;'>Nenhum produto cadastrado.</p>";
+    return;
+  }
 
-  // Custos Fixos (Etapa 4.1 a 4.3)
-  document.querySelectorAll("#step2 input").forEach(input => {
-    const label = input.closest('.form-group')?.querySelector('label')?.textContent || "";
-    if (label.includes('Aluguel') || label.includes('Energia') || label.includes('Salários') || label.includes('Internet') || label.includes('Outros') || label.includes('Combustível') || label.includes('Despesa')) {
-      custoFixos += moedaParaNumero(input.value);
-    }
-    if (label.includes('Criação de Marca') || label.includes('Abertura de Empresa') || label.includes('Consultorias') || label.includes('Estoque Inicial') || label.includes('Equipamentos') || label.includes('Imobilizados') || label.includes('Capital de Giro')) {
-      investimentoInicial += moedaParaNumero(input.value);
-    }
+  let totalMargem = 0;
+  let totalVenda = 0;
+  let totalCustoVariavel = 0;
+
+  let html = "<table style='width:100%; text-align:center; color:#fff; margin-top:10px;'>";
+  html += "<tr><th>Produto</th><th>Margem Unitária (R$)</th></tr>";
+
+  produtos.forEach(p => {
+    const preco = moedaParaNumero(p.precoVenda || "0");
+    const custo = moedaParaNumero(p.custoR || "0");
+    const impostos = moedaParaNumero(document.getElementById("impostos")?.value || "0");
+    const comissao = moedaParaNumero(document.getElementById("comissao_vendas")?.value || "0");
+    const cartao = moedaParaNumero(document.getElementById("tarifas_cartao")?.value || "0");
+    const outros = moedaParaNumero(document.getElementById("outros_variaveis")?.value || "0");
+    const volume = parseFloat(p.volume || 0);
+
+    const totalVariavelUnit = custo + (preco * (impostos + comissao + cartao + outros) / 100);
+    const margemUnit = preco - totalVariavelUnit;
+
+    html += `<tr><td>${p.nome}</td><td>R$ ${numeroParaMoeda(margemUnit)}</td></tr>`;
+
+    totalMargem += margemUnit * volume;
+    totalVenda += preco * volume;
+    totalCustoVariavel += totalVariavelUnit * volume;
   });
 
-  // Custos Variáveis (%)
-  const impostos = moedaParaNumero(document.querySelector("#step2 input:nth-of-type(39)")?.value || "0");
-  const comissao = moedaParaNumero(document.querySelector("#step2 input:nth-of-type(40)")?.value || "0");
-  const cartao = moedaParaNumero(document.querySelector("#step2 input:nth-of-type(41)")?.value || "0");
-  const outros = moedaParaNumero(document.querySelector("#step2 input:nth-of-type(42)")?.value || "0");
+  html += "</table>";
+  tableDiv.innerHTML = html;
 
-  // Produtos e Volume
-  const produtos = document.querySelectorAll("#tabelaProdutos tbody tr");
-  let margemTotalValor = 0;
-  let totalVendas = 0;
-  let totalCustosVariaveis = 0;
+  // 6.2 Margem de Contribuição Total
+  document.getElementById("margem_contribuicao_total").value = `R$ ${numeroParaMoeda(totalMargem)}`;
 
-  produtos.forEach((row, i) => {
-    const cols = row.querySelectorAll("td");
-    const precoVenda = moedaParaNumero(cols[3].textContent);
-    const custoDireto = moedaParaNumero(cols[1].textContent);
-    const volume = parseInt(document.querySelectorAll("#volumeProdutos input")[i]?.value) || 0;
+  // 7. Ponto de Equilíbrio
+  const custoFixo = moedaParaNumero(document.getElementById("totalCustosFixos")?.value || "0");
+  const pontoEquilibrio = totalMargem !== 0 ? custoFixo / totalMargem : 0;
+  document.getElementById("ponto_equilibrio").value = `R$ ${numeroParaMoeda(custoFixo / (totalMargem / totalVenda))}`;
 
-    const variaveisPercent = (impostos + comissao + cartao + outros) / 100;
-    const custoTotal = custoDireto + (precoVenda * variaveisPercent);
+  // 8. ROI
+  const investimento = moedaParaNumero(document.getElementById("totalInvestimento")?.value || "0");
+  const lucro = totalMargem - custoFixo;
+  const roi = investimento !== 0 ? ((lucro - investimento) / investimento) * 100 : 0;
+  document.getElementById("roi").value = `${roi.toFixed(2)}%`;
 
-    const margemUnit = precoVenda - custoTotal;
-    margemTotalValor += margemUnit * volume;
-    totalVendas += precoVenda * volume;
-    totalCustosVariaveis += custoTotal * volume;
-  });
-
-  // Preencher campos
-  document.getElementById("margem_contribuicao_total").value = "R$ " + numeroParaMoeda(margemTotalValor);
-
-  // Ponto de Equilíbrio (R$)
-  const pontoEquilibrioRS = margemTotalValor > 0 ? custoFixos / (margemTotalValor / totalVendas) : 0;
-  document.getElementById("ponto_equilibrio").value = "R$ " + numeroParaMoeda(pontoEquilibrioRS);
-
-  // ROI
-  const lucro = margemTotalValor - custoFixos;
-  const roi = investimentoInicial > 0 ? ((lucro - investimentoInicial) / investimentoInicial) * 100 : 0;
-  document.getElementById("roi").value = roi.toFixed(2).replace('.', ',') + "%";
-
-  // Payback Simples
-  const payback = lucro > 0 ? investimentoInicial / lucro : 0;
-  document.getElementById("payback").value = payback.toFixed(1).replace('.', ',');
+  // 9. Payback
+  const saldoMensal = totalMargem - custoFixo;
+  const payback = saldoMensal !== 0 ? investimento / saldoMensal : 0;
+  document.getElementById("payback").value = payback.toFixed(1);
 }
 
-// Rodar cálculo sempre que um campo mudar
-document.addEventListener("input", calcularModulo02);
+document.addEventListener("input", atualizarMargemUnitTable);
 </script>
  <!-- Etapa 5 -->
   <div class="step" id="step5">
