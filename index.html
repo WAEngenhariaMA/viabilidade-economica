@@ -343,77 +343,106 @@ function calcularPrecoVenda() {
 }
 </script>
 
+<!-- ETAPA 03 AJUSTADA -->
 <div class="step" id="step3">
-  <h2>Receita, Lucro e Ponto de Equilíbrio</h2>
+  <h2>Etapa 03 – Receita e Projeção de Lucro</h2>
 
+  <!-- Receita Esperada -->
   <h3 style="color:#00bcd4;">Receita Esperada</h3>
-        <label for="preco_unitario">Preço Médio por Unidade (R$):</label>
-        <input type="text" id="preco_unitario" class="currency">
-
-        <label for="quantidade_mensal">Unidades Vendidas por Mês (Estimativa):</label>
-        <input type="number" id="quantidade_mensal">
-
-        <label for="receita_mensal">Receita Bruta Mensal (R$):</label>
-        <input type="text" id="receita_mensal" readonly>
-
-        <label for="receita_anual">Receita Anual Estimada (R$):</label>
-        <input type="text" id="receita_anual" readonly>
-
-       <h3 style="color:#00bcd4;">Receita por Cenários</h3>
-
-<div class="row-group">
-  <div>
-    <label for="qtd_pessimista">Unidades - Pessimista:</label>
-    <input type="number" id="qtd_pessimista" min="0">
+  <div id="tabelaReceitaProdutos"></div>
+  <div class="form-group col-50">
+    <label>Unidades Vendidas por Mês (Estimativa):</label>
+    <input type="number" id="quantidade_mensal" min="0">
   </div>
-  <div>
-    <label for="receita_pessimista">Receita Pessimista (R$):</label>
-    <input type="text" id="receita_pessimista" readonly>
+  <div class="form-group col-50">
+    <label>Receita Bruta Mensal (R$):</label>
+    <input type="text" id="receita_mensal" class="currency" readonly>
   </div>
-</div>
+  <div class="form-group col-50">
+    <label>Receita Anual Estimada (R$):</label>
+    <input type="text" id="receita_anual" class="currency" readonly>
+  </div>
 
-<div class="row-group">
-  <div>
-    <label for="qtd_realista">Unidades - Realista:</label>
-    <input type="number" id="qtd_realista" min="0">
-  </div>
-  <div>
-    <label for="receita_realista">Receita Realista (R$):</label>
-    <input type="text" id="receita_realista" readonly>
-  </div>
-</div>
+  <!-- Receita por Cenários -->
+  <h3 style="color:#00bcd4;">Receita por Cenários</h3>
+  <div id="tabelaCenariosProdutos"></div>
 
-<div class="row-group">
-  <div>
-    <label for="qtd_otimista">Unidades - Otimista:</label>
-    <input type="number" id="qtd_otimista" min="0">
+  <!-- Projeção de Lucro -->
+  <h3 style="color:#00bcd4;">Projeção de Lucro</h3>
+  <div class="form-group col-50">
+    <label>Total de Custos Fixos Mensais (R$):</label>
+    <input type="text" id="custos_fixos_total" class="currency" readonly>
   </div>
-  <div>
-    <label for="receita_otimista">Receita Otimista (R$):</label>
-    <input type="text" id="receita_otimista" readonly>
+  <div class="form-group col-50">
+    <label>Total de Custos Variáveis Mensais (R$):</label>
+    <input type="text" id="custos_variaveis_total" class="currency" readonly>
+  </div>
+  <div class="form-group col-50">
+    <label>Lucro Operacional Mensal (R$):</label>
+    <input type="text" id="lucro_operacional" class="currency" readonly>
+  </div>
+  <div class="form-group col-50">
+    <label>Margem de Lucro (%):</label>
+    <input type="text" id="margem_lucro" class="percent" readonly>
   </div>
 </div>
 
-        <h3 style="color:#00bcd4;">Projeção de Lucro</h3>
-        <label for="custos_fixos_total">Total de Custos Fixos Mensais (R$):</label>
-        <input type="text" id="custos_fixos_total" readonly>
+<script>
+function atualizarReceitaProdutos() {
+  const container = document.getElementById("tabelaReceitaProdutos");
+  container.innerHTML = "";
 
-        <label for="custos_variaveis_total">Total de Custos Variáveis Mensais (R$):</label>
-        <input type="text" id="custos_variaveis_total" readonly>
+  produtos.forEach((produto, index) => {
+    container.innerHTML += `
+      <div class="row">
+        <div class="form-group col-50">
+          <label>Produto: ${produto.nome} – Preço (R$)</label>
+          <input type="text" class="currency" value="${produto.precoVenda}" readonly>
+        </div>
+      </div>`;
+  });
+}
 
-        <label for="lucro_operacional">Lucro Operacional Mensal (R$):</label>
-        <input type="text" id="lucro_operacional" readonly>
+function atualizarCenariosProdutos() {
+  const container = document.getElementById("tabelaCenariosProdutos");
+  container.innerHTML = "";
 
-        <label for="margem_lucro">Margem de Lucro (%):</label>
-        <input type="text" id="margem_lucro" readonly>
-
-        <h3 style="color:#00bcd4;">Ponto de Equilíbrio</h3>
-        <label for="custo_unitario_variavel">Custo Variável por Unidade (R$):</label>
-        <input type="text" id="custo_unitario_variavel" class="currency">
-
-        <label for="ponto_equilibrio">Ponto de Equilíbrio (em Unidades):</label>
-        <input type="text" id="ponto_equilibrio" readonly>
+  produtos.forEach((produto, index) => {
+    container.innerHTML += `
+      <div class="row">
+        <div class="form-group col-33">
+          <label>${produto.nome} – Unidades Pessimista:</label>
+          <input type="number" id="qtd_pessimista_${index}" min="0">
+        </div>
+        <div class="form-group col-33">
+          <label>Receita Pessimista (R$):</label>
+          <input type="text" id="receita_pessimista_${index}" class="currency" readonly>
+        </div>
       </div>
+      <div class="row">
+        <div class="form-group col-33">
+          <label>${produto.nome} – Unidades Realista:</label>
+          <input type="number" id="qtd_realista_${index}" min="0">
+        </div>
+        <div class="form-group col-33">
+          <label>Receita Realista (R$):</label>
+          <input type="text" id="receita_realista_${index}" class="currency" readonly>
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group col-33">
+          <label>${produto.nome} – Unidades Otimista:</label>
+          <input type="number" id="qtd_otimista_${index}" min="0">
+        </div>
+        <div class="form-group col-33">
+          <label>Receita Otimista (R$):</label>
+          <input type="text" id="receita_otimista_${index}" class="currency" readonly>
+        </div>
+      </div>
+    `;
+  });
+}
+</script>
     
 <!-- ETAPA 04 - MÓDULO 02: ANÁLISE -->
 <div class="step" id="step4">
