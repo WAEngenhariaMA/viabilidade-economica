@@ -212,13 +212,61 @@
     </div>
   </div>
 
-  <!-- VOLUME DE VENDAS AUTOMÁTICO -->
+ <!-- VOLUME DE VENDAS AUTOMÁTICO -->
   <div id="volumeProdutos"></div>
 
   <!-- INVESTIMENTO INICIAL -->
-  <!-- [continuação inalterada do conteúdo original] -->
-</div>
+  <h3 style="color:#00bcd4;">2. Investimento Inicial</h3>
+  <div class="row">
+    <div class="form-group col-50"><label>Criação de Marca e Registro:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Abertura de Empresa e Licenças:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Consultorias:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Estoque Inicial:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Equipamentos:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Imobilizados:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Capital de Giro:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Outros:</label><input type="text" class="currency"></div>
+  </div>
 
+  <!-- CUSTOS VARIÁVEIS -->
+  <h3 style="color:#00bcd4;">3. Custos Variáveis</h3>
+  <div class="row">
+    <div class="form-group col-50"><label>Custos com Produção (automático):</label><input type="text" id="auto_custo_prod" class="currency" readonly></div>
+    <div class="form-group col-50"><label>Impostos (%):</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Comissão de Vendas (%):</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Tarifas de Cartão (%):</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Outros (%):</label><input type="text" class="currency"></div>
+  </div>
+
+  <!-- CUSTOS FIXOS -->
+  <h3 style="color:#00bcd4;">4. Custos Mensais Fixos</h3>
+  <h4>Despesas Administrativas</h4>
+  <div class="row">
+    <div class="form-group col-50"><label>Aluguel:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Energia:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Salários:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Internet:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Outros:</label><input type="text" class="currency"></div>
+  </div>
+  <h4>Despesas Comerciais</h4>
+  <div class="row">
+    <div class="form-group col-50"><label>Combustível (vendedores):</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Salários Equipe Comercial:</label><input type="text" class="currency"></div>
+  </div>
+  <h4>Despesas Operacionais</h4>
+  <div class="row">
+    <div class="form-group col-50"><label>Despesa 1:</label><input type="text" class="currency"></div>
+    <div class="form-group col-50"><label>Despesa 2:</label><input type="text" class="currency"></div>
+  </div>
+
+  <!-- PLANO COMERCIAL -->
+  <h3 style="color:#00bcd4;">5. Plano Comercial</h3>
+  <label>Público-Alvo:</label><textarea rows="2" style="width:100%;"></textarea>
+  <label>Diferenciais do Produto:</label><textarea rows="2" style="width:100%;"></textarea>
+  <label>Possíveis Concorrentes:</label><textarea rows="2" style="width:100%;"></textarea>
+  <label>Volume de Vendas (por Produto):</label><div id="volumeProdutos"></div>
+  <label>Taxa de Crescimento Mensal (%):</label><input type="text" class="currency">
+</div>
 <script>
 let produtos = [];
 function abrirModalProduto() {
