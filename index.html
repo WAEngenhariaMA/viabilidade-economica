@@ -328,7 +328,7 @@ async function carregarImagemBase64(url) {
 async function gerarPDFPersonalizado() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'mm', 'a4');
-  const imgBase64 = await carregarImagemBase64('https://weslleyantonelle.github.io/analisador-wa/img/layout_canva.png');
+  const imgBase64 = await carregarImagemBase64('./img/layout_canva.png');
 
   doc.addImage(imgBase64, 'PNG', 0, 0, 210, 297);
 
