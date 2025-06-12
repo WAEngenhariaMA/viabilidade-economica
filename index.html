@@ -313,6 +313,7 @@
     </button>
   </div>
 </div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 async function carregarImagemBase64(url) {
@@ -325,11 +326,10 @@ async function carregarImagemBase64(url) {
   });
 }
 
-
 async function gerarPDFPersonalizado() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'mm', 'a4');
-  const imgBase64 = await carregarImagemBase64('./img/layout_canva.png');
+  const imgBase64 = await carregarImagemBase64('https://weslleyantonelle.github.io/analisador-wa/img/layout_canva.png');
 
   doc.addImage(imgBase64, 'PNG', 0, 0, 210, 297);
 
@@ -348,7 +348,7 @@ async function gerarPDFPersonalizado() {
 
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text('📌 Dados Gerais:', 15, y);
+  doc.text('📍 Dados Gerais:', 15, y);
   y += 6;
 
   doc.setFont('helvetica', 'normal');
@@ -418,8 +418,6 @@ async function gerarPDFPersonalizado() {
   doc.save('Relatorio_Viabilidade_Economica.pdf');
 }
 </script>
-
-
 <script>
 function atualizarChecklistAnalise() {
   const receita = parseFloat(document.getElementById('receita_mensal').value.replace(/\./g, '').replace(',', '.')) || 0;
