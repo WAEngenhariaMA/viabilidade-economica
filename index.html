@@ -283,7 +283,7 @@
   </small>
 </div>
  <!-- Etapa 5 -->
-    <div class="step" id="step5">
+  <div class="step" id="step5">
   <h2>Análise Final e Observações</h2>
   <table>
     <thead>
@@ -308,68 +308,109 @@
   </div>
 
   <div class="form-group col-100" style="margin-top: 20px; text-align: center;">
-    <button type="button" onclick="gerarPDFCanva()">📄 Gerar PDF com Layout</button>
+    <button type="button" onclick="gerarPDFPersonalizado()" style="background-color:#00bcd4; color:#fff; border:none; padding:10px 20px; border-radius:6px; font-size:16px; cursor:pointer;">
+      📄 Gerar Relatório em PDF
+    </button>
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-async function gerarPDFCanva() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p', 'mm', 'a4');
-  const imgBase64 = await carregarImagemBase64('./img/layout_canva.png');
-
-  // 🖼️ Aplica imagem de fundo
-  doc.addImage(imgBase64, 'PNG', 0, 0, 210, 297);
-
-  // 🎯 Coleta de dados
-  const get = id => document.getElementById(id)?.value || '';
-
-  doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0);
-
-  // 📝 Exemplo de campos posicionados manualmente
-  doc.text(`Projeto: ${get('nome')}`, 20, 40);
-  doc.text(`Atividade: ${get('tipo')}`, 20, 47);
-  doc.text(`Cidade/UF: ${get('local')}`, 20, 54);
-  doc.text(`Responsável: ${get('responsavel')}`, 20, 61);
-
-  doc.text(`Receita Mensal: R$ ${get('receita_mensal')}`, 20, 75);
-  doc.text(`Lucro Operacional: R$ ${get('lucro_operacional')}`, 20, 82);
-  doc.text(`Ponto de Equilíbrio: ${get('ponto_equilibrio')} un`, 20, 89);
-  doc.text(`ROI: ${get('roi')}`, 20, 96);
-  doc.text(`Payback: ${get('payback')} meses`, 20, 103);
-  doc.text(`VPL: R$ ${get('vpl')}`, 20, 110);
-  doc.text(`TIR: ${get('tir')}`, 20, 117);
-
-  // ✅ Checklist final
-  doc.text(`Receita cobre os custos fixos? ${document.getElementById('check_receita').textContent}`, 20, 130);
-  doc.text(`ROI acima de 20%? ${document.getElementById('check_roi').textContent}`, 20, 137);
-  doc.text(`Payback abaixo de 12 meses? ${document.getElementById('check_payback').textContent}`, 20, 144);
-  doc.text(`Fluxo de caixa positivo? ${document.getElementById('check_fluxo').textContent}`, 20, 151);
-
-  // Resultado final
-  doc.text(`Avaliação Final: ${get('avaliacao_final')}`, 20, 165);
-
-  doc.save('Relatorio_WA_Viabilidade.pdf');
-}
-
-function carregarImagemBase64(url) {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      resolve(canvas.toDataURL('image/png'));
-    };
-    img.src = url;
+async function carregarImagemBase64(url) {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
   });
 }
+
+async function gerarPDFPersonalizado() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const imgBase64 = await carregarImagemBase64('https://weslleyantonelle.github.io/analisador-wa/img/layout_canva.png');
+
+  doc.addImage(imgBase64, 'PNG', 0, 0, 210, 297);
+
+  let y = 30;
+  doc.setFontSize(20);
+  doc.setTextColor(0, 188, 212);
+  doc.text('Relatório de Viabilidade Econômica', 15, y);
+  y += 10;
+
+  doc.setFontSize(16);
+  doc.setTextColor(0);
+  doc.text(`Projeto: ${document.getElementById('nome').value}`, 15, y);
+  y += 8;
+
+  doc.setFontSize(12);
+  doc.text('📌 Dados Gerais:', 15, y);
+  y += 6;
+  const dados = [
+    ['Tipo de Atividade', 'tipo'],
+    ['Cidade/Estado', 'local'],
+    ['Estrutura', 'estrutura'],
+    ['Regime Tributário', 'regime'],
+    ['Situação Atual', 'situacao'],
+    ['Responsável', 'responsavel'],
+    ['E-mail', 'email'],
+    ['Telefone', 'telefone']
+  ];
+  dados.forEach(([label, id]) => {
+    doc.text(`${label}: ${document.getElementById(id).value}`, 15, y);
+    y += 6;
+  });
+
+  y += 4;
+  doc.setFontSize(12);
+  doc.setTextColor(0);
+  doc.text('💰 Indicadores Financeiros:', 15, y);
+  y += 6;
+
+  const indicadores = [
+    ['Receita Mensal', 'receita_mensal'],
+    ['Receita Anual', 'receita_anual'],
+    ['Lucro Operacional Mensal', 'lucro_operacional'],
+    ['Margem de Lucro', 'margem_lucro'],
+    ['Ponto de Equilíbrio', 'ponto_equilibrio'],
+    ['Payback', 'payback'],
+    ['ROI', 'roi'],
+    ['VPL', 'vpl'],
+    ['TIR', 'tir']
+  ];
+
+  indicadores.forEach(([label, id]) => {
+    if (y > 280) {
+      doc.addPage();
+      y = 10;
+    }
+    doc.text(`${label}: ${document.getElementById(id).value}`, 15, y);
+    y += 6;
+  });
+
+  y += 6;
+  doc.setFontSize(12);
+  doc.text('✅ Checklist de Viabilidade:', 15, y);
+  y += 6;
+
+  const checklist = [
+    ['Receita cobre os custos fixos?', 'check_receita'],
+    ['Projeto tem ROI acima de 20%?', 'check_roi'],
+    ['Payback abaixo de 12 meses?', 'check_payback'],
+    ['Fluxo de caixa positivo nos 6 primeiros meses?', 'check_fluxo']
+  ];
+  checklist.forEach(([label, id]) => {
+    doc.text(`${label}: ${document.getElementById(id).textContent}`, 15, y);
+    y += 6;
+  });
+
+  y += 4;
+  doc.text(`📊 Avaliação Final: ${document.getElementById('avaliacao_final').value}`, 15, y);
+
+  doc.save('Relatorio_Viabilidade_Economica.pdf');
+}
 </script>
+
 <script>
 function atualizarChecklistAnalise() {
   const receita = parseFloat(document.getElementById('receita_mensal').value.replace(/\./g, '').replace(',', '.')) || 0;
