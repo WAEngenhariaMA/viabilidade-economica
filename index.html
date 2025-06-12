@@ -560,17 +560,21 @@ const camposDiv = document.getElementById('camposEspecificos');
       document.getElementById('receita_anual').value = numeroParaMoeda(receitaMensal * 12);
 
       let fixos = 0, variaveis = 0;
-      document.querySelectorAll('#camposEspecificos h4').forEach(h4 => {
-        const categoria = h4.innerText.trim();
-        let soma = 0;
-        let el = h4.nextElementSibling;
-        while (el && el.tagName !== 'H4') {
-          if (el.tagName === 'INPUT') soma += moedaParaNumero(el.value);
-          el = el.nextElementSibling;
-        }
-        if (categoria.includes('Fixos')) fixos += soma;
-        if (categoria.includes('Variáveis')) variaveis += soma;
-      });
+      document.querySelectorAll('#camposEspecificos h3').forEach(h3 => {
+  const categoria = h3.textContent.trim().toLowerCase();
+  let soma = 0;
+
+  let elementoAtual = h3.nextElementSibling;
+  while (elementoAtual && elementoAtual.tagName !== 'H3') {
+    const input = elementoAtual.querySelector('input');
+    if (input) soma += moedaParaNumero(input.value);
+    elementoAtual = elementoAtual.nextElementSibling;
+  }
+
+  if (categoria.includes('fixos')) fixos += soma;
+  if (categoria.includes('variáveis')) variaveis += soma;
+});
+
 
       document.getElementById('custos_fixos_total').value = numeroParaMoeda(fixos);
       document.getElementById('custos_variaveis_total').value = numeroParaMoeda(variaveis);
