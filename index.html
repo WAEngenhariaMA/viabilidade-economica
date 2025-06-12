@@ -297,10 +297,6 @@
     </tbody>
   </table>
   <div class="form-group col-100">
-    <label for="observacoes">Observações Finais:</label>
-    <textarea id="observacoes" name="observacoes" rows="5"></textarea>
-  </div>
-  <div class="form-group col-100">
     <label for="avaliacao_final">Avaliação de Viabilidade Econômica:</label>
     <select id="avaliacao_final">
       <option value="">Selecione...</option>
@@ -310,8 +306,9 @@
       <option>Não Recomendado</option>
     </select>
   </div>
-</div>    
-     <script>
+</div>
+
+   <script>
 function atualizarChecklistAnalise() {
   const receita = parseFloat(document.getElementById('receita_mensal').value.replace(/\./g, '').replace(',', '.')) || 0;
   const fixos = parseFloat(document.getElementById('custos_fixos_total').value.replace(/\./g, '').replace(',', '.')) || 0;
