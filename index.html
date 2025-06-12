@@ -284,56 +284,51 @@
 </div>
  <!-- Etapa 5 -->
       <div class="step" id="step5">
-  <h2>5. Análise Final e Checklist</h2>
-  <div id="checklistAnalise" style="margin-top: 20px; font-size: 16px;"></div>
-
-  <label for="observacoes">Observações Finais, Comentários ou Estratégias:</label>
-  <textarea id="observacoes" name="observacoes" rows="6" style="width: 100%; padding: 10px; font-size: 14px; border-radius: 6px; border: none;"></textarea>
-
-  <label for="avaliacao_final">Avaliação de Viabilidade Econômica:</label>
-  <select id="avaliacao_final" name="avaliacao_final">
-    <option value="">Selecione...</option>
-    <option value="Viável com Alta Rentabilidade">Viável com Alta Rentabilidade</option>
-    <option value="Viável com Ajustes">Viável com Ajustes</option>
-    <option value="Pouco Viável no Momento">Pouco Viável no Momento</option>
-    <option value="Não Recomendado">Não Recomendado</option>
-  </select>
-
-  <label for="proximos_passos">Próximos Passos Sugeridos:</label>
-  <textarea id="proximos_passos" name="proximos_passos" rows="4" style="width: 100%; padding: 10px; font-size: 14px; border-radius: 6px; border: none;"></textarea>
-</div>
+        <h2>5. Análise Final e Observações</h2>
+        <table>
+          <thead>
+            <tr><th>Item</th><th>Status (✅/❌)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Receita cobre os custos fixos?</td><td id="check_receita"></td></tr>
+            <tr><td>Projeto tem ROI acima de 20%?</td><td id="check_roi"></td></tr>
+            <tr><td>Payback abaixo de 12 meses?</td><td id="check_payback"></td></tr>
+            <tr><td>Fluxo de caixa positivo nos 6 primeiros meses?</td><td id="check_fluxo"></td></tr>
+          </tbody>
+        </table>
+        <div class="form-group col-100">
+          <label for="observacoes">Observações Finais:</label>
+          <textarea id="observacoes" name="observacoes" rows="5"></textarea>
+        </div>
+        <div class="form-group col-100">
+          <label for="avaliacao_final">Avaliação de Viabilidade Econômica:</label>
+          <select id="avaliacao_final">
+            <option value="">Selecione...</option>
+            <option>Viável com Alta Rentabilidade</option>
+            <option>Viável com Ajustes</option>
+            <option>Pouco Viável no Momento</option>
+            <option>Não Recomendado</option>
+          </select>
+        </div>
+      </div>
+  
+  </div>
       <script>
-function atualizarChecklistAnalise(lucro, roi, payback, investimento) {
-  const checklist = [
-    {
-      titulo: "Receita cobre os custos fixos?",
-      status: lucro > 0
-    },
-    {
-      titulo: "Projeto tem ROI acima de 20%?",
-      status: roi >= 20
-    },
-    {
-      titulo: "Payback abaixo de 12 meses?",
-      status: payback < 12
-    },
-    {
-      titulo: "Fluxo de caixa positivo nos 6 primeiros meses?",
-      status: (lucro * 6) > investimento
+    function atualizarChecklistAnalise() {
+      const receita = parseFloat(document.getElementById('receita_mensal').value.replace(/\./g, '').replace(',', '.')) || 0;
+      const fixos = parseFloat(document.getElementById('custos_fixos_total').value.replace(/\./g, '').replace(',', '.')) || 0;
+      const roi = parseFloat(document.getElementById('roi').value.replace('%','').replace(',', '.')) || 0;
+      const payback = parseFloat(document.getElementById('payback').value.replace(',', '.')) || 0;
+      const lucro = receita - fixos;
+
+      document.getElementById('check_receita').textContent = receita >= fixos ? '✅' : '❌';
+      document.getElementById('check_roi').textContent = roi > 20 ? '✅' : '❌';
+      document.getElementById('check_payback').textContent = payback > 0 && payback <= 12 ? '✅' : '❌';
+      document.getElementById('check_fluxo').textContent = lucro > 0 ? '✅' : '❌';
     }
-  ];
 
-  const divChecklist = document.getElementById('checklistAnalise');
-  if (!divChecklist) return;
-
-  divChecklist.innerHTML = "<ul style='list-style:none; padding:0;'>";
-  checklist.forEach(item => {
-    const icone = item.status ? '✅' : '❌';
-    divChecklist.innerHTML += `<li>${icone} ${item.titulo}</li>`;
-  });
-  divChecklist.innerHTML += "</ul>";
-}
-</script>
+    document.addEventListener("input", atualizarChecklistAnalise);
+  </script>
   </form>
 <script>
   document.addEventListener("input", function () {
