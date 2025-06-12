@@ -1024,12 +1024,17 @@ document.querySelectorAll('input.currency[placeholder="R$"]').forEach(input => {
 });
 
 // Máscara para percentual (%)
-document.querySelectorAll('input.currency[placeholder="%"]').forEach(input => {
+document.querySelectorAll('input.percent').forEach(input => {
   input.addEventListener('input', () => {
     let val = input.value.replace(/\D/g, '');
-    val = (parseInt(val) / 100).toFixed(2) + '';
-    val = val.replace('.', ',');
-    input.value = val + ' %';
+    val = (parseInt(val) / 10).toFixed(1).replace('.', ',');
+    input.value = val + '%';
+  });
+
+  input.addEventListener('blur', () => {
+    if (!input.value.includes('%')) {
+      input.value += '%';
+    }
   });
 });
 </script>
