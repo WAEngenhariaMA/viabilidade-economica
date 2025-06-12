@@ -283,7 +283,7 @@
   </small>
 </div>
  <!-- Etapa 5 -->
-     <div class="step" id="step5">
+    <div class="step" id="step5">
   <h2>Análise Final e Observações</h2>
   <table>
     <thead>
@@ -298,25 +298,56 @@
   </table>
   <div class="form-group col-100">
     <label for="avaliacao_final">Avaliação de Viabilidade Econômica:</label>
-    <input type="text" id="avaliacao_final" readonly>
+    <select id="avaliacao_final">
+      <option value="">Selecione...</option>
+      <option>Viável com Alta Rentabilidade</option>
+      <option>Viável com Ajustes</option>
+      <option>Pouco Viável no Momento</option>
+      <option>Não Recomendado</option>
+    </select>
   </div>
- <div class="form-group col-100" style="text-align: center; margin-top: 30px;">
-    <button type="button" id="gerarPDF">📄 Gerar Relatório em PDF</button>
+
+  <div class="form-group col-100" style="margin-top: 20px; text-align: center;">
+    <button type="button" onclick="gerarPDF()" style="background-color:#00bcd4; color:#fff; border:none; padding:10px 20px; border-radius:6px; font-size:16px; cursor:pointer;">
+      📄 Gerar Relatório em PDF
+    </button>
   </div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-  document.getElementById("gerarPDF").addEventListener("click", function () {
-    const form = document.getElementById("viabilidadeForm");
-    html2pdf().set({
-      margin: 10,
-      filename: 'Relatorio_WA_Engenharia.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    }).from(form).save();
+function gerarPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  let y = 10;
+  doc.setFontSize(16);
+  doc.text('WA Engenharia – Relatório de Viabilidade Econômica', 10, y);
+  y += 10;
+
+  doc.setFontSize(12);
+  doc.text('Checklist de Viabilidade:', 10, y);
+  y += 8;
+
+  const checklist = [
+    ['Receita cobre os custos fixos?', document.getElementById('check_receita').textContent],
+    ['Projeto tem ROI acima de 20%?', document.getElementById('check_roi').textContent],
+    ['Payback abaixo de 12 meses?', document.getElementById('check_payback').textContent],
+    ['Fluxo de caixa positivo nos 6 primeiros meses?', document.getElementById('check_fluxo').textContent],
+  ];
+
+  checklist.forEach(([label, valor]) => {
+    doc.text(`${label}: ${valor}`, 10, y);
+    y += 7;
   });
+
+  y += 5;
+  doc.text(`Avaliação Final: ${document.getElementById('avaliacao_final').value}`, 10, y);
+
+  doc.save('Relatorio_Viabilidade_Economica.pdf');
+}
 </script>
+
 <script>
 function atualizarChecklistAnalise() {
   const receita = parseFloat(document.getElementById('receita_mensal').value.replace(/\./g, '').replace(',', '.')) || 0;
