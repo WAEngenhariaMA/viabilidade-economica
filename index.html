@@ -284,49 +284,67 @@
 </div>
  <!-- Etapa 5 -->
       <div class="step" id="step5">
-        <h2>Análise Final e Observações</h2>
-        <table>
-          <thead>
-            <tr><th>Item</th><th>Status (✅/❌)</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Receita cobre os custos fixos?</td><td id="check_receita"></td></tr>
-            <tr><td>Projeto tem ROI acima de 20%?</td><td id="check_roi"></td></tr>
-            <tr><td>Payback abaixo de 12 meses?</td><td id="check_payback"></td></tr>
-            <tr><td>Fluxo de caixa positivo nos 6 primeiros meses?</td><td id="check_fluxo"></td></tr>
-          </tbody>
-        </table>
-        <div class="form-group col-100">
-          <label for="observacoes">Observações Finais:</label>
-          <textarea id="observacoes" name="observacoes" rows="5"></textarea>
-        </div>
-        <div class="form-group col-100">
-          <label for="avaliacao_final">Avaliação de Viabilidade Econômica:</label>
-          <select id="avaliacao_final">
-            <option value="">Selecione...</option>
-            <option>Viável com Alta Rentabilidade</option>
-            <option>Viável com Ajustes</option>
-            <option>Pouco Viável no Momento</option>
-            <option>Não Recomendado</option>
-          </select>
-        </div>
-      </div>      
-      <script>
-    function atualizarChecklistAnalise() {
-      const receita = parseFloat(document.getElementById('receita_mensal').value.replace(/\./g, '').replace(',', '.')) || 0;
-      const fixos = parseFloat(document.getElementById('custos_fixos_total').value.replace(/\./g, '').replace(',', '.')) || 0;
-      const roi = parseFloat(document.getElementById('roi').value.replace('%','').replace(',', '.')) || 0;
-      const payback = parseFloat(document.getElementById('payback').value.replace(',', '.')) || 0;
-      const lucro = receita - fixos;
+  <h2>Análise Final e Observações</h2>
+  <table>
+    <thead>
+      <tr><th>Item</th><th>Status (Sim/Não)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Receita cobre os custos fixos?</td><td id="check_receita"></td></tr>
+      <tr><td>Projeto tem ROI acima de 20%?</td><td id="check_roi"></td></tr>
+      <tr><td>Payback abaixo de 12 meses?</td><td id="check_payback"></td></tr>
+      <tr><td>Fluxo de caixa positivo nos 6 primeiros meses?</td><td id="check_fluxo"></td></tr>
+    </tbody>
+  </table>
+  <div class="form-group col-100">
+    <label for="observacoes">Observações Finais:</label>
+    <textarea id="observacoes" name="observacoes" rows="5"></textarea>
+  </div>
+  <div class="form-group col-100">
+    <label for="avaliacao_final">Avaliação de Viabilidade Econômica:</label>
+    <select id="avaliacao_final">
+      <option value="">Selecione...</option>
+      <option>Viável com Alta Rentabilidade</option>
+      <option>Viável com Ajustes</option>
+      <option>Pouco Viável no Momento</option>
+      <option>Não Recomendado</option>
+    </select>
+  </div>
+</div>    
+     <script>
+function atualizarChecklistAnalise() {
+  const receita = parseFloat(document.getElementById('receita_mensal').value.replace(/\./g, '').replace(',', '.')) || 0;
+  const fixos = parseFloat(document.getElementById('custos_fixos_total').value.replace(/\./g, '').replace(',', '.')) || 0;
+  const roi = parseFloat(document.getElementById('roi').value.replace('%','').replace(',', '.')) || 0;
+  const payback = parseFloat(document.getElementById('payback').value.replace(',', '.')) || 0;
+  const lucro = receita - fixos;
 
-      document.getElementById('check_receita').textContent = receita >= fixos ? '✅' : '❌';
-      document.getElementById('check_roi').textContent = roi > 20 ? '✅' : '❌';
-      document.getElementById('check_payback').textContent = payback > 0 && payback <= 12 ? '✅' : '❌';
-      document.getElementById('check_fluxo').textContent = lucro > 0 ? '✅' : '❌';
-    }
+  const check_receita = receita >= fixos;
+  const check_roi = roi > 20;
+  const check_payback = payback > 0 && payback <= 12;
+  const check_fluxo = lucro > 0;
 
-    document.addEventListener("input", atualizarChecklistAnalise);
-  </script>
+  document.getElementById('check_receita').textContent = check_receita ? 'Sim' : 'Não';
+  document.getElementById('check_roi').textContent = check_roi ? 'Sim' : 'Não';
+  document.getElementById('check_payback').textContent = check_payback ? 'Sim' : 'Não';
+  document.getElementById('check_fluxo').textContent = check_fluxo ? 'Sim' : 'Não';
+
+  const totalSim = [check_receita, check_roi, check_payback, check_fluxo].filter(Boolean).length;
+  const avaliacaoFinal = document.getElementById('avaliacao_final');
+
+  if (totalSim === 4) {
+    avaliacaoFinal.value = 'Viável com Alta Rentabilidade';
+  } else if (totalSim === 3) {
+    avaliacaoFinal.value = 'Viável com Ajustes';
+  } else if (totalSim === 2) {
+    avaliacaoFinal.value = 'Pouco Viável no Momento';
+  } else {
+    avaliacaoFinal.value = 'Não Recomendado';
+  }
+}
+
+document.addEventListener("input", atualizarChecklistAnalise);
+</script>
  
 <script>
   document.addEventListener("input", function () {
