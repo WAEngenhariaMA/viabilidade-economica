@@ -605,18 +605,19 @@ const camposDiv = document.getElementById('camposEspecificos');
   const lucro = receita - (fixos + variaveis);
   const taxa = moedaParaNumero(document.getElementById('taxa_desconto').value) / 100;
 
-  // 🧮 Investimento Inicial (buscando todos os campos após h4 "Investimento Inicial")
-  let investimento = 0;
-  document.querySelectorAll('#camposEspecificos h4').forEach(h4 => {
-    const categoria = h4.innerText.trim().toLowerCase();
-    if (categoria.includes('investimento')) {
-      let el = h4.nextElementSibling;
-      while (el && el.tagName !== 'H4') {
-        if (el.tagName === 'INPUT') investimento += moedaParaNumero(el.value);
-        el = el.nextElementSibling;
-      }
+  // 🧮 Investimento Inicial (buscando todos os campos após h3 "Investimento Inicial")
+let investimento = 0;
+document.querySelectorAll('#camposEspecificos h3').forEach(h3 => {
+  const categoria = h3.textContent.trim().toLowerCase();
+  if (categoria.includes('investimento')) {
+    let el = h3.nextElementSibling;
+    while (el && el.tagName !== 'H3') {
+      const input = el.querySelector('input');
+      if (input) investimento += moedaParaNumero(input.value);
+      el = el.nextElementSibling;
     }
-  });
+  }
+});
 
   // 🧠 Cálculos principais
   const margem = receita ? (variaveis / receita) : 0;
