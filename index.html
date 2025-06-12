@@ -185,11 +185,11 @@
     <label>Nome do Produto:</label>
     <input type="text" id="novoProdutoNome">
     <label>Custo Direto (R$):</label>
-    <input type="text" id="novoCustoMonetario" placeholder="R$">
+    <input type="text" id="novoCustoMonetario" class="currency"  placeholder="R$">
     <label>Custo Direto (%):</label>
     <input type="text" id="novoCustoPercentual" placeholder="%">
     <label>Preço de Venda Pretendido (R$):</label>
-    <input type="text" id="novoPrecoVenda" placeholder="R$">
+    <input type="text" id="novoPrecoVenda" class="currency" placeholder="R$">
     <button type="button" onclick="abrirModalPreco()">Calcular Preço de Venda</button>
     <div style="text-align:right;margin-top:10px;">
       <button type="button" onclick="salvarProduto()">Salvar</button>
@@ -201,11 +201,11 @@
   <div id="modalPreco" style="display:none;position:fixed;top:10%;left:50%;transform:translateX(-50%);background:#222;padding:30px;border-radius:12px;z-index:2000;width:95%;max-width:700px;">
     <h3 style="color:#00bcd4;">Cálculo do Preço de Venda</h3>
     <label>Custos Totais (R$):</label>
-    <input type="text" id="preco_custo_calc" placeholder="R$">
+    <input type="text" id="preco_custo_calc" class="currency"  placeholder="R$">
     <label>Margem de Lucro Desejada (%):</label>
     <input type="text" id="margem_lucro_calc" placeholder="%">
     <label>Preço da Concorrência (R$):</label>
-    <input type="text" id="concorrencia_calc" placeholder="R$">
+    <input type="text" id="concorrencia_calc" class="currency" placeholder="R$">
     <div style="text-align:right;margin-top:10px;">
       <button type="button" onclick="calcularPrecoVenda()">Calcular</button>
       <button type="button" onclick="fecharModalPreco()">Cancelar</button>
