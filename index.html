@@ -165,7 +165,7 @@
         <input type="tel" id="telefone" name="telefone" required>
       </div>
       </div>
-    <div class="step" id="step2">
+   <div class="step" id="step2">
   <h2>Etapa 02 – Custos e Investimentos (Comércio e Varejo)</h2>
 
   <!-- Cadastro de Produtos -->
@@ -174,6 +174,43 @@
     <div id="listaProdutos"></div>
     <button type="button" onclick="adicionarProduto()">➕ Cadastrar Novo Produto</button>
   </div>
+
+  <!-- Container de produtos adicionados -->
+  <template id="produtoTemplate">
+    <div class="produto-box" style="border: 1px solid #00bcd4; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+      <div class="form-group col-100">
+        <label>Nome do Produto:</label>
+        <input type="text" class="nomeProduto" required>
+      </div>
+
+      <div class="row">
+        <div class="form-group col-50">
+          <label>1.2. Custo de Produção Direto:</label>
+          <select class="tipoCusto" onchange="alternarCusto(this)">
+            <option value="monetario">Valor Monetário</option>
+            <option value="percentual">Percentual (%)</option>
+          </select>
+          <input type="text" class="valorCusto currency" placeholder="R$ ou %">
+        </div>
+
+        <div class="form-group col-50">
+          <label>1.3. Preço de Venda Pretendido (R$):</label>
+          <input type="text" class="precoVenda currency">
+          <button type="button" onclick="mostrarCalculo(this)">🧮 Calcular Preço de Venda</button>
+        </div>
+      </div>
+
+      <div class="form-group col-100 boxCalculo" style="display:none; margin-top:10px; border-top:1px solid #ccc; padding-top:10px;">
+        <label>Cálculo do Preço de Venda</label>
+        <input type="text" class="custoBase currency" placeholder="Custo Base (R$)">
+        <input type="text" class="margemLucro currency" placeholder="Margem de Lucro (%)">
+        <input type="text" class="precoConcorrencia currency" placeholder="Preço da Concorrência (R$)">
+        <button type="button" onclick="calcularPreco(this)">📌 Usar no campo 1.3</button>
+      </div>
+
+      <button type="button" onclick="removerProduto(this)" style="margin-top:10px; background-color:#e53935;">🗑 Excluir Produto</button>
+    </div>
+  </template>
 
   <!-- Investimento Inicial -->
   <h3 style="color:#00bcd4;">2. Investimento Inicial</h3>
@@ -188,7 +225,7 @@
 
   <!-- Custos Variáveis -->
   <h3 style="color:#00bcd4;">3. Custos Variáveis</h3>
-  <div class="form-group col-100"><label>3.1. Custos com Produção (valor ou %):</label><input type="text" class="currency"></div>
+  <div class="form-group col-100"><label>3.1. Custos com Produção (valor ou %):</label><input type="text" class="currency" id="campoCustoProducaoTotal"></div>
   <div class="form-group col-50"><label>3.2. Impostos (%):</label><input type="text" class="currency"></div>
   <div class="form-group col-50"><label>3.3. Comissão de Vendas (%):</label><input type="text" class="currency"></div>
   <div class="form-group col-50"><label>3.4. Tarifas de Cartão (%):</label><input type="text" class="currency"></div>
@@ -219,8 +256,6 @@
   <div class="form-group col-100"><label>5.4. Volume de Vendas Esperado (por Produto):</label><div id="volumeProdutos"></div></div>
   <div class="form-group col-100"><label>5.5. Taxa de Crescimento Mensal (%):</label><input type="text" class="currency"></div>
 </div>
-
-
 <script>
 function adicionarProduto() {
   const container = document.getElementById("listaProdutos");
