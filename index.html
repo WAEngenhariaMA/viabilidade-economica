@@ -300,8 +300,23 @@
     <label for="avaliacao_final">Avaliação de Viabilidade Econômica:</label>
     <input type="text" id="avaliacao_final" readonly>
   </div>
+ <div class="form-group col-100" style="text-align: center; margin-top: 30px;">
+    <button type="button" id="gerarPDF">📄 Gerar Relatório em PDF</button>
+  </div>
 </div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+  document.getElementById("gerarPDF").addEventListener("click", function () {
+    const form = document.getElementById("viabilidadeForm");
+    html2pdf().set({
+      margin: 10,
+      filename: 'Relatorio_WA_Engenharia.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(form).save();
+  });
+</script>
 <script>
 function atualizarChecklistAnalise() {
   const receita = parseFloat(document.getElementById('receita_mensal').value.replace(/\./g, '').replace(',', '.')) || 0;
