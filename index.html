@@ -348,7 +348,7 @@ async function gerarPDFPersonalizado() {
 
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text('📍 Dados Gerais:', 15, y);
+  doc.text('Dados Gerais:', 15, y);
   y += 6;
 
   doc.setFont('helvetica', 'normal');
@@ -369,7 +369,7 @@ async function gerarPDFPersonalizado() {
 
   y += 4;
   doc.setFont('helvetica', 'bold');
-  doc.text('💰 Indicadores Financeiros:', 15, y);
+  doc.text('Indicadores Financeiros:', 15, y);
   y += 6;
   doc.setFont('helvetica', 'normal');
 
@@ -396,7 +396,7 @@ async function gerarPDFPersonalizado() {
 
   y += 6;
   doc.setFont('helvetica', 'bold');
-  doc.text('✅ Checklist de Viabilidade:', 15, y);
+  doc.text('Checklist de Viabilidade:', 15, y);
   y += 6;
   doc.setFont('helvetica', 'normal');
 
@@ -413,7 +413,7 @@ async function gerarPDFPersonalizado() {
 
   y += 6;
   doc.setFont('helvetica', 'bold');
-  doc.text(`📊 Avaliação Final: ${document.getElementById('avaliacao_final').value}`, 15, y);
+  doc.text(`Avaliação Final: ${document.getElementById('avaliacao_final').value}`, 15, y);
 
   doc.save('Relatorio_Viabilidade_Economica.pdf');
 }
