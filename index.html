@@ -343,17 +343,14 @@ function calcularPrecoVenda() {
 }
 </script>
 
-<!-- ETAPA 03 AJUSTADA -->
+<!-- ETAPA 03 COMPLETA (HTML + JS Corrigido) -->
 <div class="step" id="step3">
   <h2>Etapa 03 – Receita e Projeção de Lucro</h2>
 
-  <!-- Receita Esperada -->
+  <!-- RECEITA ESPERADA -->
   <h3 style="color:#00bcd4;">Receita Esperada</h3>
-  <div id="tabelaReceitaProdutos"></div>
-  <div class="form-group col-50">
-    <label>Unidades Vendidas por Mês (Estimativa):</label>
-    <input type="number" id="quantidade_mensal" min="0">
-  </div>
+  <div class="row" id="receitaProdutos"></div>
+
   <div class="form-group col-50">
     <label>Receita Bruta Mensal (R$):</label>
     <input type="text" id="receita_mensal" class="currency" readonly>
@@ -363,87 +360,153 @@ function calcularPrecoVenda() {
     <input type="text" id="receita_anual" class="currency" readonly>
   </div>
 
-  <!-- Receita por Cenários -->
+  <!-- RECEITA POR CENÁRIOS -->
   <h3 style="color:#00bcd4;">Receita por Cenários</h3>
-  <div id="tabelaCenariosProdutos"></div>
+  <div id="receitaCenarios"></div>
 
-  <!-- Projeção de Lucro -->
+  <!-- PROJEÇÃO DE LUCRO -->
   <h3 style="color:#00bcd4;">Projeção de Lucro</h3>
   <div class="form-group col-50">
-    <label>Total de Custos Fixos Mensais (R$):</label>
+    <label>Custos Fixos (R$):</label>
     <input type="text" id="custos_fixos_total" class="currency" readonly>
   </div>
   <div class="form-group col-50">
-    <label>Total de Custos Variáveis Mensais (R$):</label>
+    <label>Custos Variáveis (R$):</label>
     <input type="text" id="custos_variaveis_total" class="currency" readonly>
   </div>
   <div class="form-group col-50">
-    <label>Lucro Operacional Mensal (R$):</label>
-    <input type="text" id="lucro_operacional" class="currency" readonly>
-  </div>
-  <div class="form-group col-50">
-    <label>Margem de Lucro (%):</label>
-    <input type="text" id="margem_lucro" class="percent" readonly>
+    <label>Investimento Inicial (R$):</label>
+    <input type="text" id="totalInvestimento" class="currency" readonly>
   </div>
 </div>
 
 <script>
-function atualizarReceitaProdutos() {
-  const container = document.getElementById("tabelaReceitaProdutos");
-  container.innerHTML = "";
+function atualizarReceita() {
+  let receitaMensal = 0;
+  const produtosDiv = document.getElementById("receitaProdutos");
+  produtosDiv.innerHTML = "";
 
-  produtos.forEach((produto, index) => {
-    container.innerHTML += `
-      <div class="row">
-        <div class="form-group col-50">
-          <label>Produto: ${produto.nome} – Preço (R$)</label>
-          <input type="text" class="currency" value="${produto.precoVenda}" readonly>
-        </div>
-      </div>`;
+  produtos.forEach((p, i) => {
+    const volumeInput = document.createElement("input");
+    volumeInput.type = "number";
+    volumeInput.placeholder = "Unidades por mês";
+    volumeInput.className = "volumeProdutoInput";
+    volumeInput.setAttribute("data-index", i);
+    volumeInput.oninput = () => atualizarReceita();
+
+    const label = document.createElement("label");
+    label.innerText = `${p.nome} (R$${p.precoVenda}):`;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "form-group col-50";
+    wrapper.appendChild(label);
+    wrapper.appendChild(volumeInput);
+    produtosDiv.appendChild(wrapper);
   });
+
+  document.querySelectorAll(".volumeProdutoInput").forEach((input, i) => {
+    const volume = parseInt(input.value) || 0;
+    const preco = moedaParaNumero(produtos[i].precoVenda || "0");
+    receitaMensal += volume * preco;
+  });
+
+  document.getElementById("receita_mensal").value = numeroParaMoeda(receitaMensal);
+  document.getElementById("receita_anual").value = numeroParaMoeda(receitaMensal * 12);
+
+  atualizarReceitaCenarios();
+  atualizarCustosFixosVariaveis();
 }
 
-function atualizarCenariosProdutos() {
-  const container = document.getElementById("tabelaCenariosProdutos");
-  container.innerHTML = "";
+function atualizarReceitaCenarios() {
+  const cenariosDiv = document.getElementById("receitaCenarios");
+  cenariosDiv.innerHTML = "";
 
-  produtos.forEach((produto, index) => {
-    container.innerHTML += `
+  produtos.forEach((p, i) => {
+    const preco = moedaParaNumero(p.precoVenda || "0");
+
+    const pessInput = document.createElement("input");
+    const realInput = document.createElement("input");
+    const otiInput = document.createElement("input");
+
+    pessInput.type = realInput.type = otiInput.type = "number";
+    pessInput.placeholder = "Unidades Pessimista";
+    realInput.placeholder = "Unidades Realista";
+    otiInput.placeholder = "Unidades Otimista";
+
+    pessInput.oninput = realInput.oninput = otiInput.oninput = () => atualizarReceitaCenarios();
+
+    const pessOutput = document.createElement("input");
+    const realOutput = document.createElement("input");
+    const otiOutput = document.createElement("input");
+    pessOutput.readOnly = realOutput.readOnly = otiOutput.readOnly = true;
+    pessOutput.className = realOutput.className = otiOutput.className = "currency";
+
+    const receitaP = (parseInt(pessInput.value) || 0) * preco;
+    const receitaR = (parseInt(realInput.value) || 0) * preco;
+    const receitaO = (parseInt(otiInput.value) || 0) * preco;
+
+    pessOutput.value = numeroParaMoeda(receitaP);
+    realOutput.value = numeroParaMoeda(receitaR);
+    otiOutput.value = numeroParaMoeda(receitaO);
+
+    const bloco = document.createElement("div");
+    bloco.innerHTML = `
+      <h4 style="margin-top:10px;">${p.nome}</h4>
       <div class="row">
-        <div class="form-group col-33">
-          <label>${produto.nome} – Unidades Pessimista:</label>
-          <input type="number" id="qtd_pessimista_${index}" min="0">
-        </div>
-        <div class="form-group col-33">
+        <div class="form-group col-50">
+          <label>Unidades - Pessimista:</label>
+          ${pessInput.outerHTML}
           <label>Receita Pessimista (R$):</label>
-          <input type="text" id="receita_pessimista_${index}" class="currency" readonly>
+          ${pessOutput.outerHTML}
         </div>
-      </div>
-      <div class="row">
-        <div class="form-group col-33">
-          <label>${produto.nome} – Unidades Realista:</label>
-          <input type="number" id="qtd_realista_${index}" min="0">
-        </div>
-        <div class="form-group col-33">
+        <div class="form-group col-50">
+          <label>Unidades - Realista:</label>
+          ${realInput.outerHTML}
           <label>Receita Realista (R$):</label>
-          <input type="text" id="receita_realista_${index}" class="currency" readonly>
+          ${realOutput.outerHTML}
         </div>
-      </div>
-      <div class="row">
-        <div class="form-group col-33">
-          <label>${produto.nome} – Unidades Otimista:</label>
-          <input type="number" id="qtd_otimista_${index}" min="0">
-        </div>
-        <div class="form-group col-33">
+        <div class="form-group col-50">
+          <label>Unidades - Otimista:</label>
+          ${otiInput.outerHTML}
           <label>Receita Otimista (R$):</label>
-          <input type="text" id="receita_otimista_${index}" class="currency" readonly>
+          ${otiOutput.outerHTML}
         </div>
       </div>
     `;
+    cenariosDiv.appendChild(bloco);
   });
 }
+
+function atualizarCustosFixosVariaveis() {
+  let totalFixos = 0;
+  let totalVariaveis = 0;
+
+  document.querySelectorAll(".currency").forEach(input => {
+    const label = input.previousElementSibling?.textContent || "";
+    const val = moedaParaNumero(input.value || "0");
+    if (label.includes("(R$)")) totalFixos += val;
+    if (label.includes("(%)")) totalVariaveis += val;
+  });
+
+  document.getElementById("custos_fixos_total").value = numeroParaMoeda(totalFixos);
+  document.getElementById("custos_variaveis_total").value = numeroParaMoeda(totalVariaveis);
+
+  const investimentos = document.querySelectorAll('#step2 input.currency');
+  let totalInv = 0;
+  investimentos.forEach(input => {
+    const label = input.previousElementSibling?.textContent || "";
+    if (label.includes("Investimento") || label.includes("Marca") || label.includes("Estoque") || label.includes("Capital")) {
+      totalInv += moedaParaNumero(input.value || "0");
+    }
+  });
+  document.getElementById("totalInvestimento").value = numeroParaMoeda(totalInv);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  atualizarReceita();
+});
 </script>
-    
+
 <!-- ETAPA 04 - MÓDULO 02: ANÁLISE -->
 <div class="step" id="step4">
   <h2>Etapa 04 – Módulo 02: Análise</h2>
