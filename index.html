@@ -172,9 +172,9 @@
   <!-- PRODUTOS -->
   <h3 style="color:#00bcd4;">1.1 Produto – Descrição do Produto</h3>
   <button type="button" onclick="abrirModalProduto()">+ Cadastrar Novo Produto</button>
-  <table id="tabelaProdutos" style="margin-top:10px;width:100%;color:#fff;">
+  <table id="tabelaProdutos" style="margin-top:10px;width:100%;color:#fff;text-align:center;">
     <thead>
-      <tr><th>Produto</th><th>Custo Direto (R$)</th><th>Custo Direto (%)</th><th>Preço de Venda (R$)</th><th>Ações</th></tr>
+      <tr><th style="text-align:center;">Produto</th><th style="text-align:center;">Custo Direto (R$)</th><th style="text-align:center;">Custo Direto (%)</th><th style="text-align:center;">Preço de Venda (R$)</th><th style="text-align:center;">Ações</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -211,7 +211,6 @@
       <button onclick="fecharModalPreco()">Cancelar</button>
     </div>
   </div>
-
  <!-- VOLUME DE VENDAS AUTOMÁTICO -->
   <div id="volumeProdutos"></div>
 
@@ -316,7 +315,6 @@ function calcularPrecoVenda() {
   fecharModalPreco();
 }
 </script>
-
 
 <div class="step" id="step3">
   <h2>Receita, Lucro e Ponto de Equilíbrio</h2>
