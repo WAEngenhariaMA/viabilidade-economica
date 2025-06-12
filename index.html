@@ -165,7 +165,7 @@
         <input type="tel" id="telefone" name="telefone" required>
       </div>
       </div>
-     <div class="step" id="step2">
+    <div class="step" id="step2">
   <h2>Etapa 02 – Custos e Investimentos (Comércio e Varejo)</h2>
 
   <!-- Cadastro de Produtos -->
@@ -188,10 +188,11 @@
 
   <!-- Custos Variáveis -->
   <h3 style="color:#00bcd4;">3. Custos Variáveis</h3>
-  <div class="form-group col-50"><label>3.1. Impostos (%):</label><input type="text" class="currency"></div>
-  <div class="form-group col-50"><label>3.2. Comissão de Vendas (%):</label><input type="text" class="currency"></div>
-  <div class="form-group col-50"><label>3.3. Tarifas de Cartão (%):</label><input type="text" class="currency"></div>
-  <div class="form-group col-50"><label>3.4. Outros (%):</label><input type="text" class="currency"></div>
+  <div class="form-group col-100"><label>3.1. Custos com Produção (valor ou %):</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>3.2. Impostos (%):</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>3.3. Comissão de Vendas (%):</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>3.4. Tarifas de Cartão (%):</label><input type="text" class="currency"></div>
+  <div class="form-group col-50"><label>3.5. Outros (%):</label><input type="text" class="currency"></div>
 
   <!-- Custos Fixos Mensais -->
   <h3 style="color:#00bcd4;">4. Custos Mensais Fixos</h3>
@@ -212,12 +213,13 @@
 
   <!-- Plano Comercial -->
   <h3 style="color:#00bcd4;">5. Plano Comercial</h3>
-  <div class="form-group col-100"><label>5.1. Público Alvo:</label><textarea rows="3"></textarea></div>
-  <div class="form-group col-100"><label>5.2. Diferenciais do Produto:</label><textarea rows="3"></textarea></div>
-  <div class="form-group col-100"><label>5.3. Possíveis Concorrentes:</label><textarea rows="3"></textarea></div>
+  <div class="form-group col-100"><label>5.1. Público Alvo:</label><textarea rows="5"></textarea></div>
+  <div class="form-group col-100"><label>5.2. Diferenciais do Produto:</label><textarea rows="5"></textarea></div>
+  <div class="form-group col-100"><label>5.3. Possíveis Concorrentes:</label><textarea rows="5"></textarea></div>
   <div class="form-group col-100"><label>5.4. Volume de Vendas Esperado (por Produto):</label><div id="volumeProdutos"></div></div>
   <div class="form-group col-100"><label>5.5. Taxa de Crescimento Mensal (%):</label><input type="text" class="currency"></div>
 </div>
+
 
 <script>
 function adicionarProduto() {
