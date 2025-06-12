@@ -701,7 +701,7 @@ document.addEventListener("input", atualizarChecklistAnalise);
       const steps = document.querySelectorAll(".step");
       for (let i = 0; i < steps.length; i++) {
         if (steps[i].classList.contains("active")) {
-          'const requiredInputs = steps[i].querySelectorAll("input[required], select[required]");
+          const requiredInputs = steps[i].querySelectorAll("input[required], select[required]");
           'for (let j = 0; j < requiredInputs.length; j++) {
             'if (!requiredInputs[j].value) {
               alert("Por favor, preencha todos os campos obrigatórios antes de continuar.");
