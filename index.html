@@ -417,46 +417,113 @@ function calcularPrecoVenda() {
         <input type="text" id="ponto_equilibrio" readonly>
       </div>
     
-  <!-- Etapa 4: Indicadores Econômicos -->
-<div class="step" id="step4">
-  <h2>Indicadores Econômicos</h2>
+ <!-- ETAPA 04 - MÓDULO 02: ANÁLISE -->
+<section class="etapa" id="etapa04">
+  <h2>Etapa 04 – Módulo 02: Análise</h2>
 
-  <label for="taxa_desconto">Taxa de Desconto (% a.a):</label>
-  <input type="text" id="taxa_desconto" class="currency" value="10,00">
-  <small style="font-size: 12px; color: #ccc;">
-    Utilizada para trazer o valor do dinheiro ao presente em análises de fluxo de caixa.
-  </small>
+  <!-- 6. Margem de Contribuição -->
+  <div class="bloco">
+    <h3>6. Margem de Contribuição</h3>
 
-  <label for="ponto_equilibrio_fin">Ponto de Equilíbrio Financeiro:</label>
-  <input type="text" id="ponto_equilibrio_fin" readonly>
-  <small style="font-size: 12px; color: #ccc;">
-    Receita mínima necessária para cobrir os custos fixos e variáveis.
-  </small>
+    <!-- 6.1 Unitária -->
+    <div class="subbloco">
+      <h4>6.1. Margem de Contribuição Unitária (por produto)</h4>
+      <div id="margemUnitTable"></div>
+    </div>
 
-  <label for="payback">Payback (meses):</label>
-  <input type="text" id="payback" readonly>
-  <small style="font-size: 12px; color: #ccc;">
-    Tempo necessário (em meses) para recuperar o valor investido inicialmente.
-  </small>
+    <!-- 6.2 Total -->
+    <div class="subbloco">
+      <h4>6.2. Margem de Contribuição Total</h4>
+      <input type="text" id="margemTotal" class="currency" readonly>
+    </div>
 
-  <label for="roi">ROI (%):</label>
-  <input type="text" id="roi" readonly>
-  <small style="font-size: 12px; color: #ccc;">
-    Retorno sobre o investimento: (Lucro ÷ Investimento Inicial) × 100.
-  </small>
+    <!-- 6.3 Ponderada -->
+    <div class="subbloco">
+      <h4>6.3. Margem de Contribuição Ponderada</h4>
+      <input type="text" id="margemPonderada" class="currency" readonly placeholder="Aguardando fórmula...">
+    </div>
+  </div>
 
-  <label for="vpl">VPL (R$):</label>
-  <input type="text" id="vpl" readonly>
-  <small style="font-size: 12px; color: #ccc;">
-    Valor Presente Líquido dos lucros esperados nos próximos anos, descontados pela taxa definida.
-  </small>
+  <!-- 7. Ponto de Equilíbrio -->
+  <div class="bloco">
+    <h3>7. Ponto de Equilíbrio</h3>
+    <div class="form-group col-50">
+      <label>Ponto de Equilíbrio (R$):</label>
+      <input type="text" id="pontoEquilibrio" class="currency" readonly>
+    </div>
+  </div>
 
-  <label for="tir">TIR (%):</label>
-  <input type="text" id="tir" readonly>
-  <small style="font-size: 12px; color: #ccc;">
-    Taxa de retorno interna que torna o VPL igual a zero.
-  </small>
-</div>
+  <!-- 8. ROI -->
+  <div class="bloco">
+    <h3>8. ROI (Retorno Sobre Investimento)</h3>
+    <div class="form-group col-50">
+      <label>ROI (%):</label>
+      <input type="text" id="roi" readonly>
+    </div>
+  </div>
+
+  <!-- 9. PAYBACK -->
+  <div class="bloco">
+    <h3>9. Payback Simples</h3>
+    <div class="form-group col-50">
+      <label>Payback (meses):</label>
+      <input type="text" id="payback" readonly>
+    </div>
+  </div>
+</section>
+
+<script>
+function calcularModulo02() {
+  let produtos = window.produtos || [];
+  let impostos = parseFloat(document.getElementById('impostos').value || 0);
+  let comissao = parseFloat(document.getElementById('comissao').value || 0);
+  let cartao = parseFloat(document.getElementById('cartao').value || 0);
+  let outros = parseFloat(document.getElementById('outros').value || 0);
+  let custosFixos = parseFloat(document.getElementById('totalCustosFixos').value || 0);
+  let investimentoInicial = parseFloat(document.getElementById('investimentoTotal').value || 0);
+
+  let totalMargem = 0;
+  let totalReceita = 0;
+  let totalCustosVar = 0;
+  let html = '<table><tr><th>Produto</th><th>Preço</th><th>Volume</th><th>Margem Unitária</th></tr>';
+
+  produtos.forEach(p => {
+    let preco = parseFloat(p.precoVenda || 0);
+    let custo = parseFloat(p.custoDireto || 0);
+    let volume = parseFloat(p.volume || 0);
+    
+    let impostosR = preco * impostos / 100;
+    let comissaoR = preco * comissao / 100;
+    let cartaoR = preco * cartao / 100;
+    let outrosR = preco * outros / 100;
+
+    let custoVarUnit = custo + impostosR + comissaoR + cartaoR + outrosR;
+    let margemUnit = preco - custoVarUnit;
+    let margemTotalProduto = margemUnit * volume;
+    let receita = preco * volume;
+
+    totalMargem += margemTotalProduto;
+    totalReceita += receita;
+    totalCustosVar += custoVarUnit * volume;
+
+    html += `<tr><td>${p.nome}</td><td>R$ ${preco.toFixed(2)}</td><td>${volume}</td><td>R$ ${margemUnit.toFixed(2)}</td></tr>`;
+  });
+  html += '</table>';
+  document.getElementById('margemUnitTable').innerHTML = html;
+
+  document.getElementById('margemTotal').value = 'R$ ' + totalMargem.toFixed(2);
+
+  let pontoEquilibrio = custosFixos / totalMargem;
+  document.getElementById('pontoEquilibrio').value = 'R$ ' + (isFinite(pontoEquilibrio) ? pontoEquilibrio.toFixed(2) : '0.00');
+
+  let roi = ((totalMargem - custosFixos - totalCustosVar) / totalCustosVar) * 100;
+  document.getElementById('roi').value = isFinite(roi) ? roi.toFixed(2) + '%' : '0%';
+
+  let saldoCaixa = totalMargem - custosFixos;
+  let payback = investimentoInicial / saldoCaixa;
+  document.getElementById('payback').value = isFinite(payback) ? payback.toFixed(1) + ' meses' : '—';
+}
+</script>
  <!-- Etapa 5 -->
   <div class="step" id="step5">
   <h2>Análise Final e Observações</h2>
