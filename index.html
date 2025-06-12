@@ -165,7 +165,7 @@
         <input type="tel" id="telefone" name="telefone" required>
       </div>
       </div>
-     <!-- ETAPA 02 COMPLETA (HTML + JS) -->
+   <!-- ETAPA 02 COMPLETA (HTML + JS) -->
 <div class="step" id="step2">
   <h2>Custos e Investimentos</h2>
 
@@ -174,7 +174,7 @@
   <button type="button" onclick="abrirModalProduto()">+ Cadastrar Novo Produto</button>
   <table id="tabelaProdutos" style="margin-top:10px;width:100%;color:#fff;">
     <thead>
-      <tr><th>Produto</th><th>Custo Direto (R$)</th><th>Custo Direto (%)</th><th>Ações</th></tr>
+      <tr><th>Produto</th><th>Custo Direto (R$)</th><th>Custo Direto (%)</th><th>Preço de Venda (R$)</th><th>Ações</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -188,19 +188,17 @@
     <input type="text" class="currency" id="novoCustoMonetario">
     <label>Custo Direto (%):</label>
     <input type="text" class="currency" id="novoCustoPercentual">
+    <label>Preço de Venda Pretendido (R$):</label>
+    <input type="text" class="currency" id="novoPrecoVenda">
+    <button type="button" onclick="abrirModalPreco()">Calcular Preço de Venda</button>
     <div style="text-align:right;margin-top:10px;">
       <button onclick="salvarProduto()">Salvar</button>
       <button onclick="fecharModalProduto()">Cancelar</button>
     </div>
   </div>
 
-  <!-- PREÇO DE VENDA -->
-  <h3 style="color:#00bcd4;">1.3 Preço de Venda Pretendido</h3>
-  <input type="text" id="preco_venda" class="currency">
-  <button type="button" onclick="abrirModalPreco()">Calcular Preço de Venda</button>
-
   <!-- MODAL PREÇO VENDA -->
-  <div id="modalPreco" style="display:none;position:fixed;top:20%;left:50%;transform:translateX(-50%);background:#222;padding:20px;border-radius:10px;z-index:1000;width:90%;max-width:500px;">
+  <div id="modalPreco" style="display:none;position:fixed;top:25%;left:50%;transform:translateX(-50%);background:#222;padding:20px;border-radius:10px;z-index:2000;width:90%;max-width:500px;">
     <h3 style="color:#00bcd4;">Cálculo do Preço de Venda</h3>
     <label>Custos Totais (R$):</label>
     <input type="text" id="preco_custo_calc" class="currency">
@@ -280,12 +278,14 @@ function fecharModalProduto() {
   document.getElementById("novoProdutoNome").value = '';
   document.getElementById("novoCustoMonetario").value = '';
   document.getElementById("novoCustoPercentual").value = '';
+  document.getElementById("novoPrecoVenda").value = '';
 }
 function salvarProduto() {
   const nome = document.getElementById("novoProdutoNome").value;
   const custoR = document.getElementById("novoCustoMonetario").value;
   const custoP = document.getElementById("novoCustoPercentual").value;
-  produtos.push({ nome, custoR, custoP });
+  const precoVenda = document.getElementById("novoPrecoVenda").value;
+  produtos.push({ nome, custoR, custoP, precoVenda });
   atualizarTabelaProdutos();
   fecharModalProduto();
 }
@@ -295,7 +295,7 @@ function atualizarTabelaProdutos() {
   tbody.innerHTML = '';
   volumeDiv.innerHTML = '';
   produtos.forEach((p, index) => {
-    tbody.innerHTML += `<tr><td>${p.nome}</td><td>${p.custoR}</td><td>${p.custoP}</td><td><button onclick="removerProduto(${index})">Excluir</button></td></tr>`;
+    tbody.innerHTML += `<tr><td>${p.nome}</td><td>${p.custoR}</td><td>${p.custoP}</td><td>${p.precoVenda}</td><td><button onclick="removerProduto(${index})">Excluir</button></td></tr>`;
     volumeDiv.innerHTML += `<div class='form-group col-50'><label>Volume: ${p.nome}</label><input type='number' /></div>`;
   });
 }
@@ -312,12 +312,12 @@ function fecharModalPreco() {
 function calcularPrecoVenda() {
   const custo = parseFloat(document.getElementById("preco_custo_calc").value.replace(',', '.')) || 0;
   const margem = parseFloat(document.getElementById("margem_lucro_calc").value.replace(',', '.')) || 0;
-  const concorrente = parseFloat(document.getElementById("concorrencia_calc").value.replace(',', '.')) || 0;
   const precoCalculado = custo * (1 + margem / 100);
-  document.getElementById("preco_venda").value = precoCalculado.toFixed(2).replace('.', ',');
+  document.getElementById("novoPrecoVenda").value = precoCalculado.toFixed(2).replace('.', ',');
   fecharModalPreco();
 }
 </script>
+
 <div class="step" id="step3">
   <h2>Receita, Lucro e Ponto de Equilíbrio</h2>
 
