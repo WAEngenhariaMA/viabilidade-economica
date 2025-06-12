@@ -298,15 +298,15 @@ function atualizarTabelaProdutos() {
   let somaPrecosVenda = 0;
 
   produtos.forEach((p, index) => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${p.nome}</td>
-        <td>R$ ${p.custoR}</td>
-        <td>${p.custoP}%</td>
-        <td>R$ ${p.precoVenda}</td>
-        <td><button onclick="removerProduto(${index})">Excluir</button></td>
-      </tr>
-    `;
+   tbody.innerHTML += `
+  <tr>
+    <td>${p.nome}</td>
+    <td>R$ ${p.custoR}</td>
+    <td>${p.custoP.includes('%') ? p.custoP : p.custoP + '%'}</td>
+    <td>R$ ${p.precoVenda}</td>
+    <td><button onclick="removerProduto(${index})">Excluir</button></td>
+  </tr>
+`;
 
     volumeDiv.innerHTML += `
       <div class="row" style="margin-bottom: 10px; align-items: center;">
