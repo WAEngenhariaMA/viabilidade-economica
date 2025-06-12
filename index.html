@@ -300,8 +300,19 @@ function alternarCusto(idx) {
   input.placeholder = tipo === "percentual" ? "%" : "R$";
 }
 
-function calcularPrecoVenda(idx) {
-  document.getElementById(`box_calculo_${idx}`).style.display = 'block';
+function calcularPreco(btn) {
+  const bloco = btn.closest('.produto-box');
+  const custo = parseFloat(bloco.querySelector('.custoBase').value.replace(/\./g, '').replace(',', '.')) || 0;
+  const margem = parseFloat(bloco.querySelector('.margemLucro').value.replace(',', '.')) || 0;
+  const concorrente = parseFloat(bloco.querySelector('.precoConcorrencia').value.replace(/\./g, '').replace(',', '.')) || 0;
+
+  const preco = custo + (custo * margem / 100);
+  const precoFinal = concorrente > 0 ? (preco + concorrente) / 2 : preco;
+
+  bloco.querySelector('.precoVenda').value = precoFinal.toFixed(2).replace('.', ',');
+
+  // Fecha o campo de cálculo após aplicar
+  bloco.querySelector('.boxCalculo').style.display = 'none';
 }
 
 function aplicarPrecoCalculado(idx) {
