@@ -392,8 +392,10 @@ function atualizarReceita() {
     volumeInput.placeholder = "Unidades por mês";
     volumeInput.className = "volumeProdutoInput";
     volumeInput.setAttribute("data-index", i);
-    volumeInput.oninput = () => atualizarReceita();
-
+    volumeInput.oninput = (e) => {
+  produtos[i].volume = parseInt(e.target.value) || 0;
+  atualizarReceita();
+};
     const label = document.createElement("label");
     label.innerText = `${p.nome} (R$${p.precoVenda}):`;
 
