@@ -454,9 +454,9 @@ function calcularPrecoVenda() {
 
   <!-- Receita Esperada com Matriz Mensal -->
   <h3 style="color:#00bcd4;">Receita Esperada</h3>
-  <div class="form-group col-33">
-    <label for="mes_selecionado">Escolha o mês para Receita Bruta Mensal:</label>
-    <select id="mes_selecionado" onchange="calcularReceitaTotal()">
+  <div class="form-group" style="max-width: 200px;">
+    <label for="mes_selecionado">Mês de Receita Bruta:</label>
+    <select id="mes_selecionado" onchange="calcularReceitaTotal()" style="width: 100%; padding: 8px;">
       <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
       <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
       <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
@@ -509,14 +509,14 @@ function atualizarReceitaProdutos() {
   tabela += "<thead><tr><th>Produto</th><th>Preço</th>";
 
   meses.forEach(m => tabela += `<th>${m}</th>`);
-  tabela += "</tr></thead><tbody>";
+  tabela += "<th>Total Unidades</th></tr></thead><tbody>";
 
   produtos.forEach((p, i) => {
     tabela += `<tr><td>${p.nome}</td><td>${p.precoVenda}</td>`;
     for (let m = 0; m < 12; m++) {
-      tabela += `<td><input type="number" min="0" class="vendaMes" data-index="${i}" data-mes="${m}" style="width:60px;"></td>`;
+      tabela += `<td><input type="number" min="0" class="vendaMes" data-index="${i}" data-mes="${m}" style="width:45px;"></td>`;
     }
-    tabela += "</tr>";
+    tabela += `<td><span class="totalQtdAno" data-index="${i}">0</span></td></tr>`;
   });
 
   tabela += "</tbody></table></div>";
@@ -535,21 +535,27 @@ function calcularReceitaTotal() {
   produtos.forEach((p, i) => {
     const preco = parseFloat(p.precoVenda.replace(/\./g, '').replace(',', '.')) || 0;
     let totalProduto = 0;
+    let totalQtd = 0;
 
     for (let m = 0; m < 12; m++) {
       const input = document.querySelector(`.vendaMes[data-index='${i}'][data-mes='${m}']`);
       const qtd = parseInt(input?.value || 0);
       if (m === mesSelecionado) receitaMensal += qtd * preco;
       totalProduto += qtd * preco;
+      totalQtd += qtd;
     }
 
     receitaAnual += totalProduto;
+    const spanQtd = document.querySelector(`.totalQtdAno[data-index='${i}']`);
+    if (spanQtd) {
+      spanQtd.textContent = totalQtd;
+    }
   });
 
   document.getElementById("receita_mensal").value = receitaMensal.toLocaleString("pt-BR", {minimumFractionDigits: 2});
   document.getElementById("receita_anual").value = receitaAnual.toLocaleString("pt-BR", {minimumFractionDigits: 2});
 }
-
+</script>
 function atualizarCenariosProdutos() {
   const container = document.getElementById("tabelaCenariosProdutos");
   container.innerHTML = "";
@@ -557,26 +563,74 @@ function atualizarCenariosProdutos() {
   produtos.forEach((produto, i) => {
     const preco = parseFloat(produto.precoVenda.replace(/\./g, '').replace(',', '.')) || 0;
 
-    container.innerHTML += `
-      <div class="row">
+    container.innerHTML += \`
+      <div class="row" style="margin-bottom: 15px;">
         <div class="form-group col-33">
-          <label>${produto.nome} – Unidades Pessimista:</label>
-          <input type="number" class="pessimista" data-index="${i}" min="0" oninput="document.getElementById('val_pess_${i}').value = (this.value * ${preco}).toLocaleString('pt-BR', {minimumFractionDigits: 2})">
-          <input type="text" id="val_pess_${i}" readonly class="currency" placeholder="R$">
+          <label>\${produto.nome} – Unidades Pessimista:</label>
+          <input type="number" class="pessimista" data-index="\${i}" min="0" oninput="atualizarValoresCenario(\${i}, \${preco})">
+          <input type="text" id="val_pess_\${i}" readonly class="currency" placeholder="R$">
         </div>
         <div class="form-group col-33">
-          <label>${produto.nome} – Unidades Realista:</label>
-          <input type="number" class="realista" data-index="${i}" min="0" oninput="document.getElementById('val_real_${i}').value = (this.value * ${preco}).toLocaleString('pt-BR', {minimumFractionDigits: 2})">
-          <input type="text" id="val_real_${i}" readonly class="currency" placeholder="R$">
+          <label>\${produto.nome} – Unidades Realista:</label>
+          <input type="number" class="realista" data-index="\${i}" min="0" oninput="atualizarValoresCenario(\${i}, \${preco})">
+          <input type="text" id="val_real_\${i}" readonly class="currency" placeholder="R$">
         </div>
         <div class="form-group col-33">
-          <label>${produto.nome} – Unidades Otimista:</label>
-          <input type="number" class="otimista" data-index="${i}" min="0" oninput="document.getElementById('val_otim_${i}').value = (this.value * ${preco}).toLocaleString('pt-BR', {minimumFractionDigits: 2})">
-          <input type="text" id="val_otim_${i}" readonly class="currency" placeholder="R$">
+          <label>\${produto.nome} – Unidades Otimista:</label>
+          <input type="number" class="otimista" data-index="\${i}" min="0" oninput="atualizarValoresCenario(\${i}, \${preco})">
+          <input type="text" id="val_otim_\${i}" readonly class="currency" placeholder="R$">
         </div>
-      </div>`;
+      </div>\`;
   });
 }
+
+function atualizarValoresCenario(i, preco) {
+  const pess = parseInt(document.querySelector(\`.pessimista[data-index="\${i}"]\`)?.value || 0);
+  const real = parseInt(document.querySelector(\`.realista[data-index="\${i}"]\`)?.value || 0);
+  const otim = parseInt(document.querySelector(\`.otimista[data-index="\${i}"]\`)?.value || 0);
+
+  document.getElementById(\`val_pess_\${i}\`).value = (pess * preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  document.getElementById(\`val_real_\${i}\`).value = (real * preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  document.getElementById(\`val_otim_\${i}\`).value = (otim * preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+}
+
+<script>
+function atualizarCustosFixosEVariaveis() {
+  const moedaParaNumero = str => parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+
+  let custosFixos = 0;
+  document.querySelectorAll("#step2 input.currency").forEach(input => {
+    if (input.closest("h4")?.textContent.includes("Despesas")) {
+      custosFixos += moedaParaNumero(input.value);
+    }
+  });
+
+  let custosVariaveis = 0;
+  document.querySelectorAll("#step2 input.percent").forEach(input => {
+    custosVariaveis += moedaParaNumero(input.value);
+  });
+
+  let investimento = 0;
+  document.querySelectorAll("#step2 h3").forEach(h3 => {
+    if (h3.textContent.includes("Investimento")) {
+      let el = h3.nextElementSibling;
+      while (el && el.tagName !== "H3") {
+        const input = el.querySelector("input");
+        if (input) investimento += moedaParaNumero(input.value);
+        el = el.nextElementSibling;
+      }
+    }
+  });
+
+  document.getElementById("custos_fixos_total").value = custosFixos.toLocaleString("pt-BR", {minimumFractionDigits: 2});
+  document.getElementById("custos_variaveis_total").value = custosVariaveis.toLocaleString("pt-BR", {minimumFractionDigits: 2});
+  document.getElementById("investimento_inicial").value = investimento.toLocaleString("pt-BR", {minimumFractionDigits: 2});
+}
+
+document.addEventListener("input", () => {
+  calcularReceitaTotal();
+  atualizarCustosFixosEVariaveis();
+});
 </script>
 
 <!-- ETAPA 04 - MÓDULO 02: ANÁLISE -->
