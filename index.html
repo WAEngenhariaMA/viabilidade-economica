@@ -370,48 +370,65 @@ function salvarProduto() {
   const custoR = document.getElementById("novoCustoMonetario").value;
   const custoP = document.getElementById("novoCustoPercentual").value;
   const precoVenda = document.getElementById("novoPrecoVenda").value;
-  produtos.push({ nome, custoR, custoP, precoVenda });
-  atualizarTabelaProdutos();
-  fecharModalProduto();
+
+  if (nome && precoVenda) {
+    produtos.push({ nome, custoR, custoP, precoVenda });
+    atualizarTabelaProdutos();
+    fecharModalProduto();
+  } else {
+    alert("Preencha pelo menos o nome do produto e o preço de venda.");
+  }
 }
+
 function atualizarTabelaProdutos() {
   const tbody = document.querySelector("#tabelaProdutos tbody");
-  const volumeDiv = document.getElementById("volumeProdutos");
-  const custoProdField = document.getElementById("auto_custo_prod");
+  const volumeDiv = document.getElementById("volumeProdutos"); // Caso use essa parte
+  const custoProdField = document.getElementById("auto_custo_prod"); // Campo automático de custos com produção
 
-  tbody.innerHTML = '';
-  volumeDiv.innerHTML = '';
+  tbody.innerHTML = "";
+  if (volumeDiv) volumeDiv.innerHTML = "";
 
   let somaCustosDiretos = 0;
   let somaPrecosVenda = 0;
 
   produtos.forEach((p, index) => {
-   tbody.innerHTML += `
-  <tr>
-    <td>${p.nome}</td>
-    <td>R$ ${p.custoR}</td>
-    <td>${p.custoP.includes('%') ? p.custoP : p.custoP + '%'}</td>
-    <td>R$ ${p.precoVenda}</td>
-    <td><button onclick="removerProduto(${index})">Excluir</button></td>
-  </tr>
-`;
-
-    volumeDiv.innerHTML += `
-      <div class="row" style="margin-bottom: 10px; align-items: center;">
-        <div class="col-50"><label>${p.nome}</label></div>
-        <div class="col-50"><input type="number" class="volumeProdutoInput" data-index="${index}" min="0" style="width: 100%; padding: 6px;" /></div>
-      </div>
+    // Adiciona à tabela
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${p.nome}</td>
+      <td>${p.custoR}</td>
+      <td>${p.custoP}</td>
+      <td>${p.precoVenda}</td>
+      <td><button type="button" onclick="removerProduto(${index})">Excluir</button></td>
     `;
+    tbody.appendChild(row);
 
+    // Campo de volume por produto (caso deseje exibir)
+    if (volumeDiv) {
+      volumeDiv.innerHTML += `
+        <div class="row" style="margin-bottom: 10px; align-items: center;">
+          <div class="col-50"><label>${p.nome}</label></div>
+          <div class="col-50">
+            <input type="number" class="volumeProdutoInput" data-index="${index}" min="0" style="width: 100%; padding: 6px;" />
+          </div>
+        </div>
+      `;
+    }
+
+    // Cálculo acumulado dos custos e preços
     const custo = parseFloat(p.custoR.replace(/\./g, '').replace(',', '.')) || 0;
     const preco = parseFloat(p.precoVenda.replace(/\./g, '').replace(',', '.')) || 0;
     somaCustosDiretos += custo;
     somaPrecosVenda += preco;
   });
 
-  const custoProducaoPercentual = somaPrecosVenda > 0 ? (somaCustosDiretos / somaPrecosVenda) * 100 : 0;
-  custoProdField.value = custoProducaoPercentual.toFixed(1).replace('.', ',') + '%';
+  // Cálculo final do campo automático de custo de produção (%)
+  if (custoProdField) {
+    const custoProducaoPercentual = somaPrecosVenda > 0 ? (somaCustosDiretos / somaPrecosVenda) * 100 : 0;
+    custoProdField.value = custoProducaoPercentual.toFixed(1).replace('.', ',') + '%';
+  }
 }
+
 function removerProduto(index) {
   produtos.splice(index, 1);
   atualizarTabelaProdutos();
@@ -430,6 +447,7 @@ function calcularPrecoVenda() {
   fecharModalPreco();
 }
 </script>
+
 <!-- ETAPA 03 COMPLETA (HTML + JS Corrigido) -->
 <div class="step" id="step3">
   <h2>Etapa 03 – Receita e Projeção de Lucro</h2>
@@ -670,7 +688,7 @@ function atualizarMargemUnitTable() {
 
   produtos.forEach(p => {
     const preco = moedaParaNumero(p.precoVenda || "0");
-    const custo = moedaParaNumero(p.custoR || "0");
+    const custo = moedaParaNumero(p.custoDiretoReais || "0");
     const impostos = moedaParaNumero(document.getElementById("impostos")?.value || "0");
     const comissao = moedaParaNumero(document.getElementById("comissao_vendas")?.value || "0");
     const cartao = moedaParaNumero(document.getElementById("tarifas_cartao")?.value || "0");
