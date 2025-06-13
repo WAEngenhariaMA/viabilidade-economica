@@ -593,6 +593,67 @@ function atualizarValoresCenario(i, preco) {
   document.getElementById(`val_real_${i}`).value = (real * preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
   document.getElementById(`val_otim_${i}`).value = (otim * preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 }
+function atualizarCustosFixosEVariaveis() {
+  const moedaParaNumero = str => parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+
+  // ✅ CUSTOS FIXOS – Lista por nome da label
+  let custosFixos = 0;
+  const camposCustosFixos = [
+    "Aluguel (R$):", "Energia (R$):", "Salários (R$):",
+    "Internet (R$):", "Outros (R$):",
+    "Combustível (R$):", "Salários Equipe Comercial (R$):",
+    "Despesa 1 (R$):", "Despesa 2 (R$):"
+  ];
+
+  document.querySelectorAll("#step2 label").forEach(label => {
+    const texto = label.textContent.trim();
+    if (camposCustosFixos.includes(texto)) {
+      const input = label.closest(".form-group")?.querySelector("input");
+      if (input && input.value) {
+        custosFixos += moedaParaNumero(input.value);
+      }
+    }
+  });
+
+  // ✅ CUSTOS VARIÁVEIS – Soma de todos os % da etapa 2
+  let custosVariaveis = 0;
+  document.querySelectorAll("#step2 input.percent").forEach(input => {
+    custosVariaveis += moedaParaNumero(input.value);
+  });
+
+  // ✅ INVESTIMENTO INICIAL – Lista por nome da label
+  let investimento = 0;
+  const camposInvestimento = [
+    "Criação de Marca e Registro (R$):",
+    "Abertura de Empresa e Licenças (R$):",
+    "Consultorias (R$):",
+    "Estoque Inicial (R$):",
+    "Equipamentos (R$):",
+    "Imobilizados (R$):",
+    "Capital de Giro (R$):",
+    "Outros (R$):"
+  ];
+
+  document.querySelectorAll("#step2 label").forEach(label => {
+    const texto = label.textContent.trim();
+    if (camposInvestimento.includes(texto)) {
+      const input = label.closest(".form-group")?.querySelector("input");
+      if (input && input.value) {
+        investimento += moedaParaNumero(input.value);
+      }
+    }
+  });
+
+  // ✅ Preencher os campos da Etapa 03
+  document.getElementById("custos_fixos_total").value = custosFixos.toLocaleString("pt-BR", {minimumFractionDigits: 2});
+  document.getElementById("custos_variaveis_total").value = custosVariaveis.toLocaleString("pt-BR", {minimumFractionDigits: 2});
+  document.getElementById("investimento_inicial").value = investimento.toLocaleString("pt-BR", {minimumFractionDigits: 2});
+}
+document.addEventListener("input", () => {
+  calcularReceitaTotal();
+  atualizarCustosFixosEVariaveis();
+});
+
 </script>
 
 <!-- ETAPA 04 - MÓDULO 02: ANÁLISE -->
