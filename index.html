@@ -91,7 +91,7 @@
     <h1>WA Engenharia – Analisador de Viabilidade Econômica</h1>
     <form id="viabilidadeForm">
       <!-- ETAPA 01 - DADOS GERAIS DO PROJETO -->
-<div class="step active" id="step1">
+      <div class="step active" id="step1">
   <h2>Dados Gerais do Projeto</h2>
 
   <div class="form-group col-100">
@@ -164,7 +164,7 @@
     <label for="responsavel">Responsável:</label>
     <input type="text" id="responsavel" name="responsavel" required>
   </div>
-  
+
  <div class="row">
   <div class="form-group col-66">
     <label for="email">E-mail:</label>
@@ -176,7 +176,7 @@
     <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required>
   </div>
 </div>
-
+</div>
 <script>
   // Lista de estados e cidades (exemplo parcial)
   const estadosECidades = {
@@ -287,14 +287,14 @@
   <!-- INVESTIMENTO INICIAL -->
   <h3 style="color:#00bcd4;">2. Investimento Inicial</h3>
   <div class="row">
-    <div class="form-group col-50"><label>Criação de Marca e Registro (R$):</label><input type="text" class="currency" placeholder="R$"></div>
-    <div class="form-group col-50"><label>Abertura de Empresa e Licenças (R$):</label><input type="text" class="currency" placeholder="R$"></div>
-    <div class="form-group col-50"><label>Consultorias (R$):</label><input type="text" class="currency" placeholder="R$"></div>
-    <div class="form-group col-50"><label>Estoque Inicial (R$):</label><input type="text" class="currency" placeholder="R$"></div>
-    <div class="form-group col-50"><label>Equipamentos (R$):</label><input type="text" class="currency" placeholder="R$"></div>
-    <div class="form-group col-50"><label>Imobilizados (R$):</label><input type="text" class="currency" placeholder="R$"></div>
-    <div class="form-group col-50"><label>Capital de Giro (R$):</label><input type="text" class="currency" placeholder="R$"></div>
-    <div class="form-group col-50"><label>Outros (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-33"><label>Criação de Marca e Registro (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-33"><label>Abertura de Empresa e Licenças (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-33"><label>Consultorias (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-33"><label>Estoque Inicial (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-33"><label>Equipamentos (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-33"><label>Imobilizados (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-33"><label>Capital de Giro (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-33"><label>Outros (R$):</label><input type="text" class="currency" placeholder="R$"></div>
   </div>
 
   <!-- CUSTOS VARIÁVEIS -->
@@ -302,9 +302,9 @@
   <div class="row">
     <div class="form-group col-50"><label>Custos com Produção (%):</label><input type="text" id="auto_custo_prod" placeholder="%" readonly></div>
     <div class="form-group col-50"><label>Impostos (%):</label><input type="text" class="percent" placeholder="%"></div>
-    <div class="form-group col-50"><label>Comissão de Vendas (%):</label><input type="text" class="percent" placeholder="%"></div>
-    <div class="form-group col-50"><label>Tarifas de Cartão (%):</label><input type="text" class="percent" placeholder="%"></div>
-    <div class="form-group col-50"><label>Outros (%):</label><input type="text" class="percent" placeholder="%"></div>
+    <div class="form-group col-33"><label>Comissão de Vendas (%):</label><input type="text" class="percent" placeholder="%"></div>
+    <div class="form-group col-33"><label>Tarifas de Cartão (%):</label><input type="text" class="percent" placeholder="%"></div>
+    <div class="form-group col-33"><label>Outros (%):</label><input type="text" class="percent" placeholder="%"></div>
   </div>
 
   <!-- CUSTOS FIXOS -->
@@ -313,9 +313,9 @@
   <div class="row">
     <div class="form-group col-50"><label>Aluguel (R$):</label><input type="text" class="currency" placeholder="R$"></div>
     <div class="form-group col-50"><label>Energia (R$):</label><input type="text" class="currency" placeholder="R$"></div>
-    <div class="form-group col-50"><label>Salários (R$):</label><input type="text" class="currency" placeholder="R$"></div>
-    <div class="form-group col-50"><label>Internet (R$):</label><input type="text" class="currency" placeholder="R$"></div>
-    <div class="form-group col-50"><label>Outros (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-33"><label>Salários (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-33"><label>Internet (R$):</label><input type="text" class="currency" placeholder="R$"></div>
+    <div class="form-group col-33"><label>Outros (R$):</label><input type="text" class="currency" placeholder="R$"></div>
   </div>
   <h4>Despesas Comerciais</h4>
   <div class="row">
@@ -330,12 +330,11 @@
 
   <!-- PLANO COMERCIAL -->
   <h3 style="color:#00bcd4;">5. Plano Comercial</h3>
-  <label>Público-Alvo:</label><textarea rows="2" style="width:100%;"></textarea>
-  <label>Diferenciais do Produto:</label><textarea rows="2" style="width:100%;"></textarea>
-  <label>Possíveis Concorrentes:</label><textarea rows="2" style="width:100%;"></textarea>
-  <label>Volume de Vendas (por Produto):</label>
-  <div id="volumeProdutos"></div>
-  <label>Taxa de Crescimento Mensal (%):</label><input type="text" class="currency" placeholder="%">
+  <label>Público-Alvo:</label><textarea rows="2" style="width:100%; resize: none; overflow-y: hidden;" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'"></textarea>
+  <label>Diferenciais do Produto:</label><textarea rows="2" style="width:100%; resize: none; overflow-y: hidden;" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'"></textarea>
+  <label>Possíveis Concorrentes:</label><textarea rows="2" style="width:100%; resize: none; overflow-y: hidden;" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'"></textarea>
+  
+  <label>Taxa de Crescimento Mensal (%):</label><input type="text" class="percent" placeholder="%">
 </div>
 <script>
 let produtos = [];
@@ -414,7 +413,6 @@ function calcularPrecoVenda() {
   fecharModalPreco();
 }
 </script>
-
 <!-- ETAPA 03 COMPLETA (HTML + JS Corrigido) -->
 <div class="step" id="step3">
   <h2>Etapa 03 – Receita e Projeção de Lucro</h2>
