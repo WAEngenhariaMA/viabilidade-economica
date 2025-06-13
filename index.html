@@ -448,170 +448,135 @@ function calcularPrecoVenda() {
 }
 </script>
 
-<!-- ETAPA 03 COMPLETA (HTML + JS Corrigido) -->
+<!-- ETAPA 03 – Receita e Projeção de Lucro AJUSTADA -->
 <div class="step" id="step3">
   <h2>Etapa 03 – Receita e Projeção de Lucro</h2>
 
-  <!-- RECEITA ESPERADA -->
+  <!-- Receita Esperada com Matriz Mensal -->
   <h3 style="color:#00bcd4;">Receita Esperada</h3>
-  <div class="row" id="receitaProdutos"></div>
-
-  <div class="form-group col-50">
-    <label>Receita Bruta Mensal (R$):</label>
-    <input type="text" id="receita_mensal" class="currency" readonly>
+  <div class="form-group col-33">
+    <label for="mes_selecionado">Escolha o mês para Receita Bruta Mensal:</label>
+    <select id="mes_selecionado" onchange="calcularReceitaTotal()">
+      <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+      <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+      <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+      <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+    </select>
   </div>
-  <div class="form-group col-50">
-    <label>Receita Anual Estimada (R$):</label>
-    <input type="text" id="receita_anual" class="currency" readonly>
+
+  <div id="tabelaReceitaProdutos"></div>
+
+  <div class="row">
+    <div class="form-group col-50">
+      <label>Receita Bruta Mensal (R$):</label>
+      <input type="text" id="receita_mensal" class="currency" readonly>
+    </div>
+    <div class="form-group col-50">
+      <label>Receita Anual Estimada (R$):</label>
+      <input type="text" id="receita_anual" class="currency" readonly>
+    </div>
   </div>
 
-  <!-- RECEITA POR CENÁRIOS -->
+  <!-- Receita por Cenários -->
   <h3 style="color:#00bcd4;">Receita por Cenários</h3>
-  <div id="receitaCenarios"></div>
+  <div id="tabelaCenariosProdutos"></div>
 
-  <!-- PROJEÇÃO DE LUCRO -->
+  <!-- Projeção de Lucro -->
   <h3 style="color:#00bcd4;">Projeção de Lucro</h3>
-  <div class="form-group col-50">
-    <label>Custos Fixos (R$):</label>
-    <input type="text" id="custos_fixos_total" class="currency" readonly>
-  </div>
-  <div class="form-group col-50">
-    <label>Custos Variáveis (R$):</label>
-    <input type="text" id="custos_variaveis_total" class="currency" readonly>
-  </div>
-  <div class="form-group col-50">
-    <label>Investimento Inicial (R$):</label>
-    <input type="text" id="totalInvestimento" class="currency" readonly>
+  <div class="row">
+    <div class="form-group col-50">
+      <label>Custos Fixos (R$):</label>
+      <input type="text" id="custos_fixos_total" class="currency" readonly>
+    </div>
+    <div class="form-group col-50">
+      <label>Custos Variáveis (R$):</label>
+      <input type="text" id="custos_variaveis_total" class="currency" readonly>
+    </div>
+    <div class="form-group col-50">
+      <label>Investimento Inicial (R$):</label>
+      <input type="text" id="investimento_inicial" class="currency" readonly>
+    </div>
   </div>
 </div>
 
 <script>
-function atualizarReceita() {
-  let receitaMensal = 0;
-  const produtosDiv = document.getElementById("receitaProdutos");
-  produtosDiv.innerHTML = "";
+function atualizarReceitaProdutos() {
+  const container = document.getElementById("tabelaReceitaProdutos");
+  container.innerHTML = "";
+
+  const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+  let tabela = "<div style='overflow-x:auto;'><table style='min-width:900px;text-align:center;color:#fff;margin-bottom:20px;border-collapse:collapse;width:100%;'>";
+  tabela += "<thead><tr><th>Produto</th><th>Preço</th>";
+
+  meses.forEach(m => tabela += `<th>${m}</th>`);
+  tabela += "</tr></thead><tbody>";
 
   produtos.forEach((p, i) => {
-    const volumeInput = document.createElement("input");
-    volumeInput.type = "number";
-    volumeInput.placeholder = "Unidades por mês";
-    volumeInput.className = "volumeProdutoInput";
-    volumeInput.setAttribute("data-index", i);
-    volumeInput.oninput = (e) => {
-  produtos[i].volume = parseInt(e.target.value) || 0;
-  atualizarReceita();
-};
-    const label = document.createElement("label");
-    label.innerText = `${p.nome} (R$${p.precoVenda}):`;
-
-    const wrapper = document.createElement("div");
-    wrapper.className = "form-group col-50";
-    wrapper.appendChild(label);
-    wrapper.appendChild(volumeInput);
-    produtosDiv.appendChild(wrapper);
-  });
-
-  document.querySelectorAll(".volumeProdutoInput").forEach((input, i) => {
-    const volume = parseInt(input.value) || 0;
-    const preco = moedaParaNumero(produtos[i].precoVenda || "0");
-    receitaMensal += volume * preco;
-  });
-
-  document.getElementById("receita_mensal").value = numeroParaMoeda(receitaMensal);
-  document.getElementById("receita_anual").value = numeroParaMoeda(receitaMensal * 12);
-
-  atualizarReceitaCenarios();
-  atualizarCustosFixosVariaveis();
-}
-
-function atualizarReceitaCenarios() {
-  const cenariosDiv = document.getElementById("receitaCenarios");
-  cenariosDiv.innerHTML = "";
-
-  produtos.forEach((p, i) => {
-    const preco = moedaParaNumero(p.precoVenda || "0");
-
-    const pessInput = document.createElement("input");
-    const realInput = document.createElement("input");
-    const otiInput = document.createElement("input");
-
-    pessInput.type = realInput.type = otiInput.type = "number";
-    pessInput.placeholder = "Unidades Pessimista";
-    realInput.placeholder = "Unidades Realista";
-    otiInput.placeholder = "Unidades Otimista";
-
-    pessInput.oninput = realInput.oninput = otiInput.oninput = () => atualizarReceitaCenarios();
-
-    const pessOutput = document.createElement("input");
-    const realOutput = document.createElement("input");
-    const otiOutput = document.createElement("input");
-    pessOutput.readOnly = realOutput.readOnly = otiOutput.readOnly = true;
-    pessOutput.className = realOutput.className = otiOutput.className = "currency";
-
-    const receitaP = (parseInt(pessInput.value) || 0) * preco;
-    const receitaR = (parseInt(realInput.value) || 0) * preco;
-    const receitaO = (parseInt(otiInput.value) || 0) * preco;
-
-    pessOutput.value = numeroParaMoeda(receitaP);
-    realOutput.value = numeroParaMoeda(receitaR);
-    otiOutput.value = numeroParaMoeda(receitaO);
-
-    const bloco = document.createElement("div");
-    bloco.innerHTML = `
-      <h4 style="margin-top:10px;">${p.nome}</h4>
-      <div class="row">
-        <div class="form-group col-50">
-          <label>Unidades - Pessimista:</label>
-          ${pessInput.outerHTML}
-          <label>Receita Pessimista (R$):</label>
-          ${pessOutput.outerHTML}
-        </div>
-        <div class="form-group col-50">
-          <label>Unidades - Realista:</label>
-          ${realInput.outerHTML}
-          <label>Receita Realista (R$):</label>
-          ${realOutput.outerHTML}
-        </div>
-        <div class="form-group col-50">
-          <label>Unidades - Otimista:</label>
-          ${otiInput.outerHTML}
-          <label>Receita Otimista (R$):</label>
-          ${otiOutput.outerHTML}
-        </div>
-      </div>
-    `;
-    cenariosDiv.appendChild(bloco);
-  });
-}
-
-function atualizarCustosFixosVariaveis() {
-  let totalFixos = 0;
-  let totalVariaveis = 0;
-
-  document.querySelectorAll(".currency").forEach(input => {
-    const label = input.previousElementSibling?.textContent || "";
-    const val = moedaParaNumero(input.value || "0");
-    if (label.includes("(R$)")) totalFixos += val;
-    if (label.includes("(%)")) totalVariaveis += val;
-  });
-
-  document.getElementById("custos_fixos_total").value = numeroParaMoeda(totalFixos);
-  document.getElementById("custos_variaveis_total").value = numeroParaMoeda(totalVariaveis);
-
-  const investimentos = document.querySelectorAll('#step2 input.currency');
-  let totalInv = 0;
-  investimentos.forEach(input => {
-    const label = input.previousElementSibling?.textContent || "";
-    if (label.includes("Investimento") || label.includes("Marca") || label.includes("Estoque") || label.includes("Capital")) {
-      totalInv += moedaParaNumero(input.value || "0");
+    tabela += `<tr><td>${p.nome}</td><td>${p.precoVenda}</td>`;
+    for (let m = 0; m < 12; m++) {
+      tabela += `<td><input type="number" min="0" class="vendaMes" data-index="${i}" data-mes="${m}" style="width:60px;"></td>`;
     }
+    tabela += "</tr>";
   });
-  document.getElementById("totalInvestimento").value = numeroParaMoeda(totalInv);
+
+  tabela += "</tbody></table></div>";
+  container.innerHTML = tabela;
+
+  document.querySelectorAll(".vendaMes").forEach(input => {
+    input.addEventListener("input", calcularReceitaTotal);
+  });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  atualizarReceita();
-});
+function calcularReceitaTotal() {
+  let receitaMensal = 0;
+  let receitaAnual = 0;
+  const mesSelecionado = parseInt(document.getElementById("mes_selecionado").value);
+
+  produtos.forEach((p, i) => {
+    const preco = parseFloat(p.precoVenda.replace(/\./g, '').replace(',', '.')) || 0;
+    let totalProduto = 0;
+
+    for (let m = 0; m < 12; m++) {
+      const input = document.querySelector(`.vendaMes[data-index='${i}'][data-mes='${m}']`);
+      const qtd = parseInt(input?.value || 0);
+      if (m === mesSelecionado) receitaMensal += qtd * preco;
+      totalProduto += qtd * preco;
+    }
+
+    receitaAnual += totalProduto;
+  });
+
+  document.getElementById("receita_mensal").value = receitaMensal.toLocaleString("pt-BR", {minimumFractionDigits: 2});
+  document.getElementById("receita_anual").value = receitaAnual.toLocaleString("pt-BR", {minimumFractionDigits: 2});
+}
+
+function atualizarCenariosProdutos() {
+  const container = document.getElementById("tabelaCenariosProdutos");
+  container.innerHTML = "";
+
+  produtos.forEach((produto, i) => {
+    const preco = parseFloat(produto.precoVenda.replace(/\./g, '').replace(',', '.')) || 0;
+
+    container.innerHTML += `
+      <div class="row">
+        <div class="form-group col-33">
+          <label>${produto.nome} – Unidades Pessimista:</label>
+          <input type="number" class="pessimista" data-index="${i}" min="0" oninput="document.getElementById('val_pess_${i}').value = (this.value * ${preco}).toLocaleString('pt-BR', {minimumFractionDigits: 2})">
+          <input type="text" id="val_pess_${i}" readonly class="currency" placeholder="R$">
+        </div>
+        <div class="form-group col-33">
+          <label>${produto.nome} – Unidades Realista:</label>
+          <input type="number" class="realista" data-index="${i}" min="0" oninput="document.getElementById('val_real_${i}').value = (this.value * ${preco}).toLocaleString('pt-BR', {minimumFractionDigits: 2})">
+          <input type="text" id="val_real_${i}" readonly class="currency" placeholder="R$">
+        </div>
+        <div class="form-group col-33">
+          <label>${produto.nome} – Unidades Otimista:</label>
+          <input type="number" class="otimista" data-index="${i}" min="0" oninput="document.getElementById('val_otim_${i}').value = (this.value * ${preco}).toLocaleString('pt-BR', {minimumFractionDigits: 2})">
+          <input type="text" id="val_otim_${i}" readonly class="currency" placeholder="R$">
+        </div>
+      </div>`;
+  });
+}
 </script>
 
 <!-- ETAPA 04 - MÓDULO 02: ANÁLISE -->
@@ -973,30 +938,38 @@ document.addEventListener("input", atualizarChecklistAnalise);
       }
     }
 
-    function nextStep() {
-      const steps = document.querySelectorAll(".step");
-      for (let i = 0; i < steps.length; i++) {
-        if (steps[i].classList.contains("active")) {
-           // Ignora verificação apenas na Etapa 01 (índice 0)
-      if (i !== 0) {          
-          const requiredInputs = steps[i].querySelectorAll("input[required], select[required]");
-          for (let j = 0; j < requiredInputs.length; j++) {
-            if (!requiredInputs[j].value) {
-              alert("Por favor, preencha todos os campos obrigatórios antes de continuar.");
-              return;
-            }
+   function nextStep() {
+  const steps = document.querySelectorAll(".step");
+  for (let i = 0; i < steps.length; i++) {
+    if (steps[i].classList.contains("active")) {
+
+      if (i !== 0) {
+        const requiredInputs = steps[i].querySelectorAll("input[required], select[required]");
+        for (let j = 0; j < requiredInputs.length; j++) {
+          if (!requiredInputs[j].value) {
+            alert("Por favor, preencha todos os campos obrigatórios antes de continuar.");
+            return;
           }
-        }
-          steps[i].classList.remove("active");
-          if (steps[i + 1]) {
-        steps[i + 1].classList.add("active");
-            renderButtons(i + 1);
-          }
-          break;
         }
       }
-    }
 
+      steps[i].classList.remove("active");
+
+      if (steps[i + 1]) {
+        steps[i + 1].classList.add("active");
+        renderButtons(i + 1);
+
+        // ✅ CHAMADAS DA ETAPA 03
+        if (steps[i + 1].id === 'step3') {
+          atualizarReceitaProdutos();
+          atualizarCenariosProdutos();
+        }
+      }
+
+      break;
+    }
+  }
+}
     function prevStep() {
       const steps = document.querySelectorAll(".step");
       for (let i = 0; i < steps.length; i++) {
