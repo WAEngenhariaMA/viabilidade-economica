@@ -972,28 +972,31 @@ document.addEventListener("input", atualizarChecklistAnalise);
         container.appendChild(proximo);
       }
     }
-function nextStep() {
-  const steps = document.querySelectorAll(".step");
-  for (let i = 0; i < steps.length; i++) {
-    if (steps[i].classList.contains("active")) {
-      // Ignora verificação apenas na Etapa 01 (índice 0)
-      if (i !== 0) {
-        const requiredInputs = steps[i].querySelectorAll("input[required], select[required]");
-        for (let j = 0; j < requiredInputs.length; j++) {
-          if (!requiredInputs[j].value) {
-            alert("Por favor, preencha todos os campos obrigatórios antes de continuar.");
-            return;
+
+    function nextStep() {
+      const steps = document.querySelectorAll(".step");
+      for (let i = 0; i < steps.length; i++) {
+        if (steps[i].classList.contains("active")) {
+           // Ignora verificação apenas na Etapa 01 (índice 0)
+      if (i !== 0) {          
+          const requiredInputs = steps[i].querySelectorAll("input[required], select[required]");
+          for (let j = 0; j < requiredInputs.length; j++) {
+            if (!requiredInputs[j].value) {
+              alert("Por favor, preencha todos os campos obrigatórios antes de continuar.");
+              return;
+            }
           }
         }
-      }
-      steps[i].classList.remove("active");
-      if (steps[i + 1]) {
+          steps[i].classList.remove("active");
+          if (steps[i + 1]) {
         steps[i + 1].classList.add("active");
+            renderButtons(i + 1);
+          }
+          break;
+        }
       }
-      break;
     }
-  }
-}
+
     function prevStep() {
       const steps = document.querySelectorAll(".step");
       for (let i = 0; i < steps.length; i++) {
