@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WA Engenharia – Analisador de Viabilidade</title>
+
+
+  <!-- Favicon -->
+  <link rel="icon" href="./img/favicon.png" type="image/png">
+
+  <!-- TailwindCSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2563eb', // azul semelhante ao do Gorila
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-white font-sans text-gray-900">
+  <!-- NAVBAR -->
+  <nav class="flex items-center justify-between px-6 py-4 shadow">
+    <div class="flex items-center space-x-2">
+      <img src="./img/Logo_WA.png" alt="Logo" class="h-6">
+      <span class="text-xl font-bold">WA Engenharia</span>
+    </div>
+    <div class="hidden md:flex space-x-4">
+      <a href="#" class="text-sm hover:text-primary">Início</a>
+      <a href="#" class="text-sm hover:text-primary">Soluções</a>
+      <a href="#" class="text-sm hover:text-primary">Contato</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="text-center px-6 py-24 bg-gradient-to-b from-white to-blue-50">
+    <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+      Liberdade para analisar com <span class="text-primary">clareza e confiança</span>
+    </h1>
+    <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+      Use nosso analisador de viabilidade para projetar investimentos com segurança, eficiência e dados reais.
+    </p>
+    <a href="./index.html" class="inline-block bg-primary text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-blue-700 transition">
+      Começar Agora →
+    </a>
+  </section>
+</body>
+</html>
