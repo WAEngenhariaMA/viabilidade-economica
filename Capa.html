@@ -28,30 +28,46 @@
 </head>
 
 <body class="bg-white font-sans text-gray-900">
-  <!-- NAVBAR -->
-  <nav class="flex items-center justify-between px-6 py-4 shadow">
-    <div class="flex items-center space-x-2">
-      <img src="./img/Logo_WA.png" alt="Logo" class="h-6">
-      <span class="text-xl font-bold">WA Engenharia</span>
-    </div>
-    <div class="hidden md:flex space-x-4">
-      <a href="#" class="text-sm hover:text-primary">Início</a>
-      <a href="#" class="text-sm hover:text-primary">Soluções</a>
-      <a href="#" class="text-sm hover:text-primary">Contato</a>
-    </div>
-  </nav>
+  <!-- NAVBAR TRANSPARENTE -->
+<nav class="absolute top-0 left-0 w-full flex items-center justify-between px-10 py-6 z-30">
+  <div class="flex items-center space-x-2">
+    <img src="./img/logo_wa.png" alt="Logo WA" class="h-6">
+    <span class="text-white text-xl font-bold">WA Engenharia</span>
+  </div>
+  <div class="hidden md:flex space-x-6 text-sm font-medium">
+    <a href="#" class="text-[#21344f] hover:text-[#2563eb] transition">Início</a>
+    <a href="#" class="text-[#21344f] hover:text-[#2563eb] transition">Soluções</a>
+    <a href="#" class="text-[#21344f] hover:text-[#2563eb] transition">Contato</a>
+  </div>
+</nav>
 
-  <!-- HERO -->
-  <section class="text-center px-6 py-24 bg-gradient-to-b from-white to-blue-50">
-    <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-      Liberdade para analisar com <span class="text-primary">clareza e confiança</span>
-    </h1>
-    <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
-      Use nosso analisador de viabilidade para projetar investimentos com segurança, eficiência e dados reais.
-    </p>
-    <a href="./index.html" class="inline-block bg-primary text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-blue-700 transition">
-      Começar Agora →
-    </a>
-  </section>
+   <body class="font-sans text-white">
+  <!-- LOGO NO TOPO 
+  <header class="absolute top-6 left-10 z-20">
+    <img src="./img/logo_wa.png" alt="WA Engenharia" class="h-10">
+  </header>-->
+
+   <!-- HERO COM IMAGEM DE FUNDO -->
+  <section
+    class="w-full h-screen bg-cover bg-center flex items-center"
+    style="background-image: url('./img/capa_wa.png');"
+  >
+    <div class="ml-10 max-w-xl text-left drop-shadow-md">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight text-white">
+        Liberdade para analisar com <span class="text-primary drop-shadow">clareza e confiança</span>
+      </h1>
+      <p class="text-lg text-gray-200 mb-8 max-w-xl drop-shadow leading-relaxed">
+        Use nosso analisador de viabilidade para projetar investimentos com segurança, eficiência e dados reais.
+      </p>
+    <div class="mt-8 flex justify-center">
+  <a
+        href="./index.html"
+        class="bg-[#1a2a40] text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-[#21344f] transition shadow-md"
+      >
+        Começar Agora →
+      </a>
+    </div>
+  </div>
+</section>
 </body>
 </html>
