@@ -327,7 +327,7 @@
     <div class="form-group col-50"><label>Impostos (%):</label><input type="text" class="percent" placeholder="%"></div>
     <div class="form-group col-33"><label>Comissão de Vendas (%):</label><input type="text" class="percent" placeholder="%"></div>
     <div class="form-group col-33"><label>Tarifas de Cartão (%):</label><input type="text" class="percent" placeholder="%"></div>
-    <div class="form-group col-33"><label>Outros (%):</label><input type="text" class="percent" placeholder="%"></div>
+    <div class="form-group col-33"><label>Outros Valores (%):</label><input type="text" class="percent" placeholder="%"></div>
   </div>
 
   <!-- CUSTOS FIXOS -->
@@ -381,6 +381,7 @@ function salvarProduto() {
     produtos.push({ nome, custoR, custoP, precoVenda });
     atualizarTabelaProdutos();
     fecharModalProduto();
+   
   } else {
     alert("Preencha pelo menos o nome do produto e o preço de venda.");
   }
@@ -499,10 +500,12 @@ function calcularPrecoVenda() {
       <input type="text" id="investimento_inicial" class="currency" readonly>
     </div>
  <!-- Custos Variáveis - Detalhamento individual -->
-<div class="row" id="custos_variaveis_exibidos"></div>
+      <div class="row" id="custos_variaveis_exibidos"></div>
+   <div id="custos_variaveis_valores_rs" class="row" style="margin-top:20px;">
+     <h3 style="color:#00bcd4; width:100%;">Custos Variáveis Convertidos (R$)</h3>
+    </div>
   </div>
 </div>
-
 <script>
 function atualizarReceitaProdutos() {
   const container = document.getElementById("tabelaReceitaProdutos");
@@ -530,7 +533,82 @@ function atualizarReceitaProdutos() {
     input.addEventListener("input", calcularReceitaTotal);
   });
 }
+function calcularCustosVariaveisEmReais() {
+  const container = document.getElementById("custos_variaveis_valores_rs");
+  if (!container) return;
 
+  container.innerHTML = '<h3 style="color:#00bcd4; width:100%;">Custos Variáveis Convertidos (R$)</h3>';
+  if (produtos.length === 0) return;
+
+  // Captura os inputs corretamente pela posição dos labels
+  const campos = {
+    "Produção (%)": document.getElementById("auto_custo_prod"),
+    "Impostos (%)": null,
+    "Comissão de Vendas (%)": null,
+    "Tarifas de Cartão (%)": null,
+    "Outros Valores (%):": null,
+  };
+
+  document.querySelectorAll("#step2 .form-group").forEach(group => {
+  const label = group.querySelector("label")?.textContent.trim();
+  const input = group.querySelector("input");
+
+  if (label && input) {
+    console.log("🔎 label:", label); // debug
+  }
+
+  if (!label || !input) return;
+
+  if (label.includes("Impostos")) campos["Impostos (%):"] = input;
+  else if (label.includes("Comissão")) campos["Comissão de Vendas (%):"] = input;
+  else if (label.includes("Tarifas")) campos["Tarifas de Cartão (%):"] = input;
+  else if (label.includes("Outros Valores")) campos["Outros Valores (%):"] = input;
+});
+  // Cálculo dos valores em R$
+  const totalPorTipo = {};
+  for (const tipo in campos) {
+    const input = campos[tipo];
+    if (!input) continue;
+
+    let valorBruto = input.value
+  .replace('%', '')
+  .replace(/\s/g, '')
+  .replace(',', '.');
+  
+let percentual = parseFloat(valorBruto) || 0;
+
+    let total = 0;
+    produtos.forEach(p => {
+      const preco = parseFloat(p.precoVenda.replace(/\./g, '').replace(',', '.')) || 0;
+      total += preco * (percentual / 100);
+    });
+
+    totalPorTipo[tipo] = total;
+  }
+
+  for (const tipo in totalPorTipo) {
+    const div = document.createElement("div");
+    div.className = "form-group";
+    div.style.width = "30%";
+    div.innerHTML = `
+      <label>${tipo}</label>
+      <input type="text" class="currency" value="R$ ${totalPorTipo[tipo].toFixed(2).replace('.', ',')}" readonly>
+    `;
+    container.appendChild(div);
+  }
+  // Soma total
+let totalGeral = Object.values(totalPorTipo).reduce((acc, val) => acc + val, 0);
+
+// Adiciona campo do total
+const totalDiv = document.createElement("div");
+totalDiv.className = "form-group";
+totalDiv.style.width = "30%";
+totalDiv.innerHTML = `
+  <label><strong>Custos Variável (R$):</strong></label>
+  <input type="text" class="currency" value="R$ ${totalGeral.toFixed(2).replace('.', ',')}" readonly id="custo_variavel_total_rs">
+`;
+container.appendChild(totalDiv);
+}
 function calcularReceitaTotal() {
   let receitaMensal = 0;
   let receitaAnual = 0;
@@ -681,122 +759,119 @@ if (label === "Tarifas de Cartão (%):") label = "Tarifas Cartão (%)";
 
 </script>
 
-<!-- ETAPA 04 - MÓDULO 02: ANÁLISE -->
+<!-- ETAPA 04 – Módulo 2 – Análise Financeira -->
 <div class="step" id="step4">
-  <h2>Etapa 04 – Módulo 02: Análise</h2>
+  <h2>Etapa 04 – Análise Financeira</h2>
 
-  <!-- 6. Margem de Contribuição -->
-  <div class="bloco">
-    <h3>6. Margem de Contribuição</h3>
+  <!-- Margem de Contribuição Unitária (6.1) -->
+  <h3 style="color:#00bcd4;">6.1 Margem de Contribuição Unitária</h3>
+  <div id="margem_unitaria"></div>
 
-    <!-- 6.1 Unitária -->
-    <div class="subbloco">
-      <h4>6.1. Margem de Contribuição Unitária (por produto)</h4>
-      <div id="margemUnitTable"></div>
+  <!-- Margem de Contribuição Total (6.2) por mês em forma de matriz -->
+  <h3 style="color:#00bcd4;">6.2 Margem de Contribuição Total (Mensal)</h3>
+  <div id="margem_total_mensal">
+    <table style="width:100%; text-align:center; color:#fff; border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th>Jan</th><th>Fev</th><th>Mar</th><th>Abr</th><th>Mai</th><th>Jun</th>
+          <th>Jul</th><th>Ago</th><th>Set</th><th>Out</th><th>Nov</th><th>Dez</th>
+        </tr>
+      </thead>
+      <tbody id="margem_matriz"></tbody>
+    </table>
+  </div>
+
+  <!-- Ponto de Equilíbrio -->
+  <h3 style="color:#00bcd4;">7. Ponto de Equilíbrio</h3>
+  <div class="row">
+    <div class="form-group col-50">
+      <label>7.1 Receita Necessária (R$):</label>
+      <input type="text" id="peq_receita" class="currency" readonly>
     </div>
-
-    <!-- 6.2 Total -->
-    <div class="subbloco">
-      <h4>6.2. Margem de Contribuição Total</h4>
-      <input type="text" id="margem_contribuicao_total" class="currency" readonly>
-    </div>
-
-    <!-- 6.3 Ponderada -->
-    <div class="subbloco">
-      <h4>6.3. Margem de Contribuição Ponderada</h4>
-      <input type="text" id="margemPonderada" class="currency" readonly placeholder="Aguardando fórmula...">
+    <div class="form-group col-50">
+      <label>7.2 Quantidade de Vendas (und):</label>
+      <input type="text" id="peq_quantidade" readonly>
     </div>
   </div>
 
-  <!-- 7. Ponto de Equilíbrio -->
-  <div class="bloco">
-    <h3>7. Ponto de Equilíbrio</h3>
-    <div class="form-group col-50">
-      <label>Ponto de Equilíbrio (R$):</label>
-      <input type="text" id="ponto_equilibrio" class="currency" readonly>
-    </div>
+  <!-- ROI -->
+  <h3 style="color:#00bcd4;">8. ROI (Retorno sobre Investimento)</h3>
+  <div class="form-group col-50">
+    <label>ROI (%):</label>
+    <input type="text" id="roi" readonly>
   </div>
 
-  <!-- 8. ROI -->
-  <div class="bloco">
-    <h3>8. ROI (Retorno Sobre Investimento)</h3>
-    <div class="form-group col-50">
-      <label>ROI (%):</label>
-      <input type="text" id="roi" readonly>
-    </div>
-  </div>
-
-  <!-- 9. PAYBACK -->
-  <div class="bloco">
-    <h3>9. Payback Simples</h3>
-    <div class="form-group col-50">
-      <label>Payback (meses):</label>
-      <input type="text" id="payback" readonly>
-    </div>
+  <!-- Payback Simples -->
+  <h3 style="color:#00bcd4;">9.1 Payback Simples</h3>
+  <div class="form-group col-50">
+    <label>Meses para Retorno:</label>
+    <input type="text" id="payback_simples" readonly>
   </div>
 </div>
 
 <script>
-function atualizarMargemUnitTable() {
-  const tableDiv = document.getElementById("margemUnitTable");
-  tableDiv.innerHTML = "";
+function atualizarEtapa04() {
+  const moedaParaNumero = str => parseFloat(str.replace("R$", "").replace(/\./g, '').replace(',', '.').trim()) || 0;
 
-  if (produtos.length === 0) {
-    tableDiv.innerHTML = "<p style='color:#ccc;'>Nenhum produto cadastrado.</p>";
-    return;
+  const containerMU = document.getElementById("margem_unitaria");
+  const containerMT = document.getElementById("margem_matriz");
+  containerMU.innerHTML = "";
+  containerMT.innerHTML = "";
+
+  let margemTotalAno = 0;
+  let totalVolumeAno = 0;
+  let margemContribuicaoTotalJaneiro = 0;
+
+produtos.forEach((p, i) => {
+  const precoVenda = moedaParaNumero(p.precoVenda);
+
+const campoTotalCV = document.querySelector('#custo_variavel_total_rs');
+const totalCV = campoTotalCV ? moedaParaNumero(campoTotalCV.value) : 0;
+
+const margemUnitaria = precoVenda - totalCV;
+
+  let margemLinha = `<tr><td>${p.nome}</td>`;
+  let margemTotalProduto = 0;
+  let volumeTotalProduto = 0;
+
+  for (let m = 0; m < 12; m++) {
+    const qtd = parseFloat(document.querySelector(`.vendaMes[data-index='${i}'][data-mes='${m}']`)?.value || 0);
+    const totalMes = qtd * margemUnitaria;
+    margemLinha += `<td>${totalMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>`;
+    margemTotalProduto += totalMes;
+    volumeTotalProduto += qtd;
+    if (m === 0) margemContribuicaoTotalJaneiro += totalMes;
   }
+  margemLinha += `</tr>`;
 
-  let totalMargem = 0;
-  let totalVenda = 0;
-  let totalCustoVariavel = 0;
+  containerMU.innerHTML += `<div><strong>${p.nome}</strong>: R$ ${margemUnitaria.toFixed(2).replace('.', ',')}</div>`;
+  containerMT.innerHTML += margemLinha;
+  margemTotalAno += margemTotalProduto;
+  totalVolumeAno += volumeTotalProduto;
+});
+ 
+  const custosFixos = moedaParaNumero(document.getElementById("custos_fixos_total")?.value);
+  const investimento = moedaParaNumero(document.getElementById("investimento_inicial")?.value);
 
-  let html = "<table style='width:100%; text-align:center; color:#fff; margin-top:10px;'>";
-  html += "<tr><th>Produto</th><th>Margem Unitária (R$)</th></tr>";
+  const peq_receita = margemContribuicaoTotalJaneiro > 0 ? custosFixos / (margemContribuicaoTotalJaneiro / totalVolumeAno) : 0;
+  const peq_quantidade = margemContribuicaoTotalJaneiro > 0 ? custosFixos / (margemContribuicaoTotalJaneiro / totalVolumeAno) : 0;
 
-  produtos.forEach(p => {
-    const preco = moedaParaNumero(p.precoVenda || "0");
-    const custo = moedaParaNumero(p.custoDiretoReais || "0");
-    const impostos = moedaParaNumero(document.getElementById("impostos")?.value || "0");
-    const comissao = moedaParaNumero(document.getElementById("comissao_vendas")?.value || "0");
-    const cartao = moedaParaNumero(document.getElementById("tarifas_cartao")?.value || "0");
-    const outros = moedaParaNumero(document.getElementById("outros_variaveis")?.value || "0");
-    const volume = parseFloat(p.volume || 0);
+  const roi = (margemTotalAno - custosFixos - investimento) / investimento * 100;
+  const saldoMensal = margemContribuicaoTotalJaneiro;
+  const payback = saldoMensal > 0 ? investimento / saldoMensal : 0;
 
-    const totalVariavelUnit = custo + (preco * (impostos + comissao + cartao + outros) / 100);
-    const margemUnit = preco - totalVariavelUnit;
-
-    html += `<tr><td>${p.nome}</td><td>R$ ${numeroParaMoeda(margemUnit)}</td></tr>`;
-
-    totalMargem += margemUnit * volume;
-    totalVenda += preco * volume;
-    totalCustoVariavel += totalVariavelUnit * volume;
-  });
-
-  html += "</table>";
-  tableDiv.innerHTML = html;
-
-  // 6.2 Margem de Contribuição Total
-  document.getElementById("margem_contribuicao_total").value = `R$ ${numeroParaMoeda(totalMargem)}`;
-
-  // 7. Ponto de Equilíbrio
-  const custoFixo = moedaParaNumero(document.getElementById("totalCustosFixos")?.value || "0");
-  const pontoEquilibrio = totalMargem !== 0 ? custoFixo / totalMargem : 0;
-  document.getElementById("ponto_equilibrio").value = `R$ ${numeroParaMoeda(custoFixo / (totalMargem / totalVenda))}`;
-
-  // 8. ROI
-  const investimento = moedaParaNumero(document.getElementById("totalInvestimento")?.value || "0");
-  const lucro = totalMargem - custoFixo;
-  const roi = investimento !== 0 ? ((lucro - investimento) / investimento) * 100 : 0;
-  document.getElementById("roi").value = `${roi.toFixed(2)}%`;
-
-  // 9. Payback
-  const saldoMensal = totalMargem - custoFixo;
-  const payback = saldoMensal !== 0 ? investimento / saldoMensal : 0;
-  document.getElementById("payback").value = payback.toFixed(1);
+  document.getElementById("peq_receita").value = peq_receita.toLocaleString("pt-BR", {minimumFractionDigits:2});
+  document.getElementById("peq_quantidade").value = peq_quantidade.toFixed(1);
+  document.getElementById("roi").value = roi.toFixed(1) + "%";
+  document.getElementById("payback_simples").value = payback.toFixed(1) + " meses";
 }
 
-document.addEventListener("input", atualizarMargemUnitTable);
+["input", "change"].forEach(evt =>
+  document.addEventListener(evt, () => setTimeout(atualizarEtapa04, 100))
+);
 </script>
+
  <!-- Etapa 5 -->
   <div class="step" id="step5">
   <h2>Análise Final e Observações</h2>
@@ -1231,7 +1306,12 @@ document.querySelectorAll('input.currency[placeholder="R$"]').forEach(input => {
     input.value = 'R$ ' + val;
   });
 });
-
+// Atualiza o cálculo dos custos variáveis em R$ sempre que um input da etapa 2 for alterado
+document.querySelectorAll("#step2 input").forEach(input => {
+  input.addEventListener("input", () => {
+    calcularCustosVariaveisEmReais();
+  });
+});
 // Corrige comportamento da máscara de percentual (%)
 document.querySelectorAll('input.percent').forEach(input => {
   input.addEventListener('input', () => {
