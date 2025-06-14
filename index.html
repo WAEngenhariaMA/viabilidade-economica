@@ -200,6 +200,7 @@
   </div>
 </div>
 </div>
+
 <script>
   // Lista de estados e cidades (exemplo parcial)
   const estadosECidades = {
@@ -259,6 +260,7 @@
     v = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
     e.target.value = v;
   });
+  
 </script>
 <!-- ETAPA 02 COMPLETA (HTML + JS) -->
 <div class="step" id="step2">
@@ -802,17 +804,23 @@ if (label === "Tarifas de Cartão (%):") label = "Tarifas Cartão (%)";
 <div class="step" id="step4">
   <h2>Etapa 04 – Análise Financeira</h2>
 
-  <!-- Margem de Contribuição Unitária (6.1) -->
-    
-  <h4 style="color:#00bcd4;">6.1 Margem de Contribuição Unitária</h4>
-   <div style="color:white; margin-top: 10px;">
-  <strong>Margem Unitária por Produto:</strong>
-<p id="margem_unitaria_valor" style="color:white;">R$ 0,00</p>
-<div id="margem_unitaria_detalhada"></div></div>
+ <!-- Margem de Contribuição Unitária (6.1) -->
+<h4 style="color:#00bcd4; margin-top: 30px;">6.1 Margem de Contribuição Unitária</h4>
+
+<!-- Margem por Produto -->
 <div style="color:white; margin-top: 10px;">
-  <strong>Margem Unitária Total:</strong>
-  <p id="margem_unitaria_total_valor" style="color:white;">R$ 0,00</p>
+  <strong>Margem Unitária por Produto:</strong>
+  <div id="margem_unitaria_detalhada" style="font-weight:bold; color:#ffffff; margin: 4px 0;">
+    <!-- JS irá inserir aqui os produtos -->
+  </div>
 </div>
+
+<!-- Margem Total -->
+<div style="color:white; margin-top: 15px;">
+  <strong>Margem Unitária Total:</strong>
+  <p id="margem_unitaria_total_valor" style="font-weight:bold; color:#ffffff; margin: 4px 0;">R$ 0,00</p>
+</div>
+
 
   <!-- Margem de Contribuição Total (6.2) por mês em forma de matriz -->
   <h3 style="color:#00bcd4;">6.2 Margem de Contribuição Total (Mensal)</h3>
@@ -858,49 +866,49 @@ if (label === "Tarifas de Cartão (%):") label = "Tarifas Cartão (%)";
 </div>
 
 <script>
+function calcularCustosVariaveisReais(produto) {
+  const moedaParaNumero = str => parseFloat((str || "0").replace("R$", "").replace(/\./g, '').replace(',', '.').trim()) || 0;
 
-function moedaParaNumero(str) {
-  return parseFloat(str.replace("R$", "").replace(/\./g, '').replace(',', '.').trim()) || 0;
+  const precoVenda = moedaParaNumero(produto.precoVenda);
+
+  const impostoPerc = parseFloat((produto.impostos || "0").replace(",", ".")) || 0;
+  const comissaoPerc = parseFloat((produto.comissao || "0").replace(",", ".")) || 0;
+  const cartaoPerc = parseFloat((produto.cartao || "0").replace(",", ".")) || 0;
+  const outrosPerc = parseFloat((produto.outros || "0").replace(",", ".")) || 0;
+
+  return {
+    nome: produto.nome,
+    impostoReais: precoVenda * (impostoPerc / 100),
+    comissaoReais: precoVenda * (comissaoPerc / 100),
+    cartaoReais: precoVenda * (cartaoPerc / 100),
+    outrosReais: precoVenda * (outrosPerc / 100)
+  };
 }
-
-function atualizarMargemUnitáriaTotal() {
-  const produtos = window.produtos || []; // pega produtos globais
-  let precoTotal = 0;
-
-  produtos.forEach(p => {
-    const preco = moedaParaNumero(p.precoVenda);
-    precoTotal += preco;
-  });
-
-  const custoVariavelTotal = moedaParaNumero(document.getElementById("custo_variavel_total_rs")?.value);
-  const margemTotal = precoTotal - custoVariavelTotal;
-
-  document.getElementById("margem_unitaria_total_valor").innerText =
-    "R$ " + margemTotal.toFixed(2).replace('.', ',');
-}
-
-function atualizarMargemContribuicaoPorProduto() {
+function atualizarMargemContribuicao() {
   const container = document.getElementById("margem_unitaria_detalhada");
+  if (!container) return;
+
   container.innerHTML = "";
+  let margemTotal = 0;
 
-  let margemUnitTotal = 0;
-
-  const produtos = window.produtos || [];
   produtos.forEach(p => {
-    const preco = moedaParaNumero(p.precoVenda);
+    const precoVenda = moedaParaNumero(p.precoVenda);
     const custoDireto = moedaParaNumero(p.custoR);
 
-    const outros = moedaParaNumero(document.getElementById("outros_rs")?.value || "0");
-    const impostos = moedaParaNumero(document.getElementById("impostos_rs")?.value || "0");
-    const comissao = moedaParaNumero(document.getElementById("comissao_rs")?.value || "0");
-    const cartao = moedaParaNumero(document.getElementById("cartao_rs")?.value || "0");
+    // 🔄 CHAMA a função já criada que retorna os custos em R$
+    const custos = calcularCustosVariaveisReais(p);
 
-    // Divide proporcionalmente o total R$ por produto (média simples)
-    const totalProdutos = produtos.length || 1;
-    const margem = preco - custoDireto - (outros + impostos + comissao + cartao) / totalProdutos;
+    // 📊 Cálculo da margem com os dados já processados
+    const margem = precoVenda - (
+      custoDireto +
+      custos.impostoReais +
+      custos.comissaoReais +
+      custos.cartaoReais +
+      custos.outrosReais
+    );
+    margemTotal += margem;
 
-    margemUnitTotal += margem;
-
+    // 👁️ Atualiza na tela
     container.innerHTML += `
       <div style="color:white;margin-bottom:4px;">
         <strong>${p.nome}</strong>: R$ ${margem.toFixed(2).replace('.', ',')}
@@ -908,73 +916,38 @@ function atualizarMargemContribuicaoPorProduto() {
     `;
   });
 
-  document.getElementById("margem_unitaria_valor").innerText =
-    "R$ " + margemUnitTotal.toFixed(2).replace('.', ',');
-}
-
-function atualizarEtapa04() {
-  
-  const moedaParaNumero = str => parseFloat(str.replace("R$", "").replace(/\./g, '').replace(',', '.').trim()) || 0;
-
-  const containerMU = document.getElementById("margem_unitaria");
-  const containerMT = document.getElementById("margem_matriz");
-  containerMU.innerHTML = "";
-  containerMT.innerHTML = "";
-
-  let margemTotalAno = 0;
-  let totalVolumeAno = 0;
-  let margemContribuicaoTotalJaneiro = 0;
-
-produtos.forEach((p, i) => {
-  const precoVenda = moedaParaNumero(p.precoVenda);
-
-const campoTotalCV = document.querySelector('#custo_variavel_total_rs');
-const totalCV = campoTotalCV ? moedaParaNumero(campoTotalCV.value) : 0;
-
-const margemUnitaria = precoVenda - totalCV;
-
-  let margemLinha = `<tr><td>${p.nome}</td>`;
-  let margemTotalProduto = 0;
-  let volumeTotalProduto = 0;
-
-  for (let m = 0; m < 12; m++) {
-    const qtd = parseFloat(document.querySelector(`.vendaMes[data-index='${i}'][data-mes='${m}']`)?.value || 0);
-    const totalMes = qtd * margemUnitaria;
-    margemLinha += `<td>${totalMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>`;
-    margemTotalProduto += totalMes;
-    volumeTotalProduto += qtd;
-    if (m === 0) margemContribuicaoTotalJaneiro += totalMes;
+  // Atualiza o total
+  const campoTotal = document.getElementById("margem_unitaria_total_valor");
+  if (campoTotal) {
+    campoTotal.innerText = "R$ " + margemTotal.toFixed(2).replace('.', ',');
   }
-  margemLinha += `</tr>`;
-
-  containerMU.innerHTML += `<div><strong>${p.nome}</strong>: R$ ${margemUnitaria.toFixed(2).replace('.', ',')}</div>`;
-  containerMT.innerHTML += margemLinha;
-  margemTotalAno += margemTotalProduto;
-  totalVolumeAno += volumeTotalProduto;
-});
- 
-  const custosFixos = moedaParaNumero(document.getElementById("custos_fixos_total")?.value);
-  const investimento = moedaParaNumero(document.getElementById("investimento_inicial")?.value);
-
-  const peq_receita = margemContribuicaoTotalJaneiro > 0 ? custosFixos / (margemContribuicaoTotalJaneiro / totalVolumeAno) : 0;
-  const peq_quantidade = margemContribuicaoTotalJaneiro > 0 ? custosFixos / (margemContribuicaoTotalJaneiro / totalVolumeAno) : 0;
-
-  const roi = (margemTotalAno - custosFixos - investimento) / investimento * 100;
-  const saldoMensal = margemContribuicaoTotalJaneiro;
-  const payback = saldoMensal > 0 ? investimento / saldoMensal : 0;
-
-  document.getElementById("peq_receita").value = peq_receita.toLocaleString("pt-BR", {minimumFractionDigits:2});
-  document.getElementById("peq_quantidade").value = peq_quantidade.toFixed(1);
-  document.getElementById("roi").value = roi.toFixed(1) + "%";
-  document.getElementById("payback_simples").value = payback.toFixed(1) + " meses";
 }
+function atualizarMargemUnitáriaTotal() {
+  let margemTotal = 0;
+  produtos.forEach(p => {
+    const precoVenda = moedaParaNumero(p.precoVenda);
+    const custoDireto = moedaParaNumero(p.custoR);
 
-["input", "change"].forEach(evt =>
-  document.addEventListener(evt, () => setTimeout(atualizarEtapa04, 100))
-);
+    // Recalculando internamente os custos variáveis
+    const impostosRS = precoVenda * (parseFloat(p.impostos || 0) / 100);
+    const comissaoRS = precoVenda * (parseFloat(p.comissao || 0) / 100);
+    const cartaoRS = precoVenda * (parseFloat(p.cartao || 0) / 100);
+    const outrosRS = precoVenda * (parseFloat(p.outros || 0) / 100);
 
-atualizarMargemUnitáriaTotal(); // ← isso chama a função assim que a página carrega
+    const margem = precoVenda - (custoDireto + impostosRS + comissaoRS + cartaoRS + outrosRS);
+    margemTotal += margem;
+  });
+
+  const campo = document.getElementById("margem_unitaria_total_valor");
+  if (campo) campo.innerText = "R$ " + margemTotal.toFixed(2).replace('.', ',');
+}
 </script>
+<script>
+  calcularCustosVariaveisIndividuais();
+  atualizarMargemContribuicao();
+  atualizarMargemUnitáriaTotal();
+</script>
+
 
  <!-- Etapa 5 -->
   <div class="step" id="step5">
@@ -1018,6 +991,7 @@ async function carregarImagemBase64(url) {
     reader.onloadend = () => resolve(reader.result);
     reader.readAsDataURL(blob);
   });
+  
 }
 
 async function gerarPDFPersonalizado() {
@@ -1149,9 +1123,7 @@ document.addEventListener("input", atualizarChecklistAnalise);
  
 <script>
   document.addEventListener("input", function () {
-    function moedaParaNumero(str) {
-      return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
-    }
+   
     function numeroParaMoeda(num) {
       return num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     }
@@ -1240,12 +1212,19 @@ document.addEventListener("input", atualizarChecklistAnalise);
         steps[i + 1].classList.add("active");
         renderButtons(i + 1);
 
+        
         // ✅ CHAMADAS DA ETAPA 03
         if (steps[i + 1].id === 'step3') {
           atualizarReceitaProdutos();
           atualizarCenariosProdutos();
           calcularCustosVariaveisEmReais();
           atualizarCustosFixosEVariaveis();
+        }
+
+        // ✅ CHAMADAS DA ETAPA 04
+        if (steps[i + 1].id === 'step4') {
+          atualizarMargemContribuicao();
+          atualizarMargemUnitáriaTotal();
         }
       }
 
@@ -1336,9 +1315,7 @@ document.addEventListener("input", atualizarChecklistAnalise);
       const pontoEquilibrio = preco > custoVariavelUnitario ? (fixos / (preco - custoVariavelUnitario)) : 0;
       document.getElementById('ponto_equilibrio').value = Math.ceil(pontoEquilibrio);
     });
-     function moedaParaNumero(str) {
-      return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
-    }
+     
 
     function numeroParaMoeda(num) {
       return num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -1411,6 +1388,9 @@ document.querySelectorAll('#camposEspecificos h3').forEach(h3 => {
 );
   </script>
 <script>
+function moedaParaNumero(str) {
+      return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+    }
 // Máscara para moeda (R$)
 document.querySelectorAll('input.currency[placeholder="R$"]').forEach(input => {
   input.addEventListener('input', () => {
