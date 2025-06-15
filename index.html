@@ -326,10 +326,22 @@
   <h3 style="color:#00bcd4;">3. Custos Variáveis</h3>
   <div class="row">
     <div class="form-group col-50"><label>Custos com Produção (%):</label><input type="text" id="auto_custo_prod" placeholder="%" readonly></div>
-    <div class="form-group col-50"><label>Impostos (%):</label><input type="text" class="percent" placeholder="%"></div>
-    <div class="form-group col-33"><label>Comissão de Vendas (%):</label><input type="text" class="percent" placeholder="%"></div>
-    <div class="form-group col-33"><label>Tarifas de Cartão (%):</label><input type="text" class="percent" placeholder="%"></div>
-    <div class="form-group col-33"><label>Outros Valores (%):</label><input type="text" class="percent" placeholder="%"></div>
+    <div class="form-group col-50">
+    <label>Impostos (%):</label>
+    <input type="text" id="inputImpostoPercentualEtapa02" class="percent" placeholder="%">
+  </div>
+  <div class="form-group col-33">
+    <label>Comissão de Vendas (%):</label>
+    <input type="text" id="inputComissaoPercentualEtapa02" class="percent" placeholder="%">
+  </div>
+  <div class="form-group col-33">
+    <label>Tarifas de Cartão (%):</label>
+    <input type="text" id="inputCartaoPercentualEtapa02" class="percent" placeholder="%">
+  </div>
+  <div class="form-group col-33">
+    <label>Outros Valores (%):</label>
+    <input type="text" id="inputOutrosPercentualEtapa02" class="percent" placeholder="%">
+  </div>
     <!-- Custos de Produção por Produto -->
 <div id="custos_individuais_area" style="margin-top: 10px;"></div>
   </div>
@@ -457,7 +469,23 @@ if (blocoIndividual) {
     `;
   });
 }
+function obterCustosVariaveisEtapa02() {
+  const parsePercentual = (id) => {
+    return parseFloat(
+      (document.getElementById(id)?.value || "0")
+        .replace('%', '')
+        .replace(",", ".")
+        .trim()
+    ) || 0;
+  };
 
+  const impostoPerc = parsePercentual("inputImpostoPercentualEtapa02");
+  const comissaoPerc = parsePercentual("inputComissaoPercentualEtapa02");
+  const cartaoPerc = parsePercentual("inputCartaoPercentualEtapa02");
+  const outrosPerc = parsePercentual("inputOutrosPercentualEtapa02");
+
+  return { impostoPerc, comissaoPerc, cartaoPerc, outrosPerc };
+}
 }
 
 function removerProduto(index) {
@@ -810,7 +838,7 @@ if (label === "Tarifas de Cartão (%):") label = "Tarifas Cartão (%)";
 <!-- Margem por Produto -->
 <div style="color:white; margin-top: 10px;">
   <strong>Margem Unitária por Produto:</strong>
-  <div id="margem_unitaria_detalhada" style="font-weight:bold; color:#ffffff; margin: 4px 0;">
+  <div id="margem-unitaria-produto" style="font-weight:bold; color:#ffffff; margin: 4px 0;">
     <!-- JS irá inserir aqui os produtos -->
   </div>
 </div>
@@ -818,7 +846,7 @@ if (label === "Tarifas de Cartão (%):") label = "Tarifas Cartão (%)";
 <!-- Margem Total -->
 <div style="color:white; margin-top: 15px;">
   <strong>Margem Unitária Total:</strong>
-  <p id="margem_unitaria_total_valor" style="font-weight:bold; color:#ffffff; margin: 4px 0;">R$ 0,00</p>
+  <p id="margem-unitaria-total" style="font-weight:bold; color:#ffffff; margin: 4px 0;">R$ 0,00</p>
 </div>
 
 
@@ -866,86 +894,68 @@ if (label === "Tarifas de Cartão (%):") label = "Tarifas Cartão (%)";
 </div>
 
 <script>
-function calcularCustosVariaveisReais(produto) {
-  const moedaParaNumero = str => parseFloat((str || "0").replace("R$", "").replace(/\./g, '').replace(',', '.').trim()) || 0;
-
-  const precoVenda = moedaParaNumero(produto.precoVenda);
-
-  const impostoPerc = parseFloat((produto.impostos || "0").replace(",", ".")) || 0;
-  const comissaoPerc = parseFloat((produto.comissao || "0").replace(",", ".")) || 0;
-  const cartaoPerc = parseFloat((produto.cartao || "0").replace(",", ".")) || 0;
-  const outrosPerc = parseFloat((produto.outros || "0").replace(",", ".")) || 0;
-
-  return {
-    nome: produto.nome,
-    impostoReais: precoVenda * (impostoPerc / 100),
-    comissaoReais: precoVenda * (comissaoPerc / 100),
-    cartaoReais: precoVenda * (cartaoPerc / 100),
-    outrosReais: precoVenda * (outrosPerc / 100)
-  };
-}
-function atualizarMargemContribuicao() {
-  const container = document.getElementById("margem_unitaria_detalhada");
+  
+function atualizarMargemUnitáriaPorProduto() {
+  const container = document.getElementById("margem-unitaria-produto");
   if (!container) return;
 
+  // Limpa a visualização anterior
   container.innerHTML = "";
-  let margemTotal = 0;
 
+  // Pega os percentuais da Etapa 02
+  const { impostoPerc, comissaoPerc, cartaoPerc, outrosPerc } = obterCustosVariaveisEtapa02();
+
+  // Loop por produto
   produtos.forEach(p => {
-    const precoVenda = moedaParaNumero(p.precoVenda);
-    const custoDireto = moedaParaNumero(p.custoR);
+    const precoVendaproduto = moedaParaNumero(p.precoVenda);
+    const custoDiretoproduto = moedaParaNumero(p.custoR);
 
-    // 🔄 CHAMA a função já criada que retorna os custos em R$
-    const custos = calcularCustosVariaveisReais(p);
+    // Custos variáveis calculados individualmente para este produto
+    const impostoReais = precoVendaproduto * (impostoPerc / 100);
+    const comissaoReais = precoVendaproduto * (comissaoPerc / 100);
+    const cartaoReais = precoVendaproduto * (cartaoPerc / 100);
+    const outrosReais = precoVendaproduto * (outrosPerc / 100);
 
-    // 📊 Cálculo da margem com os dados já processados
-    const margem = precoVenda - (
-      custoDireto +
-      custos.impostoReais +
-      custos.comissaoReais +
-      custos.cartaoReais +
-      custos.outrosReais
-    );
-    margemTotal += margem;
+    // Margem unitária desse produto
+    const margemUnitária = precoVendaproduto - (custoDiretoproduto + impostoReais + comissaoReais + cartaoReais + outrosReais);
 
-    // 👁️ Atualiza na tela
-    container.innerHTML += `
-      <div style="color:white;margin-bottom:4px;">
-        <strong>${p.nome}</strong>: R$ ${margem.toFixed(2).replace('.', ',')}
-      </div>
-    `;
+    // Adiciona à tela
+    const campo = document.getElementById("margem-unitaria-produto");
+  if (campo) campo.innerText = "R$ " + margemUnitária.toFixed(2).replace('.', ',');
+
   });
-
-  // Atualiza o total
-  const campoTotal = document.getElementById("margem_unitaria_total_valor");
-  if (campoTotal) {
-    campoTotal.innerText = "R$ " + margemTotal.toFixed(2).replace('.', ',');
-  }
 }
+
 function atualizarMargemUnitáriaTotal() {
-  let margemTotal = 0;
+  let somaCustosDiretos = 0;
+  let somaPrecoVenda = 0;
+
+  // Soma os valores totais de custo direto e preço de venda
   produtos.forEach(p => {
-    const precoVenda = moedaParaNumero(p.precoVenda);
-    const custoDireto = moedaParaNumero(p.custoR);
+  const precoVendaproduto = moedaParaNumero(p.precoVenda);
+  const custoDiretoproduto = moedaParaNumero(p.custoR);
+  somaCustosDiretos += custoDiretoproduto;
+  somaPrecoVenda += precoVendaproduto;
+});
 
-    // Recalculando internamente os custos variáveis
-    const impostosRS = precoVenda * (parseFloat(p.impostos || 0) / 100);
-    const comissaoRS = precoVenda * (parseFloat(p.comissao || 0) / 100);
-    const cartaoRS = precoVenda * (parseFloat(p.cartao || 0) / 100);
-    const outrosRS = precoVenda * (parseFloat(p.outros || 0) / 100);
+  // Pega os percentuais definidos na Etapa 02
+  const { impostoPerc, comissaoPerc, cartaoPerc, outrosPerc } = obterCustosVariaveisEtapa02();
 
-    const margem = precoVenda - (custoDireto + impostosRS + comissaoRS + cartaoRS + outrosRS);
-    margemTotal += margem;
-  });
+  // Aplica os percentuais sobre o total de preço de venda
+  const impostoReais = somaPrecoVenda * (impostoPerc / 100);
+  const comissaoReais = somaPrecoVenda * (comissaoPerc / 100);
+  const cartaoReais = somaPrecoVenda * (cartaoPerc / 100);
+  const outrosReais = somaPrecoVenda * (outrosPerc / 100);
 
+  // Margem total considerando todos os custos
+  const margemTotal = somaPrecoVenda - (somaCustosDiretos + impostoReais + comissaoReais + cartaoReais + outrosReais);
+
+  // Atualiza o valor na tela
   const campo = document.getElementById("margem_unitaria_total_valor");
   if (campo) campo.innerText = "R$ " + margemTotal.toFixed(2).replace('.', ',');
+
 }
-</script>
-<script>
-  calcularCustosVariaveisIndividuais();
-  atualizarMargemContribuicao();
-  atualizarMargemUnitáriaTotal();
+
 </script>
 
 
@@ -1193,9 +1203,11 @@ document.addEventListener("input", atualizarChecklistAnalise);
 
    function nextStep() {
   const steps = document.querySelectorAll(".step");
+
   for (let i = 0; i < steps.length; i++) {
     if (steps[i].classList.contains("active")) {
 
+      // Validação apenas da Etapa 1 em diante
       if (i !== 0) {
         const requiredInputs = steps[i].querySelectorAll("input[required], select[required]");
         for (let j = 0; j < requiredInputs.length; j++) {
@@ -1206,14 +1218,15 @@ document.addEventListener("input", atualizarChecklistAnalise);
         }
       }
 
+      // Remove a etapa atual
       steps[i].classList.remove("active");
 
+      // Ativa a próxima etapa
       if (steps[i + 1]) {
         steps[i + 1].classList.add("active");
         renderButtons(i + 1);
 
-        
-        // ✅ CHAMADAS DA ETAPA 03
+        // ✅ Etapa 03 – Executa os cálculos dos produtos
         if (steps[i + 1].id === 'step3') {
           atualizarReceitaProdutos();
           atualizarCenariosProdutos();
@@ -1221,10 +1234,14 @@ document.addEventListener("input", atualizarChecklistAnalise);
           atualizarCustosFixosEVariaveis();
         }
 
-        // ✅ CHAMADAS DA ETAPA 04
+        // ✅ Etapa 04 – Calcula margens por produto e total
         if (steps[i + 1].id === 'step4') {
-          atualizarMargemContribuicao();
-          atualizarMargemUnitáriaTotal();
+          if (produtos && produtos.length > 0) {
+            atualizarMargemUnitáriaTotal();
+            atualizarMargemUnitáriaPorProduto();
+          } else {
+            console.warn("Lista de produtos está vazia ao entrar na Etapa 04.");
+          }
         }
       }
 
@@ -1376,16 +1393,7 @@ document.querySelectorAll('#camposEspecificos h3').forEach(h3 => {
   document.getElementById('tir').value = (tir * 100).toFixed(2).replace('.', ',') + '%';
 }
 
-    document.addEventListener("input", calcularEtapa4);
-    ["input", "change"].forEach(evt =>
-  document.addEventListener(evt, () => {
-    setTimeout(() => {
-      atualizarEtapa04();
-      atualizarMargemUnitáriaTotal();        // ← Aqui chama a Total
-      atualizarMargemContribuicaoPorProduto(); // ← E aqui a por produto
-    }, 100);
-  })
-);
+    
   </script>
 <script>
 function moedaParaNumero(str) {
