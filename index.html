@@ -107,6 +107,20 @@
     button:hover {
       background-color: #0193a3;
     }
+    form {
+  display: block;
+  width: auto;
+  height: auto; /* <- ESSENCIAL */
+  overflow: visible; /* <- garante que conteúdo fora não seja cortado */
+  max-width: 1200px; /* <- opcional, para limitar a largura do formulário */
+  min-width: 300px; /* <- opcional, para garantir que o formulário não seja muito estreito */
+
+}
+.container {
+  height: auto;
+  overflow: visible;
+}
+
   </style>
 </head>
 <body>
@@ -852,22 +866,29 @@ if (label === "Tarifas de Cartão (%):") label = "Tarifas Cartão (%)";
   <p id="margem-unitaria-total" style="font-weight:bold; color:#ffffff; margin: 4px 0;">R$ 0,00</p>
 </div>
 
+<!-- Margem Total R$ -->
+<div style="color:white; margin-top: 15px;">
+  <strong>Margem Ano:</strong>
+  <p id="margem-ano" style="font-weight:bold; color:#ffffff; margin: 4px 0;">R$ 0,00</p>
+</div>
+
 
   <!-- Margem de Contribuição Total (6.2) por mês em forma de matriz -->
-  <h3 style="color:#00bcd4;">6.2 Margem de Contribuição Total (Mensal)</h3>
-  <div id="margem_total_mensal">
-    <table style="width:100%; text-align:center; color:#fff; border-collapse:collapse;">
-      <thead>
-        <tr>
-          <th>Produto</th>
-          <th>Jan</th><th>Fev</th><th>Mar</th><th>Abr</th><th>Mai</th><th>Jun</th>
-          <th>Jul</th><th>Ago</th><th>Set</th><th>Out</th><th>Nov</th><th>Dez</th>
-        </tr>
-      </thead>
-      <tbody id="margem_matriz"></tbody>
-    </table>
-  </div>
-
+<h3 style="color:#00bcd4;">6.2 Margem de Contribuição Total (Mensal)</h3>
+<div style="overflow-x: auto; padding-bottom: 10px;">
+  <table style="min-width: 800px; width: max-content; text-align: center; color: #fff; border-collapse: collapse;">
+    <thead>
+      <tr>
+        <th style="padding: 8px 12px;">Produto</th>
+        <th style="padding: 8px 12px;">Jan</th><th style="padding: 8px 12px;">Fev</th><th style="padding: 8px 12px;">Mar</th>
+        <th style="padding: 8px 12px;">Abr</th><th style="padding: 8px 12px;">Mai</th><th style="padding: 8px 12px;">Jun</th>
+        <th style="padding: 8px 12px;">Jul</th><th style="padding: 8px 12px;">Ago</th><th style="padding: 8px 12px;">Set</th>
+        <th style="padding: 8px 12px;">Out</th><th style="padding: 8px 12px;">Nov</th><th style="padding: 8px 12px;">Dez</th>
+      </tr>
+    </thead>
+    <tbody id="margem_matriz"></tbody>
+  </table>
+</div>
   <!-- Ponto de Equilíbrio -->
   <h3 style="color:#00bcd4;">7. Ponto de Equilíbrio</h3>
   <div class="row">
@@ -962,16 +983,14 @@ function atualizarMargemUnitáriaTotal() {
 }
 function atualizarMargemMensalPorProduto() {
   const moedaParaNumero = str => parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
-  const numeroParaMoeda = num => "R$ " + num.toFixed(2).replace('.', ',');
+  const numeroParaMoeda = num => num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const numeroParaMoedaSemRS = num =>
-  num.toFixed(2)
-    .replace('.', ',')
-    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
   const container = document.getElementById("margem_matriz");
   if (!container) return;
   container.innerHTML = "";
 
-  // 1. Obter totais por mês
   const totaisPorMes = Array(12).fill(0);
   const inputs = document.querySelectorAll(".vendaMes");
   inputs.forEach(input => {
@@ -980,59 +999,80 @@ function atualizarMargemMensalPorProduto() {
     totaisPorMes[mes] += quantidade;
   });
 
-  // 2. Obter percentuais da Etapa 02
   const { impostoPerc, comissaoPerc, cartaoPerc, outrosPerc } = obterCustosVariaveisEtapa02();
 
-  // 3. Somar preços e custos dos produtos
-  let somaPrecoVenda = 0;
-  let somaCustosDiretos = 0;
-  produtos.forEach(p => {
-    somaPrecoVenda += moedaParaNumero(p.precoVenda);
-    somaCustosDiretos += moedaParaNumero(p.custoR);
-  });
+  let margemAnoTotal = 0;
+  let receitaAnoTotal = 0;
 
-  // 4. Calcular custos variáveis totais com base na soma do preço de venda
-  const impostoReais = somaPrecoVenda * (impostoPerc / 100);
-  const comissaoReais = somaPrecoVenda * (comissaoPerc / 100);
-  const cartaoReais = somaPrecoVenda * (cartaoPerc / 100);
-  const outrosReais = somaPrecoVenda * (outrosPerc / 100);
+  produtos.forEach((p, i) => {
+    const precoVenda = moedaParaNumero(p.precoVenda);
+    const custoDireto = moedaParaNumero(p.custoR);
 
-  const custoVariavelUnitario = somaCustosDiretos + impostoReais + comissaoReais + cartaoReais + outrosReais;
+    const impostoReais = precoVenda * (impostoPerc / 100);
+    const comissaoReais = precoVenda * (comissaoPerc / 100);
+    const cartaoReais = precoVenda * (cartaoPerc / 100);
+    const outrosReais = precoVenda * (outrosPerc / 100);
 
-  //VALOR QUE PEGA PRODUTO MES 
-  //<-- produtos.forEach((p, i) => {
-   // let linha = `<tr><td>${p.nome}</td>`;
-    //for (let mes = 0; mes < 12; mes++) {
-    //  const input = document.querySelector(`.vendaMes[data-index="${i}"][data-mes="${mes}"]`);
-     // const quantidadeMes = parseInt(input?.value || 0);
-//      const receitaMes = somaPrecoVenda * quantidadeMes;
-    //  const custoMes = custoVariavelUnitario * quantidadeMes ;
-     // const margemMes = receitaMes - custoMes;
+    const custoVariavelUnitario = custoDireto + impostoReais + comissaoReais + cartaoReais + outrosReais;
 
-     // linha += `<td>${numeroParaMoeda(margemMes)}</td>`;
-   // }
+    let linha = `<tr><td><strong>${p.nome}</strong></td>`;
+    
+    for (let mes = 0; mes < 12; mes++) {
+      const input = document.querySelector(`.vendaMes[data-index="${i}"][data-mes="${mes}"]`);
+      const quantidadeMes = parseInt(input?.value || 0);
 
-   // linha += `</tr>`;
-//container.innerHTML += linha;
- // }); -->
-  
-
-  // 5. Construir a matriz mensal
-  let linha = `<tr><td><strong>Total</strong></td>`;
-  for (let mes = 0; mes < 12; mes++) {
-
-      const receitaMes = somaPrecoVenda * totaisPorMes[mes];
-      const custoMes = custoVariavelUnitario * totaisPorMes[mes] ;
+      const receitaMes = precoVenda * quantidadeMes;
+      const custoMes = custoVariavelUnitario * quantidadeMes;
       const margemMes = receitaMes - custoMes;
 
-      linha += `<td>${numeroParaMoedaSemRS(margemMes)}</td>`;
+      receitaAnoTotal += receitaMes;
+      margemAnoTotal += margemMes;
+
+      linha += `<td style="padding: 8px 12px;">${numeroParaMoeda(margemMes)}</td>`;
     }
 
     linha += `</tr>`;
     container.innerHTML += linha;
- ;
-}
+  });
 
+  document.getElementById("margem-ano").innerText = numeroParaMoeda(margemAnoTotal);
+
+  return {
+    receitaAno: receitaAnoTotal,
+    margemAno: margemAnoTotal,
+    custoVariavelUnitario: 0 // este dado não é mais único, pois é calculado por produto
+  };
+}
+function atualizarPontoEquilibrio() {
+  const moedaParaNumero = str => parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+
+  const custoFixo = moedaParaNumero(document.getElementById("custo_fixo_total")?.value || "0");
+  const receitaAnual = moedaParaNumero(document.getElementById("receita_anual")?.value || "0");
+  const margemAno = moedaParaNumero(document.getElementById("margem-ano")?.innerText.replace('R$', '').replace(/\./g, '').replace(',', '.')) || 0;
+
+  // Somar todas as quantidades dos inputs
+  let totalQtd = 0;
+  const inputs = document.querySelectorAll(".vendaMes");
+  inputs.forEach(input => {
+    totalQtd += parseInt(input.value || 0);
+  });
+
+  // Margem percentual (margemAno / receita)
+  const margemPercentual = margemAno > 0 ? (margemAno / receitaAnual) * 100 : 0;
+
+  // Margem Unitária Média
+  const margemUnitMedia = totalQtd > 0 ? margemAno / totalQtd : 0;
+
+  // Receita para ponto de equilíbrio (em R$)
+  const receitaEquilibrio = margemPercentual > 0 ? custoFixo / (margemPercentual / 100) : 0;
+
+  // Quantidade de vendas para ponto de equilíbrio (em unidades)
+  const quantidadeEquilibrio = margemUnitMedia > 0 ? custoFixo / margemUnitMedia : 0;
+
+  // Preencher os campos no HTML
+  document.getElementById("peq_receita").value = receitaEquilibrio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  document.getElementById("peq_quantidade").value = Math.ceil(quantidadeEquilibrio);
+}
 </script>
 <script>
   ["input", "change"].forEach(evt =>
@@ -1042,6 +1082,7 @@ function atualizarMargemMensalPorProduto() {
         atualizarMargemUnitáriaPorProduto();
         obterCustosVariaveisEtapa02();
         atualizarMargemMensalPorProduto();
+        atualizarPontoEquilibrio();
       }, 100);
     })
   );
@@ -1328,6 +1369,7 @@ document.addEventListener("input", atualizarChecklistAnalise);
     atualizarMargemUnitáriaTotal();
     atualizarMargemUnitáriaPorProduto();
     atualizarMargemMensalPorProduto();
+    atualizarPontoEquilibrio()
   } else {
     console.warn("Lista de produtos está vazia ao entrar na Etapa 04.");
   }
