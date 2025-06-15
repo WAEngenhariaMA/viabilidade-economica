@@ -377,6 +377,8 @@
 </div>
 <script>
 let produtos = [];
+</script>
+<script>
 function abrirModalProduto() {
   document.getElementById("modalProduto").style.display = 'block';
 }
@@ -469,6 +471,7 @@ if (blocoIndividual) {
     `;
   });
 }
+}
 function obterCustosVariaveisEtapa02() {
   const parsePercentual = (id) => {
     return parseFloat(
@@ -486,7 +489,7 @@ function obterCustosVariaveisEtapa02() {
 
   return { impostoPerc, comissaoPerc, cartaoPerc, outrosPerc };
 }
-}
+
 
 function removerProduto(index) {
   produtos.splice(index, 1);
@@ -896,6 +899,7 @@ if (label === "Tarifas de Cartão (%):") label = "Tarifas Cartão (%)";
 <script>
   
 function atualizarMargemUnitáriaPorProduto() {
+  const moedaParaNumero = str => parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
   const container = document.getElementById("margem-unitaria-produto");
   if (!container) return;
 
@@ -918,10 +922,11 @@ function atualizarMargemUnitáriaPorProduto() {
 
     // Margem unitária desse produto
     const margemUnitária = precoVendaproduto - (custoDiretoproduto + impostoReais + comissaoReais + cartaoReais + outrosReais);
-
+console.log("Produtos cadastrados:", produtos);
     // Adiciona à tela
-    const campo = document.getElementById("margem-unitaria-produto");
-  if (campo) campo.innerText = "R$ " + margemUnitária.toFixed(2).replace('.', ',');
+     container.innerHTML += `
+      <div><strong>${p.nome}:</strong> R$ ${margemUnitária.toFixed(2).replace('.', ',')}</div>
+    `;
 
   });
 }
@@ -951,13 +956,96 @@ function atualizarMargemUnitáriaTotal() {
   const margemTotal = somaPrecoVenda - (somaCustosDiretos + impostoReais + comissaoReais + cartaoReais + outrosReais);
 
   // Atualiza o valor na tela
-  const campo = document.getElementById("margem_unitaria_total_valor");
+  const campo = document.getElementById("margem-unitaria-total");
   if (campo) campo.innerText = "R$ " + margemTotal.toFixed(2).replace('.', ',');
 
 }
+function atualizarMargemMensalPorProduto() {
+  const moedaParaNumero = str => parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+  const numeroParaMoeda = num => "R$ " + num.toFixed(2).replace('.', ',');
+  const numeroParaMoedaSemRS = num =>
+  num.toFixed(2)
+    .replace('.', ',')
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const container = document.getElementById("margem_matriz");
+  if (!container) return;
+  container.innerHTML = "";
+
+  // 1. Obter totais por mês
+  const totaisPorMes = Array(12).fill(0);
+  const inputs = document.querySelectorAll(".vendaMes");
+  inputs.forEach(input => {
+    const mes = parseInt(input.getAttribute("data-mes"));
+    const quantidade = parseInt(input.value || "0");
+    totaisPorMes[mes] += quantidade;
+  });
+
+  // 2. Obter percentuais da Etapa 02
+  const { impostoPerc, comissaoPerc, cartaoPerc, outrosPerc } = obterCustosVariaveisEtapa02();
+
+  // 3. Somar preços e custos dos produtos
+  let somaPrecoVenda = 0;
+  let somaCustosDiretos = 0;
+  produtos.forEach(p => {
+    somaPrecoVenda += moedaParaNumero(p.precoVenda);
+    somaCustosDiretos += moedaParaNumero(p.custoR);
+  });
+
+  // 4. Calcular custos variáveis totais com base na soma do preço de venda
+  const impostoReais = somaPrecoVenda * (impostoPerc / 100);
+  const comissaoReais = somaPrecoVenda * (comissaoPerc / 100);
+  const cartaoReais = somaPrecoVenda * (cartaoPerc / 100);
+  const outrosReais = somaPrecoVenda * (outrosPerc / 100);
+
+  const custoVariavelUnitario = somaCustosDiretos + impostoReais + comissaoReais + cartaoReais + outrosReais;
+
+  //VALOR QUE PEGA PRODUTO MES 
+  //<-- produtos.forEach((p, i) => {
+   // let linha = `<tr><td>${p.nome}</td>`;
+    //for (let mes = 0; mes < 12; mes++) {
+    //  const input = document.querySelector(`.vendaMes[data-index="${i}"][data-mes="${mes}"]`);
+     // const quantidadeMes = parseInt(input?.value || 0);
+//      const receitaMes = somaPrecoVenda * quantidadeMes;
+    //  const custoMes = custoVariavelUnitario * quantidadeMes ;
+     // const margemMes = receitaMes - custoMes;
+
+     // linha += `<td>${numeroParaMoeda(margemMes)}</td>`;
+   // }
+
+   // linha += `</tr>`;
+//container.innerHTML += linha;
+ // }); -->
+  
+
+  // 5. Construir a matriz mensal
+  let linha = `<tr><td><strong>Total</strong></td>`;
+  for (let mes = 0; mes < 12; mes++) {
+
+      const receitaMes = somaPrecoVenda * totaisPorMes[mes];
+      const custoMes = custoVariavelUnitario * totaisPorMes[mes] ;
+      const margemMes = receitaMes - custoMes;
+
+      linha += `<td>${numeroParaMoedaSemRS(margemMes)}</td>`;
+    }
+
+    linha += `</tr>`;
+    container.innerHTML += linha;
+ ;
+}
 
 </script>
-
+<script>
+  ["input", "change"].forEach(evt =>
+    document.addEventListener(evt, () => {
+      setTimeout(() => {
+        atualizarMargemUnitáriaTotal();
+        atualizarMargemUnitáriaPorProduto();
+        obterCustosVariaveisEtapa02();
+        atualizarMargemMensalPorProduto();
+      }, 100);
+    })
+  );
+</script>
 
  <!-- Etapa 5 -->
   <div class="step" id="step5">
@@ -1234,17 +1322,17 @@ document.addEventListener("input", atualizarChecklistAnalise);
           atualizarCustosFixosEVariaveis();
         }
 
-        // ✅ Etapa 04 – Calcula margens por produto e total
         if (steps[i + 1].id === 'step4') {
-          if (produtos && produtos.length > 0) {
-            atualizarMargemUnitáriaTotal();
-            atualizarMargemUnitáriaPorProduto();
-          } else {
-            console.warn("Lista de produtos está vazia ao entrar na Etapa 04.");
-          }
-        }
+  console.log("Produtos na entrada da Etapa 04:", produtos);
+  if (produtos && produtos.length > 0) {
+    atualizarMargemUnitáriaTotal();
+    atualizarMargemUnitáriaPorProduto();
+    atualizarMargemMensalPorProduto();
+  } else {
+    console.warn("Lista de produtos está vazia ao entrar na Etapa 04.");
+  }
+}
       }
-
       break;
     }
   }
