@@ -1405,36 +1405,187 @@ async function gerarPDFPersonalizado() {
 }
 </script>
 <script>
+// 1. Atualiza visual e dados do checklist
 function atualizarChecklistAnalise() {
-  const receita = parseFloat(document.getElementById('receita_mensal').value.replace(/\./g, '').replace(',', '.')) || 0;
-  const fixos = parseFloat(document.getElementById('custos_fixos_total').value.replace(/\./g, '').replace(',', '.')) || 0;
-  const roi = parseFloat(document.getElementById('roi').value.replace('%','').replace(',', '.')) || 0;
-  const payback = parseFloat(document.getElementById('payback').value.replace(',', '.')) || 0;
-  const lucro = receita - fixos;
+  const moedaParaNumero = str => parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
 
-  const check_receita = receita >= fixos;
-  const check_roi = roi > 20;
-  const check_payback = payback > 0 && payback <= 12;
-  const check_fluxo = lucro > 0;
+  const receitaMensal = moedaParaNumero(document.getElementById("receita_mensal")?.value || "0");
+  const receitaAnual = moedaParaNumero(document.getElementById("receita_anual")?.value || "0");
+  const custosFixosMensal = moedaParaNumero(document.getElementById("custos_fixos_total")?.value || "0");
+  const investimentoInicial = moedaParaNumero(document.getElementById("investimento_inicial")?.value || "0");
+  const lucroMensal = receitaMensal - custosFixosMensal;
 
-  document.getElementById('check_receita').textContent = check_receita ? 'Sim' : 'Não';
-  document.getElementById('check_roi').textContent = check_roi ? 'Sim' : 'Não';
-  document.getElementById('check_payback').textContent = check_payback ? 'Sim' : 'Não';
-  document.getElementById('check_fluxo').textContent = check_fluxo ? 'Sim' : 'Não';
+  const ROI = parseFloat(document.querySelector("#calculoIndicadores")?.innerText.match(/ROI:\s*(\d+(?:\.\d+)?)/)?.[1] || "0");
+  const Payback = parseFloat(document.querySelector("#calculoIndicadores")?.innerText.match(/Payback Simples:\s*(\d+(?:\.\d+)?)/)?.[1] || "0");
+  const TIR = parseFloat(document.querySelector("#calculoIndicadores")?.innerText.match(/TIR:\s*(\d+(?:\.\d+)?)/)?.[1] || "0");
+  const MargemSeguranca = parseFloat(document.querySelector("#calculoIndicadores")?.innerText.match(/Margem de Segurança:\s*(\d+(?:\.\d+)?)/)?.[1] || "0");
 
-  const totalSim = [check_receita, check_roi, check_payback, check_fluxo].filter(Boolean).length;
-  const avaliacaoFinal = document.getElementById('avaliacao_final');
-
-  if (totalSim === 4) {
-    avaliacaoFinal.value = 'Viável com Alta Rentabilidade';
-  } else if (totalSim === 3) {
-    avaliacaoFinal.value = 'Viável com Ajustes';
-  } else if (totalSim === 2) {
-    avaliacaoFinal.value = 'Pouco Viável no Momento';
-  } else {
-    avaliacaoFinal.value = 'Não Recomendado';
-  }
+  document.getElementById("check_receita").textContent = receitaMensal >= custosFixosMensal ? "Sim" : "Não";
+  document.getElementById("check_roi").textContent = ROI >= 20 ? "Sim" : "Não";
+  document.getElementById("check_payback").textContent = Payback > 0 && Payback <= 12 ? "Sim" : "Não";
+  document.getElementById("check_fluxo").textContent = lucroMensal > 0 ? "Sim" : "Não";
+  document.getElementById("check_tir").textContent = TIR >= 20 ? "Sim" : "Não";
+  document.getElementById("check_margem").textContent = MargemSeguranca >= 20 ? "Sim" : "Não";
 }
+
+// 2. Atualiza visual da Etapa 05 (substituir no HTML)
+// <tr><td>TIR acima de 20%?</td><td id="check_tir"></td></tr>
+// <tr><td>Margem de Segurança acima de 20%?</td><td id="check_margem"></td></tr>
+
+// 3. PDF SUPER COMPLETO
+async function gerarPDFPersonalizado() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const margem = 20;
+  let y = 20;
+
+  const novaPagina = () => {
+    doc.addPage();
+    y = 20;
+  };
+
+  const escreveLinha = (titulo, valor) => {
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${titulo}:`, margem, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(valor || '-', margem + 60, y);
+    y += 8;
+  };
+
+  // Página 01 - Dados Gerais
+  doc.setFontSize(18);
+  doc.text('1. Dados da Empresa', margem, y);
+  y += 10;
+  escreveLinha('Projeto', document.getElementById('nome').value);
+  escreveLinha('Responsável', document.getElementById('responsavel').value);
+  escreveLinha('E-mail', document.getElementById('email').value);
+  escreveLinha('Telefone', document.getElementById('telefone').value);
+  escreveLinha('Tipo', document.getElementById('tipo').value);
+  escreveLinha('Estado', document.getElementById('estado').value);
+  escreveLinha('Cidade', document.getElementById('cidade').value);
+  novaPagina();
+
+  // Página 02 - Produtos e Custos
+  doc.setFontSize(18);
+  doc.text('2. Produtos, Custos e Taxas', margem, y);
+  y += 10;
+  produtos.forEach(p => {
+    escreveLinha(`Produto`, p.nome);
+    escreveLinha(`Custo`, p.custoR);
+    escreveLinha(`Preço Venda`, p.precoVenda);
+    y += 5;
+  });
+  escreveLinha('Custos Fixos Mensais', document.getElementById('custos_fixos_total').value);
+  escreveLinha('Investimento Inicial', document.getElementById('investimento_inicial').value);
+  novaPagina();
+
+  // Página 03 - Receita Anual + Totais
+  doc.setFontSize(18);
+  doc.text('3. Receita e Totais', margem, y);
+  y += 10;
+  escreveLinha('Receita Mensal', document.getElementById('receita_mensal').value);
+  escreveLinha('Receita Anual', document.getElementById('receita_anual').value);
+  escreveLinha('Custos Variáveis Total (R$)', document.getElementById('custo_variavel_total_rs')?.value);
+  novaPagina();
+
+  // Página 04 - Indicadores
+  doc.setFontSize(18);
+  doc.text('4. Indicadores Financeiros', margem, y);
+  y += 10;
+  doc.setFontSize(12);
+  doc.text(document.getElementById("calculoIndicadores")?.innerText || 'Indicadores não calculados.', margem, y);
+  y += 60;
+
+  // Resumo interpretativo
+  const roi = parseFloat(document.querySelector("#calculoIndicadores")?.innerText.match(/ROI:\s*(\d+(?:\.\d+)?)/)?.[1] || "0");
+  const payback = parseFloat(document.querySelector("#calculoIndicadores")?.innerText.match(/Payback Simples:\s*(\d+(?:\.\d+)?)/)?.[1] || "0");
+  const paybackDesc = parseFloat(document.querySelector("#calculoIndicadores")?.innerText.match(/Payback Descontado:\s*(\d+(?:\.\d+)?)/)?.[1] || "0");
+  const tir = parseFloat(document.querySelector("#calculoIndicadores")?.innerText.match(/TIR:\s*(\d+(?:\.\d+)?)/)?.[1] || "0");
+  const margemSeg = parseFloat(document.querySelector("#calculoIndicadores")?.innerText.match(/Margem de Segurança:\s*(\d+(?:\.\d+)?)/)?.[1] || "0");
+  const il = parseFloat(document.querySelector("#calculoIndicadores")?.innerText.match(/Índice de Lucratividade \(IL\):\s*(\d+(?:\.\d+)?)/)?.[1] || "0");
+  const margemContribuicaoTotal = parseFloat(document.getElementById("margem_total_num")?.innerText?.replace("R$", "").replace(/\./g, "").replace(",", ".") || 0);
+ 
+
+  doc.setFontSize(11);
+  doc.text('5. Interpretação dos Indicadores', margem, y);
+  y += 10;
+
+  const textoResumo = [];
+  const condicaoRuim = roi < 0.2 || payback > 12 || tir < 0.2 || margemSeg < 0.2 || il < 1;
+
+  if (!condicaoRuim) {
+    textoResumo.push(
+     `Com base nos dados informados, o projeto apresenta um Retorno sobre Investimento (ROI) de ${(roi * 100).toFixed(2)}%,`,
+    `o que indica que, ao final do período analisado, o capital investido retornaria com um lucro de apenas ${(roi * 100).toFixed(2)}% sobre o valor aportado.`,
+    `Esse retorno está abaixo do esperado para projetos de perfil semelhante, o que pode comprometer sua atratividade frente a outras opções de investimento.`,
+
+    ``,
+    `O Payback Simples estimado é de ${payback.toFixed(2)} meses, representando o tempo necessário para recuperar integralmente o capital investido.`,
+    `Esse prazo é relativamente elevado, o que aumenta a exposição ao risco e pode afetar a tomada de decisão por parte de investidores.`,
+    `Já o Payback Descontado, que considera o valor do dinheiro no tempo, foi calculado em ${paybackDesc.toFixed(2)} meses,`,
+    `reforçando a necessidade de ajustes no modelo para acelerar a recuperação do investimento.`,
+
+    ``,
+    `A Taxa Interna de Retorno (TIR) anual foi de ${(tir * 100).toFixed(2)}%, abaixo do patamar mínimo normalmente exigido por investidores para projetos com riscos operacionais e financeiros similares.`,
+    `Esse resultado indica uma rentabilidade limitada e sugere que, da forma atual, o projeto pode não ser a melhor opção de alocação de capital.`,
+
+    ``,
+    `A Margem de Contribuição, que expressa o quanto sobra do preço de venda após os custos variáveis, ficou em R$ ${margemContribuicaoTotal.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".")}.`,
+    `Esse valor ainda é positivo, porém pode não ser suficiente para cobrir os custos fixos de maneira confortável, afetando a geração de lucro operacional.`,
+
+    ``,
+    `A Margem de Segurança, calculada em ${(margemSeg * 100).toFixed(2)}%, está abaixo do ideal, indicando que qualquer oscilação negativa nas vendas`,
+    `pode levar rapidamente o projeto ao ponto de equilíbrio ou até mesmo ao prejuízo, exigindo atenção redobrada na execução comercial.`,
+
+    ``,
+    `O Índice de Lucratividade (IL), de ${il.toFixed(2)}, significa que a cada R$ 1,00 investido, o retorno líquido estimado é de apenas R$ ${il.toFixed(2)}.`,
+    `Esse indicador sugere que o capital empregado poderia ter maior rendimento se direcionado a outras iniciativas mais eficientes financeiramente.`
+    );
+  } else {
+    textoResumo.push(
+     `Com base nos dados informados, o projeto apresenta um Retorno sobre Investimento (ROI) de ${(roi * 100).toFixed(2)}%,`,
+    `o que significa que, ao final do período analisado, espera-se que o capital investido retorne com um lucro de ${(roi * 100).toFixed(2)}% sobre o valor inicialmente aportado.`,
+    `Esse índice é um forte indicativo de atratividade, especialmente quando comparado a outras opções do mercado com riscos semelhantes.`,
+
+    ``,
+    `O Payback Simples estimado é de ${payback.toFixed(2)} meses, representando o tempo necessário para que todo o investimento inicial`,
+    `seja recuperado a partir dos lucros gerados. Trata-se de um prazo competitivo, que contribui positivamente para a percepção de risco e retorno.`,
+    `O Payback Descontado, que considera o valor do dinheiro no tempo, foi calculado em ${paybackDesc.toFixed(2)} meses,`,
+    `demonstrando que o projeto ainda assim se mantém rentável mesmo sob condições financeiras mais exigentes.`,
+
+    ``,
+    `A Taxa Interna de Retorno (TIR) anual atingiu ${(tir * 100).toFixed(2)}%, superando amplamente as expectativas mínimas de retorno de muitos investidores`,
+    `e sinalizando que o projeto possui uma excelente capacidade de geração de valor financeiro ao longo do tempo.`,
+
+    ``,
+    `Outro ponto relevante é a Margem de Contribuição, que representa a diferença entre o preço de venda e os custos variáveis unitários.`,
+    `Com uma margem de contribuição total de R$ ${margemContribuicaoTotal.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".")},`,
+    `o projeto demonstra capacidade de cobrir seus custos fixos e ainda gerar resultado operacional.`,
+
+    ``,
+    `A Margem de Segurança, atualmente em ${(margemSeg * 100).toFixed(2)}%, mostra que o projeto possui uma folga em relação à sua receita projetada.`,
+    `Mesmo que ocorra uma queda no volume de vendas, existe margem suficiente para que o ponto de equilíbrio não seja atingido de imediato.`,
+
+    ``,
+    `Por fim, o Índice de Lucratividade (IL) calculado em ${il.toFixed(2)} indica que, para cada R$ 1,00 investido,`,
+    `o projeto tende a gerar R$ ${il.toFixed(2)} de retorno líquido. Esse indicador reforça a eficiência do capital investido e permite comparações diretas`,
+    `com outras oportunidades no portfólio empresarial.`
+    );
+  }
+
+  textoResumo.forEach(paragrafo => {
+    if (y > 270) {
+      novaPagina();
+      doc.setFontSize(11);
+    }
+    doc.text(paragrafo, margem, y);
+    y += 6;
+  });
+
+  
+  doc.save('Relatorio_Viabilidade_Economica.pdf');
+}
+
 
 document.addEventListener("input", atualizarChecklistAnalise);
 </script>
