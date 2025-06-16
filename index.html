@@ -380,7 +380,25 @@
     <div class="form-group col-50"><label>Despesa 1 (R$):</label><input type="text" class="currency" placeholder="R$"></div>
     <div class="form-group col-50"><label>Despesa 2 (R$):</label><input type="text" class="currency" placeholder="R$"></div>
   </div>
+<!-- TAXA DESCONTO -->
+  <h3 style="color:#00bcd4; margin-top: 40px;">Taxas de Avaliação Financeira</h3>
+<div class="row">
+  <div class="form-group col-33">
+    <label>Inflação Esperada (%):</label>
+    <input type="text" id="taxa_inflacao" class="percent" placeholder="%">
+  </div>
+  <div class="form-group col-33">
+    <label>Custo de Oportunidade (%):</label>
+    <input type="text" id="taxa_oportunidade" class="percent" placeholder="%">
+  </div>
+  <div class="form-group col-33">
+    <label>Retorno Esperado (%):</label>
+    <input type="text" id="taxa_esperada" class="percent" placeholder="%">
+  </div>
+</div>
 
+
+  
   <!-- PLANO COMERCIAL -->
   <h3 style="color:#00bcd4;">5. Plano Comercial</h3>
   <label>Público-Alvo:</label><textarea rows="2" style="width:100%; resize: none; overflow-y: hidden;" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'"></textarea>
@@ -891,31 +909,16 @@ if (label === "Tarifas de Cartão (%):") label = "Tarifas Cartão (%)";
 </div>
   <!-- Ponto de Equilíbrio -->
   <h3 style="color:#00bcd4;">7. Ponto de Equilíbrio</h3>
-  <div class="row">
-    <div class="form-group col-50">
-      <label>7.1 Receita Necessária (R$):</label>
-      <input type="text" id="peq_receita" class="currency" readonly>
-    </div>
-    <div class="form-group col-50">
-      <label>7.2 Quantidade de Vendas (und):</label>
-      <input type="text" id="peq_quantidade" readonly>
-    </div>
-  </div>
-
-  <!-- ROI -->
-  <h3 style="color:#00bcd4;">8. ROI (Retorno sobre Investimento)</h3>
-  <div class="form-group col-50">
-    <label>ROI (%):</label>
-    <input type="text" id="roi" readonly>
-  </div>
-
-  <!-- Payback Simples -->
-  <h3 style="color:#00bcd4;">9.1 Payback Simples</h3>
-  <div class="form-group col-50">
-    <label>Meses para Retorno:</label>
-    <input type="text" id="payback_simples" readonly>
-  </div>
+  
+<h4 style="color:white; margin-top: 30px;">7.3 Ponto de Equilíbrio por Produto</h4>
+<div id="peq_individual" style="color:white; margin-top: 10px;">
+  <!-- Conteúdo será inserido via JS -->
 </div>
+ 
+  <!-- ROI -->
+  <h3 style="color:#00bcd4;">8. Indicadores Financeiros</h3>
+  <div id="calculoIndicadores" style="color:white; margin-top: 10px;"></div>
+  </div>
 
 <script>
   
@@ -1045,48 +1048,224 @@ function atualizarMargemMensalPorProduto() {
 }
 function atualizarPontoEquilibrio() {
   const moedaParaNumero = str => parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+  const numeroParaMoeda = num => num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-  const custoFixo = moedaParaNumero(document.getElementById("custo_fixo_total")?.value || "0");
+  // 📌 1. Captura os valores principais
+  const custoFixo = moedaParaNumero(document.getElementById("custos_fixos_total")?.value || "0");
   const receitaAnual = moedaParaNumero(document.getElementById("receita_anual")?.value || "0");
-  const margemAno = moedaParaNumero(document.getElementById("margem-ano")?.innerText.replace('R$', '').replace(/\./g, '').replace(',', '.')) || 0;
+  const margemAno = moedaParaNumero(document.getElementById("margem-ano")?.innerText || "0");
 
-  // Somar todas as quantidades dos inputs
-  let totalQtd = 0;
-  const inputs = document.querySelectorAll(".vendaMes");
-  inputs.forEach(input => {
-    totalQtd += parseInt(input.value || 0);
+  // 📌 2. Total de unidades vendidas no ano
+  let totalUnidades = 0;
+  document.querySelectorAll(".vendaMes").forEach(input => {
+    const qtd = parseInt(input.value || "0");
+    totalUnidades += qtd;
   });
 
-  // Margem percentual (margemAno / receita)
-  const margemPercentual = margemAno > 0 ? (margemAno / receitaAnual) * 100 : 0;
+  // 📌 3. Margem percentual (sobre receita) e margem unitária média
+  const margemPercentual = receitaAnual > 0 ? (margemAno / receitaAnual) : 0;
+  const margemUnitariaMedia = totalUnidades > 0 ? (margemAno / totalUnidades) : 0;
 
-  // Margem Unitária Média
-  const margemUnitMedia = totalQtd > 0 ? margemAno / totalQtd : 0;
+  // 📌 4. Cálculo do ponto de equilíbrio
+  const receitaNecessaria = margemPercentual > 0 ? (custoFixo / margemPercentual) : 0;
+  const quantidadeNecessaria = margemUnitariaMedia > 0 ? (custoFixo / margemUnitariaMedia) : 0;
 
-  // Receita para ponto de equilíbrio (em R$)
-  const receitaEquilibrio = margemPercentual > 0 ? custoFixo / (margemPercentual / 100) : 0;
+   // 🔍 Cálculo do Ponto de Equilíbrio por Produto
+  const containerPEQ = document.getElementById("peq_individual");
+  if (!containerPEQ) return;
 
-  // Quantidade de vendas para ponto de equilíbrio (em unidades)
-  const quantidadeEquilibrio = margemUnitMedia > 0 ? custoFixo / margemUnitMedia : 0;
+  containerPEQ.innerHTML = "";
+  let totalPEPonderado = 0;
+  let pesoTotal = 0;
 
-  // Preencher os campos no HTML
-  document.getElementById("peq_receita").value = receitaEquilibrio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  document.getElementById("peq_quantidade").value = Math.ceil(quantidadeEquilibrio);
+  produtos.forEach((p) => {
+    const preco = moedaParaNumero(p.precoVenda);
+    const custo = moedaParaNumero(p.custoR);
+
+    const { impostoPerc, comissaoPerc, cartaoPerc, outrosPerc } = obterCustosVariaveisEtapa02();
+
+    const impostos = preco * (impostoPerc / 100);
+    const comissao = preco * (comissaoPerc / 100);
+    const cartao = preco * (cartaoPerc / 100);
+    const outros = preco * (outrosPerc / 100);
+
+    const margemUnit = preco - (custo + impostos + comissao + cartao + outros);
+    const peqIndividual = margemUnit > 0 ? custoFixo / margemUnit : 0;
+
+    totalPEPonderado += peqIndividual * margemUnit;
+    pesoTotal += margemUnit;
+
+    containerPEQ.innerHTML += `
+      <div style="margin-bottom: 6px;">
+        <strong>${p.nome}</strong>: ${Math.ceil(peqIndividual)} und (Margem: R$ ${margemUnit.toFixed(2).replace('.', ',')})
+      </div>
+    `;
+  });
+
+  if (pesoTotal > 0) {
+    const mediaPonderada = totalPEPonderado / pesoTotal;
+    containerPEQ.innerHTML += `
+      <div style="margin-top:10px;"><strong style="color:#fff;">Média Ponderada do Ponto de Equilíbrio:</strong> ${Math.ceil(mediaPonderada)} unidades</div>
+    `;
+  }
+  atualizarReceitaEquilibrioPorProduto();
+
 }
+function atualizarReceitaEquilibrioPorProduto() {
+  const container = document.getElementById("peq_individual");
+  if (!container) return;
+
+  const custoFixo = moedaParaNumero(document.getElementById("custos_fixos_total")?.value || "0");
+
+  container.innerHTML += `<h4 style="color:#fff; margin-top: 25px;">7.4 Receita no Ponto de Equilíbrio (por Produto)</h4>`;
+
+  let somaPrecoMargem = 0;
+  let somaPEPonderado = 0;
+  let pesoTotal = 0;
+
+  produtos.forEach((p) => {
+    const preco = moedaParaNumero(p.precoVenda);
+    const custo = moedaParaNumero(p.custoR);
+
+    const { impostoPerc, comissaoPerc, cartaoPerc, outrosPerc } = obterCustosVariaveisEtapa02();
+
+    const impostos = preco * (impostoPerc / 100);
+    const comissao = preco * (comissaoPerc / 100);
+    const cartao = preco * (cartaoPerc / 100);
+    const outros = preco * (outrosPerc / 100);
+
+    const margemUnit = preco - (custo + impostos + comissao + cartao + outros);
+    const peqIndividual = margemUnit > 0 ? custoFixo / margemUnit : 0;
+    const receitaPE = preco * peqIndividual;
+
+    somaPrecoMargem += preco * margemUnit;              // (P × M)
+    somaPEPonderado += peqIndividual * margemUnit;      // (PE × M)
+    pesoTotal += margemUnit;                            // M
+
+    container.innerHTML += `
+      <div style="margin-bottom: 5px; font-size: 15px;">
+  <strong>${p.nome}</strong> – Receita no PE: R$ ${receitaPE.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+</div>
+    `;
+  });
+
+ if (pesoTotal > 0) {
+    const precoMedioPonderado = somaPrecoMargem / pesoTotal;
+    const peMedioPonderado = somaPEPonderado / pesoTotal;
+    const receitaPonderada = precoMedioPonderado * peMedioPonderado;
+    container.innerHTML += `
+     <div style="margin-top:10px;">
+  <strong style="color:#fff;">Receita no Ponto de Equilíbrio (Média Ponderada):</strong> R$ ${receitaPonderada.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+</div>
+    `;
+  }
+}
+function calcularIndicadoresFinanceiros() {
+  const container = document.getElementById("calculoIndicadores");
+  if (!container) return;
+
+  const moedaParaNumero = str => parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+  const numeroParaMoeda = num => num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  const investimentoInicial = moedaParaNumero(document.getElementById("investimento_inicial")?.value || "0");
+  const custosFixosMensal = moedaParaNumero(document.getElementById("custos_fixos_total")?.value || "0");
+
+  const inflacao = moedaParaNumero(document.getElementById("taxa_inflacao")?.value || "0") / 100;
+  const oportunidade = moedaParaNumero(document.getElementById("taxa_oportunidade")?.value || "0") / 100;
+  const retorno = moedaParaNumero(document.getElementById("taxa_esperada")?.value || "0") / 100;
+
+  const taxaAnual = (1 + inflacao) * (1 + oportunidade) * (1 + retorno) - 1;
+  const taxaMensal = Math.pow(1 + taxaAnual, 1 / 12) - 1;
+
+  const { impostoPerc, comissaoPerc, cartaoPerc, outrosPerc } = obterCustosVariaveisEtapa02();
+
+  let lucroTotal = 0;
+  let receitaTotal = 0;
+  let totalMargemContribuicao = 0;
+
+  produtos.forEach((produto, index) => {
+    const precoVenda = moedaParaNumero(produto.precoVenda);
+    const custoDireto = moedaParaNumero(produto.custoR);
+
+    let totalVendida = 0;
+    for (let m = 0; m < 12; m++) {
+      const input = document.querySelector(`.vendaMes[data-index='${index}'][data-mes='${m}']`);
+      if (input) totalVendida += parseInt(input.value || 0);
+    }
+
+    const impostos = precoVenda * (impostoPerc / 100);
+    const comissao = precoVenda * (comissaoPerc / 100);
+    const cartao = precoVenda * (cartaoPerc / 100);
+    const outros = precoVenda * (outrosPerc / 100);
+
+    const margemUnit = precoVenda - (custoDireto + impostos + comissao + cartao + outros);
+
+    receitaTotal += precoVenda * totalVendida;
+    lucroTotal += margemUnit * totalVendida;
+    totalMargemContribuicao += margemUnit * totalVendida;
+  });
+
+  const lucroMensal = lucroTotal / 12;
+  const receitaMensal = receitaTotal / 12;
+
+  const roi = investimentoInicial > 0 ? lucroTotal / investimentoInicial : 0;
+  const paybackSimples = lucroMensal > 0 ? investimentoInicial / lucroMensal : 0;
+
+  let vpl = -investimentoInicial;
+  let vpAcumulado = 0;
+  let paybackDescontado = 12;
+
+  for (let t = 1; t <= 12; t++) {
+    const fluxo = lucroMensal / Math.pow(1 + taxaMensal, t);
+    vpl += fluxo;
+    vpAcumulado += fluxo;
+    if (vpAcumulado >= investimentoInicial && paybackDescontado === 12) {
+      paybackDescontado = t;
+    }
+  }
+
+  function calcularTIR(fluxos, guess = 0.1) {
+    let tir = guess;
+    for (let i = 0; i < 100; i++) {
+      let f = 0, df = 0;
+      for (let t = 0; t < fluxos.length; t++) {
+        f += fluxos[t] / Math.pow(1 + tir, t);
+        df += -t * fluxos[t] / Math.pow(1 + tir, t + 1);
+      }
+      const tirNova = tir - f / df;
+      if (Math.abs(tirNova - tir) < 1e-6) break;
+      tir = tirNova;
+    }
+    return tir;
+  }
+
+  const fluxoCompleto = [-investimentoInicial];
+  for (let i = 0; i < 12; i++) fluxoCompleto.push(lucroMensal);
+
+  const tirMensal = calcularTIR(fluxoCompleto);
+  const tirAnual = Math.pow(1 + tirMensal, 12) - 1;
+
+  const margemSeguranca = receitaTotal > 0 ? 1 - ((custosFixosMensal * 12) / receitaTotal) : 0;
+  const il = investimentoInicial > 0 ? lucroTotal / investimentoInicial : 0;
+
+  if (investimentoInicial > 0) {
+    container.innerHTML = `
+      <div style="margin-top: 20px; font-size: 15px;">
+        <div><strong>ROI:</strong> ${(roi * 100).toFixed(2)}%</div>
+        <div><strong>Payback Simples:</strong> ${paybackSimples.toFixed(2)} meses</div>
+        <div><strong>Payback Descontado:</strong> ${paybackDescontado} meses</div>
+        <div><strong>VPL:</strong> ${numeroParaMoeda(vpl)}</div>
+        <div><strong>TIR:</strong> ${(tirAnual * 100).toFixed(2)}%</div>
+        <div><strong>Margem de Segurança:</strong> ${(margemSeguranca * 100).toFixed(2)}%</div>
+        <div><strong>Índice de Lucratividade (IL):</strong> ${il.toFixed(2)}</div>
+      </div>
+    `;
+  }
+}
+
+
 </script>
-<script>
-  ["input", "change"].forEach(evt =>
-    document.addEventListener(evt, () => {
-      setTimeout(() => {
-        atualizarMargemUnitáriaTotal();
-        atualizarMargemUnitáriaPorProduto();
-        obterCustosVariaveisEtapa02();
-        atualizarMargemMensalPorProduto();
-        atualizarPontoEquilibrio();
-      }, 100);
-    })
-  );
-</script>
+
 
  <!-- Etapa 5 -->
   <div class="step" id="step5">
@@ -1260,45 +1439,7 @@ function atualizarChecklistAnalise() {
 document.addEventListener("input", atualizarChecklistAnalise);
 </script>
  
-<script>
-  document.addEventListener("input", function () {
-   
-    function numeroParaMoeda(num) {
-      return num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    }
 
-    const preco = moedaParaNumero(document.getElementById('preco_unitario').value);
-    const qtd = parseInt(document.getElementById('quantidade_mensal').value) || 0;
-    const receitaMensal = preco * qtd;
-    const receitaAnual = receitaMensal * 12;
-
-    document.getElementById('receita_mensal').value = numeroParaMoeda(receitaMensal);
-    document.getElementById('receita_anual').value = numeroParaMoeda(receitaAnual);
-
-    // Receita por Cenários
-    const pess = parseInt(document.getElementById('qtd_pessimista').value) || 0;
-    const real = parseInt(document.getElementById('qtd_realista').value) || 0;
-    const otim = parseInt(document.getElementById('qtd_otimista').value) || 0;
-
-    document.getElementById('receita_pessimista').value = numeroParaMoeda(pess * preco);
-    document.getElementById('receita_realista').value = numeroParaMoeda(real * preco);
-    document.getElementById('receita_otimista').value = numeroParaMoeda(otim * preco);
-
-
-    const fixos = moedaParaNumero(document.getElementById('custos_fixos_total').value);
-    const variaveis = moedaParaNumero(document.getElementById('custos_variaveis_total').value);
-    const lucro = receitaMensal - (fixos + variaveis);
-    const margem = receitaMensal ? (lucro / receitaMensal) * 100 : 0;
-
-    document.getElementById('lucro_operacional').value = numeroParaMoeda(lucro);
-    document.getElementById('margem_lucro').value = margem.toFixed(1).replace('.', ',') + '%';
-
-    const custoVariavelUnitario = moedaParaNumero(document.getElementById('custo_unitario_variavel').value);
-    const pontoEquilibrio = preco > custoVariavelUnitario ? (fixos / (preco - custoVariavelUnitario)) : 0;
-
-    document.getElementById('ponto_equilibrio').value = Math.ceil(pontoEquilibrio);
-  }); 
-</script>
   <div class="buttons" id="navigationButtons"></div>
   </form> <!-- Fechamento correto do formulário -->
 </div> 
@@ -1361,15 +1502,18 @@ document.addEventListener("input", atualizarChecklistAnalise);
           atualizarCenariosProdutos();
           calcularCustosVariaveisEmReais();
           atualizarCustosFixosEVariaveis();
+          
         }
 
         if (steps[i + 1].id === 'step4') {
-  console.log("Produtos na entrada da Etapa 04:", produtos);
   if (produtos && produtos.length > 0) {
-    atualizarMargemUnitáriaTotal();
-    atualizarMargemUnitáriaPorProduto();
-    atualizarMargemMensalPorProduto();
-    atualizarPontoEquilibrio()
+    setTimeout(() => {
+      atualizarMargemUnitáriaTotal();
+      atualizarMargemUnitáriaPorProduto();
+      atualizarMargemMensalPorProduto();
+      atualizarPontoEquilibrio(); 
+      calcularIndicadoresFinanceiros(); // já chama atualizarReceitaEquilibrioPorProduto() internamente
+    }, 100); // Pequeno delay para garantir DOM renderizado
   } else {
     console.warn("Lista de produtos está vazia ao entrar na Etapa 04.");
   }
@@ -1415,7 +1559,6 @@ document.addEventListener("input", atualizarChecklistAnalise);
     });
   });
 };
-
     
     document.addEventListener("input", function(e) {
       if (e.target.classList.contains("currency")) {
@@ -1426,7 +1569,10 @@ document.addEventListener("input", atualizarChecklistAnalise);
 
       // Etapa 3 cálculo automático
       const moedaParaNumero = str => parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
-      const numeroParaMoeda = num => num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      const numeroParaMoeda = num => "R$ " + num
+  .toFixed(2)
+  .replace('.', ',')
+  .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
       const preco = moedaParaNumero(document.getElementById('preco_unitario').value);
       const qtd = parseInt(document.getElementById('quantidade_mensal').value) || 0;
@@ -1451,79 +1597,16 @@ document.addEventListener("input", atualizarChecklistAnalise);
 });
 
 
-      document.getElementById('custos_fixos_total').value = numeroParaMoeda(fixos);
-      document.getElementById('custos_variaveis_total').value = numeroParaMoeda(variaveis);
 
-      const lucro = receitaMensal - (fixos + variaveis);
-      document.getElementById('lucro_operacional').value = numeroParaMoeda(lucro);
-      document.getElementById('margem_lucro').value = receitaMensal ? ((lucro / receitaMensal) * 100).toFixed(1).replace('.', ',') + '%' : '0%';
 
-      const custoVariavelUnitario = moedaParaNumero(document.getElementById('custo_unitario_variavel').value);
-      const pontoEquilibrio = preco > custoVariavelUnitario ? (fixos / (preco - custoVariavelUnitario)) : 0;
-      document.getElementById('ponto_equilibrio').value = Math.ceil(pontoEquilibrio);
+      
     });
      
 
     function numeroParaMoeda(num) {
       return num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     }
-
-    function calcularEtapa4() {
-  const moedaParaNumero = str => parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
-  const numeroParaMoeda = num => num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-
-  const receita = moedaParaNumero(document.getElementById('receita_mensal').value);
-  const fixos = moedaParaNumero(document.getElementById('custos_fixos_total').value);
-  const variaveis = moedaParaNumero(document.getElementById('custos_variaveis_total').value);
-  const lucro = receita - (fixos + variaveis);
-  const taxa = moedaParaNumero(document.getElementById('taxa_desconto').value) / 100;
-
-  // 🧮 Investimento Inicial (buscando todos os campos após h3 "Investimento Inicial")
-let investimento = 0;
-document.querySelectorAll('#camposEspecificos h3').forEach(h3 => {
-  const categoria = h3.textContent.trim().toLowerCase();
-  if (categoria.includes('investimento')) {
-    let el = h3.nextElementSibling;
-    while (el && el.tagName !== 'H3') {
-      const input = el.querySelector('input');
-      if (input) investimento += moedaParaNumero(input.value);
-      el = el.nextElementSibling;
-    }
-  }
-});
-
-  // 🧠 Cálculos principais
-  const margem = receita ? (variaveis / receita) : 0;
-  const pontoEq = receita ? (fixos / (1 - margem)) : 0;
-  const payback = lucro > 0 ? (Math.abs(investimento) / lucro) : 0;
-  const roi = investimento > 0 ? ((lucro * 12 / Math.abs(investimento)) * 100) : 0;
-
-  // 💰 VPL e TIR (fluxo de 60 meses)
-  let vpl = 0;
-  for (let t = 1; t <= 60; t++) {
-    vpl += lucro / Math.pow(1 + taxa, t);
-  }
-  vpl -= investimento;
-
-  let tir = 0, step = 0.0001;
-  while (tir < 1) {
-    let testVPL = 0;
-    for (let t = 1; t <= 60; t++) {
-      testVPL += lucro / Math.pow(1 + tir, t);
-    }
-    if (testVPL < investimento) break;
-    tir += step;
-  }
-
-  // 📩 Preencher os campos da etapa 4
-  document.getElementById('ponto_equilibrio_fin').value = numeroParaMoeda(pontoEq);
-  document.getElementById('payback').value = payback.toFixed(1).replace('.', ',');
-  document.getElementById('roi').value = roi.toFixed(1).replace('.', ',') + '%';
-  document.getElementById('vpl').value = numeroParaMoeda(vpl);
-  document.getElementById('tir').value = (tir * 100).toFixed(2).replace('.', ',') + '%';
-}
-
-    
+  
   </script>
 <script>
 function moedaParaNumero(str) {
@@ -1581,6 +1664,22 @@ document.querySelectorAll('input.percent').forEach(input => {
     }
   });
 });
+
+</script>
+<script>
+  ["input", "change"].forEach(evt =>
+    document.addEventListener(evt, () => {
+      setTimeout(() => {
+        atualizarCustosFixosEVariaveis
+        atualizarMargemUnitáriaTotal();
+        atualizarMargemUnitáriaPorProduto();
+        obterCustosVariaveisEtapa02();
+        atualizarMargemMensalPorProduto();
+        atualizarPontoEquilibrio();
+
+      }, 100);
+    })
+  );
 </script>
 </body>
 </html>
