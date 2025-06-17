@@ -1345,73 +1345,39 @@ async function gerarPDFPersonalizado() {
   const doc = new jsPDF('p', 'mm', 'a4');
   const imgBase64 = await carregarImagemBase64('./img/layout_canva.png');
   const margem = 15;
+  let y = 20;
 
-  doc.addImage(imgBase64, 'PNG', 0, 0, 210, 297);
+  const novaPagina = () => {
+    doc.addPage();
+    doc.addImage(imgBase64, 'PNG', 0, 0, 210, 297);
+    y = 20;
+  };
 
-  let y = 30;
+
+  const escreveLinha = (titulo, valor) => {
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${titulo}: ${valor}`, margem, y);
+    y += 6;
+  };
+
+ doc.addImage(imgBase64, 'PNG', 0, 0, 210, 297);
+
+  // Página 1 – Dados da Empresa
   doc.setFontSize(18);
-  doc.setTextColor(1, 10, 40);
   doc.setFont('helvetica', 'bold');
-  doc.text('Relatório de Viabilidade Econômica', 15, y);
-  y += 10;
-
-  doc.setFontSize(14);
-  doc.setTextColor(0);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`Projeto: ${document.getElementById('nome').value}`, 15, y);
+  doc.text('1. Dados da Empresa', margem, y);
   y += 8;
 
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Dados Gerais:', 15, y);
-  y += 6;
+  escreveLinha('Projeto', document.getElementById('nome').value);
+  escreveLinha('Responsável', document.getElementById('responsavel').value);
+  escreveLinha('E-mail', document.getElementById('email').value);
+  escreveLinha('Telefone', document.getElementById('telefone').value);
+  escreveLinha('Tipo', document.getElementById('tipo').value);
+  escreveLinha('Estado', document.getElementById('estado').value);
+  escreveLinha('Cidade', document.getElementById('cidade').value);
 
-  doc.setFont('helvetica', 'normal');
-  const dados = [
-    ['Nome do Projeto', 'nome'],
-    ['Estado', 'estado'],
-    ['Tipo de Atividade', 'tipo'],
-    ['Cidade/Estado', 'cidade'],
-    ['Estrutura', 'estrutura'],
-    ['Regime Tributário', 'regime'],
-    ['Situação Atual', 'situacao'],
-    ['Responsável', 'responsavel'],
-    ['E-mail', 'email'],
-    ['Telefone', 'telefone']
-  ];
-  dados.forEach(([label, id]) => {
-    doc.text(`${label}: ${document.getElementById(id).value}`, 15, y);
-    y += 6;
-  });
-
-  y += 4;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Indicadores Financeiros:', 15, y);
-  y += 6;
-  doc.setFont('helvetica', 'normal');
-
-  const indicadores = [
-  ['Receita Mensal', 'receita_mensal'],
-  ['Receita Anual', 'receita_anual'],
-  ['Custos Fixos Totais', 'custos_fixos_total'],
-  ['Investimento Inicial', 'investimento_inicial'],
-    ];
-
-
-  indicadores.forEach(([label, id]) => {
-    if (y > 280) {
-      doc.addPage();
-      y = 10;
-    }
-    doc.text(`${label}: ${document.getElementById(id).value}`, 15, y);
-    y += 6;
-  });
-
-  y += 6;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Checklist de Viabilidade:', 15, y);
-  y += 6;
-  doc.setFont('helvetica', 'normal');
+  novaPagina();
 
 const roi = parseFloat(document.getElementById("roi")?.value.replace('%', '').replace(',', '.') || "0");
 const paybackSimples = parseFloat(document.getElementById("paybackSimples")?.value.replace(',', '.') || "0");
@@ -1421,103 +1387,114 @@ const margemSeguranca = parseFloat(document.getElementById("margemSeguranca")?.v
 const il = parseFloat(document.getElementById("il")?.value.replace('%', '').replace(',', '.') || "0");
 const vpl = parseFloat(document.getElementById("vpl")?.value.replace(/\./g, '').replace(',', '.') || "0");
 const margemContribuicaoTotal = parseFloat(document.getElementById("totalMargemContribuicao")?.innerText.replace("R$", "").replace(/\./g, "").replace(",", ".") || "0");
+const tir = parseFloat(document.getElementById("tirAnual")?.value.replace('%', '').replace(',', '.') || "0");
+const tirCheck = document.getElementById("check_tir")?.textContent || "N/D";
 
-const indicadoresCalculados = [
-  ['ROI', `${(roi * 100).toFixed(2)}%`],
-  ['Payback Simples', `${paybackSimples.toFixed(1)} meses`],
-  ['TIR', `${(tirAnual * 100).toFixed(2)}%`],
-  ['VPL', `R$ ${vpl.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`],
-  ['Margem de Segurança', `${margemSeguranca.toFixed(2)}%`],
-  ['Índice de Lucratividade (IL)', `${il.toFixed(2)}%`]
-];
+let lucroTotal = 0;
 
-indicadoresCalculados.forEach(([label, valor]) => {
-  if (y > 280) {
-    doc.addPage();
-    y = 10;
+const impostoPerc = parseFloat(document.getElementById("impostos")?.value.replace(',', '.') || "0");
+const comissaoPerc = parseFloat(document.getElementById("comissao")?.value.replace(',', '.') || "0");
+const cartaoPerc = parseFloat(document.getElementById("cartao")?.value.replace(',', '.') || "0");
+const outrosPerc = parseFloat(document.getElementById("outros")?.value.replace(',', '.') || "0");
+
+produtos.forEach((produto, index) => {
+  const precoVenda = moedaParaNumero(produto.precoVenda);
+  const custoDireto = moedaParaNumero(produto.custoR);
+
+  let totalVendida = 0;
+  for (let m = 0; m < 12; m++) {
+    const input = document.querySelector(`.vendaMes[data-index='${index}'][data-mes='${m}']`);
+    if (input) totalVendida += parseInt(input.value || 0);
   }
-  doc.text(`${label}: ${valor}`, 15, y);
-  y += 6;
+
+  const impostos = precoVenda * (impostoPerc / 100);
+  const comissao = precoVenda * (comissaoPerc / 100);
+  const cartao = precoVenda * (cartaoPerc / 100);
+  const outros = precoVenda * (outrosPerc / 100);
+
+  const margemUnit = precoVenda - (custoDireto + impostos + comissao + cartao + outros);
+  lucroTotal += margemUnit * totalVendida;
 });
 
-  const checklist = [
-    ['Receita cobre os custos fixos?', 'check_receita'],
-    ['Projeto tem ROI acima de 20%?', 'check_roi'],
-    ['Payback abaixo de 12 meses?', 'check_payback'],
-    ['Fluxo de caixa positivo nos 6 primeiros meses?', 'check_fluxo']
-  ];
-  checklist.forEach(([label, id]) => {
-    doc.text(`${label}: ${document.getElementById(id).textContent}`, 15, y);
-    y += 6;
-  });
+const lucroMensal = lucroTotal / 12;
 
-  y += 6;
-  doc.setFont('helvetica', 'bold');
-  doc.text(`Avaliação Final: ${document.getElementById('avaliacao_final').value}`, 15, y);
+
+  const receitaMensal = moedaParaNumero(document.getElementById("receita_mensal")?.value || "0");
+  const receitaAnual = moedaParaNumero(document.getElementById("receita_anual")?.value || "0");
+  const custosFixosMensal = moedaParaNumero(document.getElementById("custos_fixos_total")?.value || "0");
+  const investimentoInicial = moedaParaNumero(document.getElementById("investimento_inicial")?.value || "0");
   
-  const novaPagina = () => {
-    doc.addPage();
-    y = 20;
-  };
 
-  const escreveLinha = (titulo, valor) => {
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${titulo}:`, margem, y);
-    doc.setFont('helvetica', 'normal');
-    doc.text(valor || '-', margem + 60, y);
-    y += 8;
-  };
-
-  // Página 01 - Dados Gerais
+  // Página 2 – Produtos, Custos e Taxas
   doc.setFontSize(18);
-doc.setFont('helvetica', 'bold');
-doc.text('Dados da Empresa', margem, y);
-y += 8;
-  escreveLinha('Projeto', document.getElementById('nome').value);
-  escreveLinha('Responsável', document.getElementById('responsavel').value);
-  escreveLinha('E-mail', document.getElementById('email').value);
-  escreveLinha('Telefone', document.getElementById('telefone').value);
-  escreveLinha('Tipo', document.getElementById('tipo').value);
-  escreveLinha('Estado', document.getElementById('estado').value);
-  escreveLinha('Cidade', document.getElementById('cidade').value);
-  novaPagina();
-
-  // Página 02 - Produtos e Custos
-  doc.setFontSize(18);
-  doc.text('2. Produtos, Custos e Taxas', margem, y);
+  doc.setFont('helvetica', 'bold');
+  doc.text('2. Produtos, Custos e Receita', margem, y);
   y += 10;
+
   produtos.forEach(p => {
-    escreveLinha(`Produto`, p.nome);
-    escreveLinha(`Custo`, p.custoR);
-    escreveLinha(`Preço Venda`, p.precoVenda);
-    y += 5;
+    escreveLinha('Produto', p.nome);
+    escreveLinha('Preço Venda', p.precoVenda);
+    escreveLinha('Custo', p.custoR);
+    y += 4;
   });
+
+  escreveLinha('Receita Bruta Mensal', document.getElementById('receita_mensal').value);
+  escreveLinha('Receita Anual Estimada', document.getElementById('receita_anual').value);
+  escreveLinha('Lucro Mensal', `R$ ${lucroMensal.toFixed(2).replace('.', ',')}`);
+  escreveLinha('Lucro Anual', `R$ ${lucroTotal.toFixed(2).replace('.', ',')}`);
   escreveLinha('Custos Fixos Mensais', document.getElementById('custos_fixos_total').value);
   escreveLinha('Investimento Inicial', document.getElementById('investimento_inicial').value);
+
   novaPagina();
-
-  // Página 03 - Receita Anual + Totais
+  // Página 3 – Análise Financeira
   doc.setFontSize(18);
-  doc.text('3. Receita e Totais', margem, y);
+  doc.setFont('helvetica', 'bold');
+  doc.text('3. Análise Financeira', margem, y);
   y += 10;
-  escreveLinha('Receita Mensal', document.getElementById('receita_mensal').value);
-  escreveLinha('Receita Anual', document.getElementById('receita_anual').value);
-  escreveLinha('Custos Variáveis Total (R$)', document.getElementById('custo_variavel_total_rs')?.value);
+
+  const escreveIndicador = (label, id) => {
+  const el = document.getElementById(id);
+  const valor = el?.value || el?.innerText || 'N/D';
+  escreveLinha(label, valor);
+};
+
+  escreveIndicador('Margem Unitária', 'margem_unitaria');
+  escreveIndicador('Margem Total', 'margem_total');
+  escreveIndicador('Margem Anual', 'margem_anual');
+  escreveIndicador('Margem %', 'margem_percentual');
+  escreveIndicador('Lucro Mensal', 'lucro_mensal');
+  escreveIndicador('PE - Receita Necessária (R$)', 'receitaPE');
+  escreveIndicador('PE - Quantidade de Vendas (UND)', 'peq_individual');
+  escreveIndicador('PE Médio Ponderado', 'receitaPEPonderada');
+  escreveIndicador('ROI', 'roi');
+  escreveIndicador('Payback', 'paybackSimples');
+  escreveIndicador('Payback Descontado', 'paybackDesc');
+  escreveIndicador('VPL', 'vpl');
+  escreveIndicador('TIR', 'tirAnual');
+  escreveIndicador('Margem de Segurança', 'margemSeguranca');
+  escreveIndicador('Índice de Lucratividade (IL)', 'il');
+
   novaPagina();
-
-  // Página 04 - Indicadores
+  // Página 4 – Checklist e Avaliação Final
   doc.setFontSize(18);
-  doc.text('4. Indicadores Financeiros', margem, y);
-  y += 10;
-  doc.setFontSize(12);
-  doc.text(document.getElementById("calculoIndicadores")?.innerText || 'Indicadores não calculados.', margem, y);
-  y += 60;
-
-  
-  doc.setFontSize(11);
-  doc.text('5. Interpretação dos Indicadores', margem, y);
+  doc.setFont('helvetica', 'bold');
+  doc.text('4. Checklist e Avaliação Final', margem, y);
   y += 10;
 
+  escreveLinha('Receita cobre os custos fixos?', document.getElementById('check_receita').innerText);
+  escreveLinha('Projeto tem ROI acima de 20%?', document.getElementById('check_roi').innerText);
+  escreveLinha('Payback abaixo de 12 meses?', document.getElementById('check_payback').innerText);
+  escreveLinha('Fluxo de caixa positivo nos 6 primeiros meses?', document.getElementById('check_fluxo').innerText);
+  escreveLinha('TIR acima de 20%?', document.getElementById('check_tir')?.innerText || 'N/D');
+  escreveLinha('Margem de Segurança acima de 20%?', document.getElementById('check_margem')?.innerText);
+  escreveLinha('Avaliação Final', document.getElementById('avaliacao_final')?.value || 'N/D');
+
+  novaPagina();
+  // Página 5 – Resumo e Conclusões 
+doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('4. Checklist e Avaliação Final', margem, y);
+  y += 10;
   const textoResumo = [];
   const condicaoRuim = roi < 0.2 || payback > 12 || tir < 0.2 || margemSeg < 0.2 || il < 1;
 
@@ -1581,19 +1558,29 @@ y += 8;
     );
   }
 
+   doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
   textoResumo.forEach(paragrafo => {
-    if (y > 270) {
-      novaPagina();
-      doc.setFontSize(11);
-    }
-    doc.text(paragrafo, margem, y);
-    y += 6;
+    const linhas = doc.splitTextToSize(paragrafo, 180);
+    linhas.forEach(l => {
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.text(l, margem, y);
+      y += 6;
+    });
+    y += 4;
   });
 
 
   doc.save('Relatorio_Viabilidade_Economica.pdf');
 }
-
+function novaPagina() {
+  doc.addPage();
+  doc.addImage(imgBase64, 'PNG', 0, 0, 210, 297);
+  y = 20; // reposiciona y se necessário
+}
 
 
 </script>
