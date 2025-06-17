@@ -107,6 +107,15 @@
     button:hover {
       background-color: #0193a3;
     }
+    .tooltip-info {
+  font-size: 14px;
+  margin-left: 5px;
+  cursor: help;
+  color: #00bcd4;
+}
+.tooltip-info:hover {
+  text-decoration: underline;
+}
     form {
   display: block;
   width: auto;
@@ -120,7 +129,38 @@
   height: auto;
   overflow: visible;
 }
+.modal-escuro {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
 
+.modal-conteudo {
+  background-color: #222;
+  padding: 25px 30px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  box-shadow: 0 0 25px rgba(0,0,0,0.7);
+}
+
+.fechar-modal {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 20px;
+  color: #fff;
+  cursor: pointer;
+}
   </style>
 </head>
 <body>
@@ -166,25 +206,31 @@
 
   <div class="row">
     <div class="form-group col-33">
-      <label for="estrutura">Estrutura:</label>
-      <select id="estrutura" name="estrutura" required>
-        <option value="">Selecione...</option>
-        <option value="Física">Física</option>
-        <option value="Virtual">Virtual</option>
-        <option value="Híbrida">Híbrida</option>
-      </select>
-    </div>
+      <label for="estrutura">
+  Estrutura:
+  <span class="tooltip-info" title="Tipo de estrutura do seu negócio: Física (presencial), Virtual (online), ou Híbrida (ambos)">ℹ️</span>
+</label>
+<select id="estrutura" name="estrutura" required>
+  <option value="">Selecione...</option>
+  <option value="Física">Física</option>
+  <option value="Virtual">Virtual</option>
+  <option value="Híbrida">Híbrida</option>
+</select>
+</div>
 
-    <div class="form-group col-33">
-      <label for="regime">Regime Tributário:</label>
-      <select id="regime" name="regime">
-        <option value="">Não se aplica / Não definido</option>
-        <option value="MEI">MEI</option>
-        <option value="Simples Nacional">Simples Nacional</option>
-        <option value="Lucro Presumido">Lucro Presumido</option>
-        <option value="Lucro Real">Lucro Real</option>
-      </select>
-    </div>
+<div class="form-group col-33">
+  <label for="regime">
+    Regime Tributário:
+    <span class="tooltip-info" title="Selecione o regime tributário da empresa, se já tiver CNPJ. Se ainda estiver no planejamento, selecione 'Não definido'.">ℹ️</span>
+  </label>
+  <select id="regime" name="regime">
+    <option value="">Não se aplica / Não definido</option>
+    <option value="MEI">MEI</option>
+    <option value="Simples Nacional">Simples Nacional</option>
+    <option value="Lucro Presumido">Lucro Presumido</option>
+    <option value="Lucro Real">Lucro Real</option>
+  </select>
+</div>
 
     <div class="form-group col-33">
       <label for="situacao">Situação Atual:</label>
@@ -285,29 +331,39 @@
   <button type="button" onclick="abrirModalProduto()">+ Cadastrar Novo Produto</button>
   <table id="tabelaProdutos" style="margin-top:10px;width:100%;color:#fff;text-align:center;">
     <thead>
-      <tr><th style="text-align:center;">Produto</th><th style="text-align:center;">Custo Direto (R$)</th><th style="text-align:center;">Custo Direto (%)</th><th style="text-align:center;">Preço de Venda (R$)</th><th style="text-align:center;">Ações</th></tr>
-    </thead>
+  <tr>
+    <th style="text-align:center;">Produto</th>
+    <th style="text-align:center;">Custo Direto (R$)</th>
+    <th style="text-align:center;">Preço de Venda (R$)</th>
+    <th style="text-align:center;">Ações</th>
+  </tr>
+</thead>
     <tbody></tbody>
   </table>
 
-  <!-- MODAL PRODUTO -->
-  <div id="modalProduto" style="display:none;position:fixed;top:20%;left:50%;transform:translateX(-50%);background:#222;padding:20px;border-radius:10px;z-index:1000;width:90%;max-width:500px;">
+  <!-- MODAL PRODUTO (ATUALIZADO) -->
+<div id="modalProduto" class="modal-escuro">
+  <div class="modal-conteudo">
+    <span class="fechar-modal" onclick="fecharModalProduto()">×</span>
     <h3 style="color:#00bcd4;">Novo Produto</h3>
+
     <label>Nome do Produto:</label>
     <input type="text" id="novoProdutoNome">
+
     <label>Custo Direto (R$):</label>
     <input type="text" id="novoCustoMonetario" class="currency"  placeholder="R$">
-    <label>Custo Direto (%):</label>
-    <input type="text" id="novoCustoPercentual" class="percent" placeholder="%">
+
     <label>Preço de Venda Pretendido (R$):</label>
     <input type="text" id="novoPrecoVenda" class="currency" placeholder="R$">
+
     <button type="button" onclick="abrirModalPreco()" style="margin-top: 10px;">Calcular Preço de Venda</button>
-    <div style="text-align:right;margin-top:5px;">
+
+    <div style="text-align:right;margin-top:10px;">
       <button type="button" onclick="salvarProduto()">Salvar</button>
       <button type="button" onclick="fecharModalProduto()">Cancelar</button>
     </div>
   </div>
-
+</div>
   <!-- MODAL PREÇO VENDA (MAIOR JANELA) -->
   <div id="modalPreco" style="display:none;position:fixed;top:10%;left:50%;transform:translateX(-50%);background:#222;padding:30px;border-radius:12px;z-index:2000;width:95%;max-width:700px;">
     <h3 style="color:#00bcd4;">Cálculo do Preço de Venda</h3>
@@ -424,18 +480,26 @@ function fecharModalProduto() {
 function salvarProduto() {
   const nome = document.getElementById("novoProdutoNome").value;
   const custoR = document.getElementById("novoCustoMonetario").value;
-  const custoP = document.getElementById("novoCustoPercentual").value;
   const precoVenda = document.getElementById("novoPrecoVenda").value;
 
-  if (nome && precoVenda) {
-    produtos.push({ nome, custoR, custoP, precoVenda });
-    atualizarTabelaProdutos();
-    fecharModalProduto();
-   
-  } else {
+  if (!nome || !precoVenda) {
     alert("Preencha pelo menos o nome do produto e o preço de venda.");
+    return;
   }
+
+  const novoProduto = { nome, custoR, precoVenda };
+
+  if (indexProdutoEditando !== null) {
+    produtos[indexProdutoEditando] = novoProduto;
+    indexProdutoEditando = null;
+  } else {
+    produtos.push(novoProduto);
+  }
+
+  atualizarTabelaProdutos();
+  fecharModalProduto();
 }
+
 
 function atualizarTabelaProdutos() {
   const tbody = document.querySelector("#tabelaProdutos tbody");
@@ -454,9 +518,11 @@ function atualizarTabelaProdutos() {
     row.innerHTML = `
       <td>${p.nome}</td>
       <td>${p.custoR}</td>
-      <td>${p.custoP}</td>
       <td>${p.precoVenda}</td>
-      <td><button type="button" onclick="removerProduto(${index})">Excluir</button></td>
+      <td>
+  <button type="button" onclick="editarProduto(${index})">Editar</button>
+  <button type="button" onclick="removerProduto(${index})">Excluir</button>
+</td>
     `;
     tbody.appendChild(row);
 
@@ -527,11 +593,24 @@ function removerProduto(index) {
   produtos.splice(index, 1);
   atualizarTabelaProdutos();
 }
+  let indexProdutoEditando = null;
+
+function editarProduto(index) {
+  const p = produtos[index];
+  document.getElementById("novoProdutoNome").value = p.nome;
+  document.getElementById("novoCustoMonetario").value = p.custoR;
+  document.getElementById("novoPrecoVenda").value = p.precoVenda;
+
+  indexProdutoEditando = index;
+  document.getElementById("modalProduto").style.display = "block";
+}
+
 function abrirModalPreco() {
   document.getElementById("modalPreco").style.display = 'block';
 }
 function fecharModalPreco() {
   document.getElementById("modalPreco").style.display = 'none';
+  indexProdutoEditando = null;
 }
 function calcularPrecoVenda() {
   const custo = parseFloat(document.getElementById("preco_custo_calc").value.replace(',', '.')) || 0;
@@ -1553,16 +1632,27 @@ if (condicaoRuim) {
 // Escreve o texto no PDF com formatação controlada
 doc.setFontSize(11);
 doc.setFont('helvetica', 'normal');
+
 textoResumo.forEach(paragrafo => {
-  if (paragrafo.trim() === "") return; // ignora linhas vazias
+  // ignora linhas vazias
+  if (paragrafo.trim() === "") return;
 
   const linhas = doc.splitTextToSize(paragrafo, 180);
-  linhas.forEach(l => {
+
+  linhas.forEach(linha => {
     if (y > 270) {
       novaPaginaSemFundo();
-      y = 20;
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
     }
-    doc.text(l, margem, y);
+
+    // justificado (com fallback)
+    try {
+      doc.text(linha, margem, y, { align: 'justify', maxWidth: 180 });
+    } catch {
+      doc.text(linha, margem, y);
+    }
+
     y += 6;
   });
 
