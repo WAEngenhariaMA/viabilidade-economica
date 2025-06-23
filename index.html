@@ -630,12 +630,7 @@ h4 {
   
 </script>
  
-<!-- Campos ocultos para indicadores financeiros -->
-<input type="hidden" id="ROI" value="">
-<input type="hidden" id="roiMensal" value="">
-<input type="hidden" id="roiTotal" value="">
-<input type="hidden" id="paybackSimples" value="">
-<input type="hidden" id="paybackAnual" value="">
+
 <!-- ETAPA 02 COMPLETA (HTML + JS) -->
 <div class="step" id="step2">
   <h2>Custos e Investimentos</h2>
@@ -1762,7 +1757,7 @@ camposReplicaveis.forEach(campo => {
   if (input) {
     const div = document.createElement("div");
    div.className = "form-group col-25";
-div.style.padding = "0 8px";
+div.style.padding = "0 0px";
     div.innerHTML = `
       <label>${campo.nome}</label>
       <input type="text" class="percent readonly-clone" value="${input.value}" readonly style="background-color: #111; color: #bbb; border: 1px solid #333;">
@@ -2905,15 +2900,8 @@ function gerarMatrizFluxoCaixa() {
   `;
 
   // Atualiza campo oculto para uso em outros cálculos/checklist/pdf
-  let tirInput = document.getElementById("tirAnual");
-  if (!tirInput) {
-    tirInput = document.createElement("input");
-    tirInput.type = "hidden";
-    tirInput.id = "tirAnual";
-    document.body.appendChild(tirInput);
-  }
-  tirInput.value = tir !== null && isFinite(tir) ? (tir * 100).toFixed(2) + "%" : "N/D";
-
+  // Removido campo oculto tirAnual, usa-se o campo direto agora
+  
   // Atualiza campos ocultos para PDF/checklist
   let vplInput = document.getElementById("vpl");
   if (!vplInput) {
@@ -3058,7 +3046,7 @@ function calcularMargemSegurancaEIL() {
     </div>
     <div class="form-group col-25">
       <label>Índice de Lucratividade (IL)</label>
-      <input type="text" class="readonly-clone" readonly value="${(il*100).toFixed(2).replace('.', ',')}" style="background:#111; color:#bbb; border:1px solid #333;">
+      <input type="text" class="readonly-clone" readonly value="${(il*100).toFixed(2).replace('.', ',')}%" style="background:#111; color:#bbb; border:1px solid #333;">
     </div>
     <div class="form-group col-25">
       <label>Rentabilidade (%)</label>
@@ -3152,42 +3140,138 @@ async function carregarImagemBase64(url) {
 // 1. Atualiza visual e dados do checklist
 function atualizarChecklistFinal() {
   // Função para converter moeda/percentual para número
-  const moedaParaNumero = str => parseFloat(String(str||'').replace(/R\$\s?/g,'').replace(/%/g,'').replace(/\./g,'').replace(',','.').replace(/\s/g,''))||0;
+  function moedaParaNumero(str) {
+    if (!str) return 0;
+    return parseFloat(
+      String(str)
+        .replace(/R\$\s?/g, '')
+        .replace(/%/g, '')
+        .replace(/\./g, '')
+        .replace(',', '.')
+        .replace(/\s/g, '')
+    ) || 0;
+  }
+  // Helper para formatar número com vírgula e duas casas
+  function formatarNumero(num) {
+    return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function formatarPercentual(num) {
+    return formatarNumero(num) + "%";
+  }
 
-  // IL
-  const il = moedaParaNumero(document.getElementById("il")?.value || "0");
-  document.getElementById("valor_il").textContent = il.toFixed(2);
+  // IL = Lucro Líquido / Receita Total
+  let lucroAnual = moedaParaNumero(document.getElementById("lucro_anual")?.value || "0");
+  let receitaAnual = moedaParaNumero(document.getElementById("receita_anual")?.value || "0");
+  let il = receitaAnual > 0 ? lucroAnual / receitaAnual : 0;
+  document.getElementById("valor_il").textContent = formatarNumero(il);
   document.getElementById("referencia_il").textContent = "> 1";
-  document.getElementById("check_il").textContent = (il > 1) ? "Sim" : "Não";
+  document.getElementById("check_il").textContent = il > 1 ? "Sim" : "Não";
 
   // Payback Descontado (em meses)
-  let paybackDesc = document.getElementById("paybackDescontadoMes")?.innerText || "";
-  let paybackDescNum = moedaParaNumero(paybackDesc);
-  document.getElementById("valor_payback_desc").textContent = paybackDesc ? paybackDesc : "N/D";
-  document.getElementById("referencia_payback").textContent = ""; // Deixe vazio ou ajuste conforme regra do cliente
-  document.getElementById("check_payback_desc").textContent = paybackDescNum > 0 && paybackDescNum <= 12 ? "Sim" : "Não";
-
- 
-  // ROI Mensal
-  let lucroMensal = moedaParaNumero(document.getElementById("lucro_mensal")?.value || "0");
+  // Payback = Investimento Inicial / Lucro Mensal
   let investimentoInicial = moedaParaNumero(document.getElementById("investimento_inicial")?.value || "0");
-  // Usa o valor já calculado e exibido no campo oculto roiMensal (que já está em % com 2 casas)
-  let roiMensalCampo = document.getElementById("roiMensal")?.value || "0%";
-  let roiMensal = moedaParaNumero(roiMensalCampo.replace('%', ''));
-  let retornoEsperadoStr = document.getElementById("taxa_esperada")?.value || "0";
-  let retornoEsperado = moedaParaNumero(retornoEsperadoStr.replace('%', ''));
-  document.getElementById("valor_roi").textContent = roiMensalCampo;
-  document.getElementById("referencia_roi").textContent = "> " + retornoEsperado.toFixed(2) + "%";
+  let lucroMensal = moedaParaNumero(document.getElementById("lucro_mensal")?.value || "0");
+  let paybackDesc = lucroMensal > 0 ? investimentoInicial / lucroMensal : 0;
+  let paybackDescStr = paybackDesc > 0 ? formatarNumero(paybackDesc) : "N/D";
+  document.getElementById("valor_payback_desc").textContent = paybackDescStr;
+  document.getElementById("referencia_payback").textContent = "<= 12 meses";
+  document.getElementById("check_payback_desc").textContent = paybackDesc > 0 && paybackDesc <= 12 ? "Sim" : "Não";
+
+  // ROI Mensal = Lucro Mensal / Investimento Inicial
+  let roiMensal = investimentoInicial > 0 ? (lucroMensal / investimentoInicial) * 100 : 0;
+  let retornoEsperado = moedaParaNumero(document.getElementById("taxa_esperada")?.value || "0");
+  document.getElementById("valor_roi").textContent = formatarPercentual(roiMensal);
+  document.getElementById("referencia_roi").textContent = "> " + formatarPercentual(retornoEsperado);
   document.getElementById("check_roi_final").textContent = roiMensal > retornoEsperado ? "Sim" : "Não";
 
-  // TIR vs TMA
-  let tir = moedaParaNumero(document.getElementById("tirAnual")?.value || "0");
-  let tma = moedaParaNumero(document.getElementById("taxa_tma")?.value || "0");
-  // Corrige: se tir veio como 83,578 (em vez de 0.83578), divide por 100 se for maior que 100
-  if (tir > 100) tir = tir / 100;
-  document.getElementById("valor_tir_tma").textContent = tir.toFixed(2) + "%";
-  document.getElementById("referencia_tir_tma").textContent = "TIR > " + tma.toFixed(2) + "%";
-  document.getElementById("check_tir_tma").textContent = tir > tma ? "Sim" : "Não";
+    
+    // Calcula TIR usando os fluxos de caixa anuais (lucrosAnuais)
+    // Calcula lucrosAnuais localmente para o checklist
+    let lucrosAnuais = [];
+    const anos = 6; // Ano 0 até 5
+    // Função para converter moeda para número já está definida acima
+    lucrosAnuais.push(-investimentoInicial);
+    for (let ano = 1; ano < anos; ano++) {
+      let lucroAno = 0;
+      produtos.forEach((p, idx) => {
+        let quantidade = 0;
+        const anoID = anosAdicionados[ano - 1];
+        if (anoID) {
+          for (let m = 0; m < 12; m++) {
+            const input = document.getElementById(`${anoID}_produto_${idx}_mes_${m}`);
+            if (input) quantidade += parseFloat(input.value) || 0;
+          }
+        }
+        const precoVenda = moedaParaNumero(p.precoVenda);
+        const receita = quantidade * precoVenda;
+        const getPercent = campo => {
+          const el = document.getElementById(`${campo}_produto_${idx}`);
+          if (!el) return 0;
+          return parseFloat(el.value.replace('%', '').replace(',', '.')) || 0;
+        };
+        const prodPerc = getPercent('producao');
+        const impPerc = getPercent('imposto');
+        const comPerc = getPercent('comissao');
+        const cartPerc = getPercent('cartao');
+        const outPerc = getPercent('outros');
+        const custoVariavelUnit = precoVenda * (prodPerc + impPerc + comPerc + cartPerc + outPerc) / 100;
+        const custoVariavelTotal = custoVariavelUnit * quantidade;
+        lucroAno += receita - custoVariavelTotal;
+      });
+      const custoFixoMensal = moedaParaNumero(document.getElementById("custos_fixos_total")?.value || "0");
+      const custoFixoAnual = custoFixoMensal * 12;
+      lucroAno -= custoFixoAnual;
+      lucrosAnuais.push(lucroAno);
+    }
+    // Função calcularTIR local
+    function calcularTIR(fluxos) {
+      let guess = 0.15;
+      let tol = 1e-6;
+      let maxIter = 1000;
+      let r = guess;
+      let iter = 0;
+      let diff = 1;
+      function npv(rate) {
+        let sum = 0;
+        for (let t = 0; t < fluxos.length; t++) {
+          sum += fluxos[t] / Math.pow(1 + rate, t);
+        }
+        return sum;
+      }
+      let low = 0, high = 20000;
+      let npvLow = npv(low);
+      let npvHigh = npv(high);
+      if (npvLow * npvHigh > 0) return null;
+      while (iter < maxIter && Math.abs(diff) > tol) {
+        r = (low + high) / 2;
+        let npvR = npv(r);
+        if (Math.abs(npvR) < tol) break;
+        if (npvLow * npvR < 0) {
+          high = r;
+          npvHigh = npvR;
+        } else {
+          low = r;
+          npvLow = npvR;
+        }
+        diff = npvR;
+        iter++;
+      }
+      return r;
+    }
+    let tir = calcularTIR(lucrosAnuais);
+    tir = tir !== null && isFinite(tir) ? tir * 100 : 0;
+    let tma = moedaParaNumero(document.getElementById("taxa_tma")?.value || "0");
+    // Máscara para percentual no formato 000.000.000,00%
+    function mascaraPercentualBR(valor) {
+      let num = Number(valor).toFixed(2).replace('.', ',');
+      // Adiciona separador de milhar
+      let partes = num.split(',');
+      partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      return partes.join(',');
+    }
+    document.getElementById("valor_tir_tma").textContent = mascaraPercentualBR(tir) + "%";
+    document.getElementById("referencia_tir_tma").textContent = "TIR > " + mascaraPercentualBR(tma) + "%";
+    document.getElementById("check_tir_tma").textContent = tir > tma ? "Sim" : "Não";
 }
 document.addEventListener("input", atualizarChecklistFinal);
 setTimeout(atualizarChecklistFinal, 500);
@@ -3469,61 +3553,50 @@ async function gerarPDFPersonalizado() {
   escreveTitulo('8. Interpretação dos Indicadores');
   y += 2;
 
+  // Função para remover máscara de percentual e moeda
+  function desmascararNumero(str) {
+    if (!str) return 0;
+    return parseFloat(
+      String(str)
+        .replace(/R\$\s?/g, '')
+        .replace(/%/g, '')
+        .replace(/\./g, '')
+        .replace(',', '.')
+        .replace(/\s/g, '')
+    ) || 0;
+  }
+
   // Monta o texto interpretativo
   const textoResumo = [];
-  const roi = parseFloat(document.getElementById("ROI")?.value?.replace('%', '').replace(',', '.') || "0") / 100;
-  const paybackSimples = parseFloat(document.getElementById("paybackSimples")?.value?.replace(',', '.') || "0");
-  const paybackDesc = parseFloat(document.getElementById("paybackDescontado")?.value?.replace(',', '.') || "0");
-  const tirAnual = parseFloat(document.getElementById("tirAnual")?.value?.replace('%', '').replace(',', '.') || "0") / 100;
-  const margemSeguranca = parseFloat(document.getElementById("margemSeguranca")?.value?.replace('%', '').replace(',', '.') || "0") / 100;
-  const il = parseFloat(document.getElementById("il")?.value?.replace('%', '').replace(',', '.') || "0");
+  const roi = desmascararNumero(document.getElementById("roiMensal")?.value) / 100;
+  const paybackSimples = desmascararNumero(document.getElementById("paybackSimples")?.value);
+  const paybackDesc = desmascararNumero(document.getElementById("paybackDescontado")?.value);
+  const tirAnual = desmascararNumero(document.getElementById("tirAnual")?.value) / 100;
+  const margemSeguranca = desmascararNumero(document.getElementById("margemSeguranca")?.value) / 100;
+  const il = desmascararNumero(document.getElementById("il")?.value);
+  // Definir lucroMensal corretamente
+  const lucroMensal = (() => {
+    const el = document.getElementById("lucro_mensal");
+    if (!el) return 0;
+    return desmascararNumero(el.value);
+  })();
+  // Corrige: converte todos os valores para percentual (exceto payback e IL) e formata para exibição
+  function formatarPercentual(num) {
+    return (num * 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + "%";
+  }
+  function formatarNumero(num) {
+    return num.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  }
+
   const condicaoRuim = roi < 0.2 || paybackSimples > 12 || tirAnual < 0.2 || margemSeguranca < 0.2 || il < 1;
 
   if (condicaoRuim) {
     textoResumo.push(
-      `Com base nos dados informados, o projeto apresenta um Retorno sobre Investimento (ROI) de ${roi.toFixed(2)}%, `
-      + `o que indica que, ao final do período analisado, o capital investido retornaria com um lucro de apenas ${lucroMensal.toFixed(2)} sobre o valor aportado. `
-      + `Esse retorno está abaixo do esperado para projetos de perfil semelhante, o que pode comprometer sua atratividade frente a outras opções de investimento.`,
-
-      `O Payback Simples estimado é de ${paybackSimples.toFixed(2)} meses, representando o tempo necessário para recuperar integralmente o capital investido.`,
-      `Esse prazo é relativamente elevado, o que aumenta a exposição ao risco e pode afetar a tomada de decisão por parte de investidores.`,
-      `Já o Payback Descontado, que considera o valor do dinheiro no tempo, foi calculado em ${paybackDesc.toFixed(2)} meses, `
-      + `reforçando a necessidade de ajustes no modelo para acelerar a recuperação do investimento.`,
-
-      `A Taxa Interna de Retorno (TIR) anual foi de ${tirAnual.toFixed(2)}%, abaixo do patamar mínimo normalmente exigido por investidores para projetos com riscos operacionais e financeiros similares.`,
-      `Esse resultado indica uma rentabilidade limitada e sugere que, da forma atual, o projeto pode não ser a melhor opção de alocação de capital.`,
-
-      `A Margem de Contribuição, que expressa o quanto sobra do preço de venda após os custos variáveis, pode não ser suficiente para cobrir os custos fixos de maneira confortável, afetando a geração de lucro operacional.`,
-
-      `A Margem de Segurança, calculada em ${(margemSeguranca * 100).toFixed(2)}%, está abaixo do ideal, indicando que qualquer oscilação negativa nas vendas`
-      + `pode levar rapidamente o projeto ao ponto de equilíbrio ou até mesmo ao prejuízo, exigindo atenção redobrada na execução comercial.`,
-
-      `O Índice de Lucratividade (IL), de ${il.toFixed(2)}, significa que a cada R$ 1,00 investido, o retorno líquido estimado é de apenas R$ ${il.toFixed(2)}.`,
-      `Esse indicador sugere que o capital empregado poderia ter maior rendimento se direcionado a outras iniciativas mais eficientes financeiramente.`
+      `O projeto, com ROI de ${formatarPercentual(roi)}, apresenta retorno abaixo do esperado, indicando baixa atratividade frente a outros investimentos. O payback simples é de ${formatarNumero(paybackSimples)} meses, e o descontado, ${formatarNumero(paybackDesc)} meses, ambos considerados longos e aumentando o risco. A TIR anual de ${formatarPercentual(tirAnual)} está abaixo do mínimo desejado, sugerindo rentabilidade limitada. A margem de contribuição e a margem de segurança, ambas baixas (${formatarPercentual(margemSeguranca)}), mostram que pequenas quedas nas vendas podem levar ao prejuízo. O índice de lucratividade (IL) de ${formatarNumero(il)} reforça que o capital poderia render mais em outras alternativas. Em resumo, o projeto exige ajustes para se tornar viável e competitivo.`
     );
   } else {
     textoResumo.push(
-      `Com base nos dados informados, o projeto apresenta um Retorno sobre Investimento (ROI) de ${roi.toFixed(2)}%,`,
-      `o que significa que, ao final do período analisado, espera-se que o capital investido retorne com um lucro de ${lucroMensal.toFixed(2)} sobre o valor inicialmente aportado.`,
-      `Esse índice é um forte indicativo de atratividade, especialmente quando comparado a outras opções do mercado com riscos semelhantes.`,
-
-      `O Payback Simples estimado é de ${paybackSimples.toFixed(2)} meses, representando o tempo necessário para que todo o investimento inicial`,
-      `seja recuperado a partir dos lucros gerados. Trata-se de um prazo competitivo, que contribui positivamente para a percepção de risco e retorno.`,
-      `O Payback Descontado, que considera o valor do dinheiro no tempo, foi calculado em ${paybackDesc.toFixed(2)} meses,`,
-      `demonstrando que o projeto ainda assim se mantém rentável mesmo sob condições financeiras mais exigentes.`,
-
-      `A Taxa Interna de Retorno (TIR) anual atingiu ${(tirAnual * 100).toFixed(2)}%, superando amplamente as expectativas mínimas de retorno de muitos investidores`,
-      `e sinalizando que o projeto possui uma excelente capacidade de geração de valor financeiro ao longo do tempo.`,
-
-      `Outro ponto relevante é a Margem de Contribuição, que representa a diferença entre o preço de venda e os custos variáveis unitários.`,
-      `Com uma margem de contribuição positiva, o projeto demonstra capacidade de cobrir seus custos fixos e ainda gerar resultado operacional.`,
-
-      `A Margem de Segurança, atualmente em ${(margemSeguranca * 100).toFixed(2)}%, mostra que o projeto possui uma folga em relação à sua receita projetada.`,
-      `Mesmo que ocorra uma queda no volume de vendas, existe margem suficiente para que o ponto de equilíbrio não seja atingido de imediato.`,
-
-      `Por fim, o Índice de Lucratividade (IL) calculado em ${il.toFixed(2)} indica que, para cada R$ 1,00 investido,`,
-      `o projeto tende a gerar R$ ${il.toFixed(2)} de retorno líquido. Esse indicador reforça a eficiência do capital investido e permite comparações diretas`,
-      `com outras oportunidades no portfólio empresarial.`
+      `O projeto demonstra forte potencial, com ROI de ${formatarPercentual(roi)} e payback simples de ${formatarNumero(paybackSimples)} meses, indicando retorno rápido do investimento. O payback descontado, de ${formatarNumero(paybackDesc)} meses, confirma a atratividade mesmo considerando o valor do dinheiro no tempo. A TIR anual de ${formatarPercentual(tirAnual)} supera as expectativas do mercado, mostrando excelente capacidade de geração de valor. Margem de contribuição positiva e margem de segurança de ${formatarPercentual(margemSeguranca)} garantem folga operacional e resiliência a oscilações nas vendas. O índice de lucratividade (IL) de ${formatarNumero(il)} indica retorno eficiente para cada real investido. Assim, o projeto se destaca como uma opção sólida e rentável.`
     );
   }
 
