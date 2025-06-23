@@ -2,7 +2,7 @@ const express = require("express");
 const admin = require("firebase-admin");
 const cors = require("cors");
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
+const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG); // ✅ Aqui
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -16,7 +16,12 @@ app.use(cors());
 app.get("/api/projetos", async (req, res) => {
   try {
     const snapshot = await db.collection("projetos").get();
-    const dados = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const dados = [];
+
+    snapshot.forEach((doc) => {
+      dados.push({ id: doc.id, ...doc.data() });
+    });
+
     res.json(dados);
   } catch (error) {
     console.error("Erro ao buscar dados:", error);
