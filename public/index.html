@@ -2674,6 +2674,7 @@ function calcularIndicadoresFinanceiros() {
   const roi = investimentoInicial > 0 ? (lucroAnual / investimentoInicial) : 0;
   const roiMensal = investimentoInicial > 0 ? (lucroMensal / investimentoInicial) : 0;
   const roiTotal = investimentoInicial > 0 ? (((lucroMensal * 12 * qtdMatrizes) - investimentoInicial) / investimentoInicial) : 0;
+  
 
   // Payback
   const paybackMensal = lucroMensal > 0 ? (investimentoInicial / lucroMensal) : 0;
@@ -3296,7 +3297,13 @@ async function gerarPDFPersonalizado() {
         .replace(/\s/g, '')
     ) || 0;
   }
-
+ function desmascararNumero(valor) {
+  if (!valor) return '0';
+  return valor
+    .replace(/[R$\s%]/g, '')  // remove R$, espaço e %
+    .replace(/\./g, '')       // remove pontos de milhar
+    .replace(',', '.');       // converte vírgula para ponto decimal
+}
   // Função para escrever campo (label + valor na mesma linha)
   const escreveCampo = (label, valor) => {
     doc.setFontSize(11);
@@ -3465,61 +3472,105 @@ async function gerarPDFPersonalizado() {
   });
   y += 2;
 
-  // 5. Ponto de Equilíbrio
-  escreveTitulo('5. Ponto de Equilíbrio');
-  escreveSubtitulo('5.1 Ponto de Equilíbrio Receita');
-  // Receita Necessária e Média Ponderada
-  let receitaNecessaria = '';
-  let mediaPonderada = '';
-  const peqDiv = document.getElementById('peq_individual');
-  if (peqDiv) {
-    const html = peqDiv.innerHTML;
-    const matchReceita = html.match(/Receita Necessária[^:]*:\s*([^<]+)/i);
-    const matchMedia = html.match(/Ponto de Equilibrio Média Ponderada[^:]*:\s*([^<]+)/i);
-    receitaNecessaria = matchReceita ? matchReceita[1].trim() : '';
-    mediaPonderada = matchMedia ? matchMedia[1].trim() : '';
+
+// 5. Ponto de Equilíbrio
+escreveTitulo('5. Ponto de Equilíbrio');
+escreveSubtitulo('5.1 Ponto de Equilíbrio Receita');
+
+// Calcula Receita Necessária e Média Ponderada diretamente
+function moedaParaNumero(str) {
+  if (!str) return 0;
+  return parseFloat(
+    String(str)
+      .replace(/R\$\s?/g, '')
+      .replace(/%/g, '')
+      .replace(/\./g, '')
+      .replace(',', '.')
+      .replace(/\s/g, '')
+  ) || 0;
+}
+
+let custoFixo = moedaParaNumero(document.getElementById("custos_fixos_total")?.value || "0");
+let mcPonderadaPerc = moedaParaNumero(document.getElementById("mc_ponderada")?.value || "0") / 100;
+let receitaNecessaria = 0;
+if (mcPonderadaPerc > 0) {
+  receitaNecessaria = custoFixo / mcPonderadaPerc;
+}
+escreveCampo('Receita Necessária', receitaNecessaria.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
+
+let precoMedioPonderado = moedaParaNumero(document.getElementById("preco_medio_pond")?.value || "0");
+let mediaPonderada = 0;
+if (precoMedioPonderado > 0) {
+  mediaPonderada = receitaNecessaria / precoMedioPonderado;
+}
+escreveCampo('Média Ponderada', mediaPonderada.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
+y += 2;
+
+// 5.2 Ponto de Equilíbrio Unitário
+escreveSubtitulo('5.2 Ponto de Equilíbrio Unitário');
+  // Obtém o HTML do ponto de equilíbrio individual
+  const htmlPEQ = document.getElementById('peq_individual')?.innerHTML || '';
+  produtos.forEach((p) => {
+  let qtd = '0';
+  // Corrige para aceitar tanto "Equilíbrio" quanto "Equilibrio" (com ou sem acento)
+  const regex = new RegExp(`<strong>${p.nome}</strong> – Ponto de Equil[ií]br[ií]o Quantidade: ([^<]+) unidades`, 'i');
+  const matchQtd = htmlPEQ.match(regex);
+  if (matchQtd) {
+    qtd = desmascararNumero(matchQtd[1]);
   }
-  escreveCampo('Receita Necessária', receitaNecessaria || 'R$ 0,00');
-  escreveCampo('Média Ponderada', mediaPonderada || 'Unidade');
-  y += 2;
+  escreveCampo(`Quantidade - ${p.nome}`, qtd);
+});
+y += 2;
 
-  // 5.2 Ponto de Equilíbrio Unitário
-  escreveSubtitulo('5.2 Ponto de Equilíbrio Unitário');
-  produtos.forEach((p, idx) => {
-    // Busca no peq_individual
-    let qtd = '';
-    const html = peqDiv?.innerHTML || '';
-    const regex = new RegExp(`<strong>${p.nome}</strong> – Ponto de Equilibrio Quantidade: ([^<]+) unidades`, 'i');
-    const match = html.match(regex);
-    qtd = match ? match[1].trim() : '';
-    escreveCampo(`Quantidade - ${p.nome}`, `${qtd || '0,00'} Unidade`);
-  });
-  y += 2;
-
-  // 5.3 Ponto de Equilíbrio Distribuído
-  escreveSubtitulo('5.3 Ponto de Equilíbrio Distribuído');
-  produtos.forEach((p, idx) => {
-    let qtd = '';
-    const html = peqDiv?.innerHTML || '';
-    const regex = new RegExp(`<strong>${p.nome}</strong> – Ponto de Equilíbrio Distribuído: ([^<]+) unidades`, 'i');
-    const match = html.match(regex);
-    qtd = match ? match[1].trim() : '';
-    escreveCampo(`Quantidade - ${p.nome}`, `${qtd || '0,00'} Unidade`);
-  });
-  y += 2;
+// 5.3 Ponto de Equilíbrio Distribuído
+escreveSubtitulo('5.3 Ponto de Equilíbrio Distribuído');
+produtos.forEach((p) => {
+  let qtdDist = '0';
+  // Corrige para aceitar tanto "Equilíbrio" quanto "Equilibrio" (com ou sem acento)
+  const regexDist = new RegExp(`<strong>${p.nome}</strong> – Ponto de Equil[ií]br[ií]o Distribu[ií]do: ([^<]+) unidades`, 'i');
+  const matchDist = htmlPEQ.match(regexDist);
+  if (matchDist) {
+    qtdDist = desmascararNumero(matchDist[1]);
+  }
+  escreveCampo(`Quantidade - ${p.nome}`, qtdDist);
+});
+y += 2;
 
   // 6. Indicadores Financeiros
-  escreveTitulo('6. Indicadores Financeiros');
-  escreveSubtitulo('6.1 Indicadores');
-  escreveCampo('ROI (%)', document.getElementById('ROI')?.value || '%');
-  escreveCampo('ROI Mensal', document.getElementById('roiMensal')?.value || '%');
-  escreveCampo('ROI Total', document.getElementById('roiTotal')?.value || '%');
-  escreveCampo('Payback Mensal Simples', document.getElementById('paybackSimples')?.value || 'Meses');
-  escreveCampo('Payback Anual Simples', document.getElementById('paybackAnual')?.value || 'Anos');
-  escreveCampo('VPL Total', document.getElementById('vpl')?.innerText || 'R$ 0,00');
-  escreveCampo('Payback Descontado', document.getElementById('paybackDescontado')?.value || 'Anos');
-  escreveCampo('Payback Descontado Mês', document.getElementById('paybackDescontadoMes')?.innerText || 'Meses');
-  escreveCampo('Taxa Interna de Retorno (TIR)', document.getElementById('tirAnual')?.value || '%');
+escreveTitulo('6. Indicadores Financeiros');
+escreveSubtitulo('6.1 Indicadores');
+
+// ROI (%) = (Lucro Anual / Investimento Inicial) * 100
+const investimentoInicial = desmascararNumero(document.getElementById("investimento_inicial")?.value || "0");
+const lucroAnual = desmascararNumero(document.getElementById("lucro_anual")?.value || "0");
+const lucroMensal = desmascararNumero(document.getElementById("lucro_mensal")?.value || "0");
+const qtdMatrizes = anosAdicionados.length || 1;
+
+const roi = investimentoInicial > 0 ? (lucroAnual / investimentoInicial) * 100 : 0;
+const roiMensal = investimentoInicial > 0 ? (lucroMensal / investimentoInicial) * 100 : 0;
+const roiTotal = investimentoInicial > 0 ? (((lucroMensal * 12 * qtdMatrizes) - investimentoInicial) / investimentoInicial) * 100 : 0;
+
+// Payback Mensal Simples = Investimento Inicial / Lucro Mensal
+const paybackMensal = lucroMensal > 0 ? investimentoInicial / lucroMensal : 0;
+// Payback Anual Simples = Investimento Inicial / Lucro Anual
+const paybackAnual = lucroAnual > 0 ? investimentoInicial / lucroAnual : 0;
+
+// VPL Total (já calculado na tela)
+const vplTotal = desmascararNumero(document.getElementById('vpl')?.innerText || '0');
+
+escreveCampo('ROI (%)', roi.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + '%');
+escreveCampo('ROI Mensal (%)', roiMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + '%');
+escreveCampo('ROI Total (%)', roiTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + '%');
+escreveCampo('Payback Mensal Simples', paybackMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + ' meses');
+escreveCampo('Payback Anual Simples', paybackAnual.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + ' anos');
+escreveCampo('VPL Total', 'R$ ' + vplTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
+escreveCampo('Payback Descontado', desmascararNumero(document.getElementById('paybackDescontado')?.value || document.getElementById('paybackDescontado')?.innerText || '') + ' anos');
+escreveCampo('Payback Descontado Mês', desmascararNumero(document.getElementById('paybackDescontadoMes')?.value || document.getElementById('paybackDescontadoMes')?.innerText || '') + ' meses');
+escreveCampo('Taxa Interna de Retorno (TIR)', desmascararNumero(document.getElementById('tir')?.value || document.getElementById('tir')?.innerText || '') + '%');
+escreveCampo('IL', desmascararNumero(document.getElementById('il')?.value || '') + '%');
+escreveCampo('Margem de Segurança (%)', desmascararNumero(document.getElementById('margemSeguranca')?.value || '') + '%');
+escreveCampo('Rentabilidade (%)', desmascararNumero(document.getElementById('rentabilidade')?.value || '') + '%');
+y += 2;
 
   // ===== Pagina 04 =====
   novaPagina();
@@ -3567,36 +3618,82 @@ async function gerarPDFPersonalizado() {
   }
 
   // Monta o texto interpretativo
+  // Cálculo detalhado dos principais indicadores para o texto interpretativo
   const textoResumo = [];
-  const roi = desmascararNumero(document.getElementById("roiMensal")?.value) / 100;
-  const paybackSimples = desmascararNumero(document.getElementById("paybackSimples")?.value);
-  const paybackDesc = desmascararNumero(document.getElementById("paybackDescontado")?.value);
-  const tirAnual = desmascararNumero(document.getElementById("tirAnual")?.value) / 100;
-  const margemSeguranca = desmascararNumero(document.getElementById("margemSeguranca")?.value) / 100;
-  const il = desmascararNumero(document.getElementById("il")?.value);
-  // Definir lucroMensal corretamente
-  const lucroMensal = (() => {
+
+  // ROI Mensal (%)
+  const investimentoInicial_pdf = (() => {
+    const el = document.getElementById("investimento_inicial");
+    if (!el) return 0;
+    return Number(desmascararNumero(el.value));
+  })();
+  const lucroMensal_pdf = (() => {
     const el = document.getElementById("lucro_mensal");
     if (!el) return 0;
-    return desmascararNumero(el.value);
+    return Number(desmascararNumero(el.value));
   })();
-  // Corrige: converte todos os valores para percentual (exceto payback e IL) e formata para exibição
+  const roiMensal_pdf = investimentoInicial_pdf > 0 ? (lucroMensal_pdf / investimentoInicial_pdf) * 100 : 0;
+
+  // Payback Mensal Simples (meses)
+  const paybackSimples_pdf = lucroMensal_pdf > 0 ? investimentoInicial_pdf / lucroMensal_pdf : 0;
+
+  // Payback Descontado (meses)
+  const paybackDesc_pdf = (() => {
+    const el = document.getElementById("paybackDescontado");
+    if (!el) return 0;
+    return Number(desmascararNumero(el.value)) * 12; // converte anos para meses
+  })();
+
+  // TIR (Taxa Interna de Retorno) (%)
+  const tir_pdf = (() => {
+    const el = document.getElementById("tir");
+    if (!el) return 0;
+    // Usa desmascararNumero para remover máscara e garantir número puro
+    return Number(desmascararNumero(el.innerText || el.value));
+  })();
+
+  // Margem de Segurança (%)
+  const margemSeguranca_pdf = (() => {
+    const el = document.getElementById("margemSeguranca");
+    if (!el) return 0;
+    return Number(desmascararNumero(el.value));
+  })();
+
+  // IL (Índice de Lucratividade)
+  const lucroAnual_pdf = (() => {
+    const el = document.getElementById("lucro_anual");
+    if (!el) return 0;
+    return Number(desmascararNumero(el.value));
+  })();
+  const receitaAnual_pdf = (() => {
+    const el = document.getElementById("receita_anual");
+    if (!el) return 0;
+    return Number(desmascararNumero(el.value));
+  })();
+  const il_pdf = receitaAnual_pdf > 0 ? lucroAnual_pdf / receitaAnual_pdf : 0;
+
   function formatarPercentual(num) {
-    return (num * 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + "%";
+    return (Number(num)).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + "%";
   }
   function formatarNumero(num) {
-    return num.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    return Number(num).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
   }
 
-  const condicaoRuim = roi < 0.2 || paybackSimples > 12 || tirAnual < 0.2 || margemSeguranca < 0.2 || il < 1;
+  // Condição de projeto ruim
+  // Todos os valores já estão sem máscara (número puro) por causa do desmascararNumero
+  // Condição de projeto ruim
+  // Todos os valores já estão sem máscara (número puro) por causa do desmascararNumero
+  const retornoEsperado = moedaParaNumero(document.getElementById("taxa_esperada")?.value || "0");
+  const condicaoRuim = roiMensal_pdf < retornoEsperado || paybackSimples_pdf > 12 || tir_pdf < moedaParaNumero(document.getElementById("taxa_tma")?.value || "0") || margemSeguranca_pdf < 20 || il_pdf < 1;
 
+  // Adiciona os indicadores principais ao texto interpretativo
   if (condicaoRuim) {
     textoResumo.push(
-      `O projeto, com ROI de ${formatarPercentual(roi)}, apresenta retorno abaixo do esperado, indicando baixa atratividade frente a outros investimentos. O payback simples é de ${formatarNumero(paybackSimples)} meses, e o descontado, ${formatarNumero(paybackDesc)} meses, ambos considerados longos e aumentando o risco. A TIR anual de ${formatarPercentual(tirAnual)} está abaixo do mínimo desejado, sugerindo rentabilidade limitada. A margem de contribuição e a margem de segurança, ambas baixas (${formatarPercentual(margemSeguranca)}), mostram que pequenas quedas nas vendas podem levar ao prejuízo. O índice de lucratividade (IL) de ${formatarNumero(il)} reforça que o capital poderia render mais em outras alternativas. Em resumo, o projeto exige ajustes para se tornar viável e competitivo.`
+      `O projeto apresenta os seguintes indicadores calculados: ROI Mensal de ${formatarPercentual(roiMensal_pdf)}, Payback Simples de ${formatarNumero(paybackSimples_pdf)} meses, Payback Descontado de ${formatarNumero(paybackDesc_pdf)} meses, TIR anual de ${formatarPercentual(tir_pdf)}, Margem de Segurança de ${formatarPercentual(margemSeguranca_pdf)} e Índice de Lucratividade (IL) de ${formatarNumero(il_pdf)}. Esses resultados indicam retorno abaixo do esperado, com risco elevado e baixa atratividade frente a outros investimentos. Recomenda-se ajustes para tornar o projeto mais competitivo e viável.`
     );
   } else {
     textoResumo.push(
-      `O projeto demonstra forte potencial, com ROI de ${formatarPercentual(roi)} e payback simples de ${formatarNumero(paybackSimples)} meses, indicando retorno rápido do investimento. O payback descontado, de ${formatarNumero(paybackDesc)} meses, confirma a atratividade mesmo considerando o valor do dinheiro no tempo. A TIR anual de ${formatarPercentual(tirAnual)} supera as expectativas do mercado, mostrando excelente capacidade de geração de valor. Margem de contribuição positiva e margem de segurança de ${formatarPercentual(margemSeguranca)} garantem folga operacional e resiliência a oscilações nas vendas. O índice de lucratividade (IL) de ${formatarNumero(il)} indica retorno eficiente para cada real investido. Assim, o projeto se destaca como uma opção sólida e rentável.`
+      `O projeto demonstra forte potencial, com os seguintes indicadores: ROI Mensal de ${formatarPercentual(roiMensal_pdf)}, Payback Simples de ${formatarNumero(paybackSimples_pdf)} meses, Payback Descontado de ${formatarNumero(paybackDesc_pdf)} meses, TIR anual de ${formatarPercentual(tir_pdf)}, Margem de Segurança de ${formatarPercentual(margemSeguranca_pdf)} e Índice de Lucratividade (IL) de ${formatarNumero(il_pdf)}. Esses resultados evidenciam retorno rápido, excelente capacidade de geração de valor e resiliência operacional, tornando o projeto uma opção sólida e rentável.`
     );
   }
 
