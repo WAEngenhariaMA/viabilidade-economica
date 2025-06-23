@@ -10,10 +10,8 @@ app.use(cors());
 app.use(express.json());
 
 // Caminho absoluto do arquivo de credenciais (para evitar erro no Render)
-const serviceAccountPath = path.resolve(
-  __dirname,
-  "serviceAccountKey.json.json"
-);
+const serviceAccount = require("./serviceAccountKey.json");
+
 const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
 
 admin.initializeApp({
