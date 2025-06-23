@@ -14,7 +14,9 @@ const serviceAccountPath = path.resolve(__dirname, "serviceAccountKey.json");
 const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
 
 admin.initializeApp({
-  credential: admin.credential.cert(require("./serviceAccountKey.json")),
+  credential: admin.credential.cert(
+    JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON)
+  ),
 });
 
 const db = admin.firestore();
