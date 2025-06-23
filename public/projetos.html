@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Projetos Salvos</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        padding: 2rem;
+      }
+      .actions button {
+        margin-right: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Projetos Salvos</h1>
+    <table class="table table-striped" id="projetosTable">
+      <thead>
+        <tr>
+          <th>Nome do Projeto</th>
+          <th>Data de Criação</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Projetos serão inseridos aqui via JS -->
+      </tbody>
+    </table>
+
+    <!-- Modal de Edição -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <form class="modal-content" id="editForm">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar Projeto</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="editIndex" />
+            <div class="mb-3">
+              <label for="editNome" class="form-label">Nome do Projeto</label>
+              <input type="text" class="form-control" id="editNome" required />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <button class="btn btn-secondary mb-3" id="btnVoltar">Voltar</button>
+    <script>
+      document.getElementById("btnVoltar").onclick = function () {
+        window.location.href = "index.html";
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+        deleteDoc,
+        doc,
+        query,
+        orderBy,
+        updateDoc,
+      } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCa-dgw5QA2QJbTrJykkOk0x1iJV1OiTvw",
+        authDomain: "analiseviabilidadewa.firebaseapp.com",
+        projectId: "analiseviabilidadewa",
+        storageBucket: "analiseviabilidadewa.appspot.com",
+        messagingSenderId: "705210629815",
+        appId: "1:705210629815:web:2bd3bf2f281ae278335732",
+        measurementId: "G-GMQSJW9JE2",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      let projetosFirebase = [];
+      let editProjetoId = null;
+
+      // Campos a serem exibidos na tabela, na ordem desejada
+      const camposTabela = [
+        { key: "nomeProjeto", label: "Projeto" },
+        { key: "dataCadastro", label: "Data de Criação" },
+        { key: "email", label: "Email" },
+        { key: "responsavel", label: "Responsável" },
+        { key: "telefone", label: "Telefone" },
+      ];
+
+      // Atualiza o cabeçalho da tabela conforme os campos definidos
+      function atualizarCabecalhoTabela() {
+        const thead = document.querySelector("#projetosTable thead tr");
+        // Remove todas as colunas exceto a de ações
+        while (thead.children.length > 1) {
+          thead.removeChild(thead.firstChild);
+        }
+        camposTabela.forEach((campo) => {
+          const th = document.createElement("th");
+          th.textContent = campo.label;
+          thead.insertBefore(
+            th,
+            thead.children[thead.children.length - 1] || null
+          );
+        });
+      }
+
+      async function renderProjetos() {
+        atualizarCabecalhoTabela();
+        const projetosRef = collection(db, "projetos");
+        const q = query(projetosRef, orderBy("dataCadastro", "desc"));
+        const querySnapshot = await getDocs(q);
+        projetosFirebase = [];
+        const tbody = document.querySelector("#projetosTable tbody");
+        tbody.innerHTML = "";
+        querySnapshot.forEach((docSnap, idx) => {
+          const data = docSnap.data();
+          projetosFirebase.push({ id: docSnap.id, ...data });
+          const tr = document.createElement("tr");
+          let colunas = "";
+          camposTabela.forEach((campo) => {
+            if (campo.key === "dataCadastro") {
+              colunas += `<td>${
+                data.dataCadastro
+                  ? new Date(
+                      data.dataCadastro.seconds * 1000
+                    ).toLocaleDateString()
+                  : ""
+              }</td>`;
+            } else {
+              colunas += `<td>${data[campo.key] || ""}</td>`;
+            }
+          });
+          tr.innerHTML = `
+                ${colunas}
+                <td class="actions">
+                    <button class="btn btn-sm btn-warning" onclick="editarProjetoFirebase(${idx})">Editar</button>
+                    <button class="btn btn-sm btn-danger" onclick="excluirProjetoFirebase(${idx})">Excluir</button>
+                    <button class="btn btn-sm btn-success" onclick="baixarPDFFirebase(${idx})">Baixar PDF</button>
+                </td>
+            `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      window.editarProjetoFirebase = function (idx) {
+        editProjetoId = projetosFirebase[idx].id;
+        document.getElementById("editIndex").value = idx;
+        document.getElementById("editNome").value =
+          projetosFirebase[idx].nomeProjeto || "";
+        new bootstrap.Modal(document.getElementById("editModal")).show();
+      };
+
+      document.getElementById("editForm").onsubmit = async function (e) {
+        e.preventDefault();
+        const idx = document.getElementById("editIndex").value;
+        const novoNome = document.getElementById("editNome").value;
+        if (editProjetoId) {
+          await updateDoc(doc(db, "projetos", editProjetoId), {
+            nomeProjeto: novoNome,
+          });
+          editProjetoId = null;
+          await renderProjetos();
+          bootstrap.Modal.getInstance(
+            document.getElementById("editModal")
+          ).hide();
+        }
+      };
+
+      window.excluirProjetoFirebase = async function (idx) {
+        if (confirm("Tem certeza que deseja excluir este projeto?")) {
+          const id = projetosFirebase[idx].id;
+          await deleteDoc(doc(db, "projetos", id));
+          await renderProjetos();
+        }
+      };
+
+      window.baixarPDFFirebase = function (idx) {
+        const projeto = projetosFirebase[idx];
+        let conteudo = "";
+        camposTabela.forEach((campo) => {
+          let valor = "";
+          if (campo.key === "dataCadastro") {
+            valor = projeto.dataCadastro
+              ? new Date(
+                  projeto.dataCadastro.seconds * 1000
+                ).toLocaleDateString()
+              : "";
+          } else {
+            valor = projeto[campo.key] || "";
+          }
+          conteudo += `${campo.label}: ${valor}\n`;
+        });
+        const blob = new Blob([conteudo], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${projeto.nomeProjeto || "projeto"}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      window.addEventListener("DOMContentLoaded", renderProjetos);
+
+      window.addEventListener("DOMContentLoaded", renderProjetos);
+    </script>
+  </body>
+</html>
