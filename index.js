@@ -10,12 +10,11 @@ app.use(cors());
 app.use(express.json());
 
 // Caminho absoluto do arquivo de credenciais (para evitar erro no Render)
-const serviceAccount = require("./serviceAccountKey.json");
-
+const serviceAccountPath = path.resolve(__dirname, "serviceAccountKey.json");
 const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(require("./serviceAccountKey.json")),
 });
 
 const db = admin.firestore();
