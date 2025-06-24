@@ -29,6 +29,7 @@ body {
   background: linear-gradient(to bottom, #1a1a1a, #333);
   color: #fff;
   padding: 30px 20px;
+  
 }
 
 .sidebar h2 {
@@ -39,6 +40,7 @@ body {
 
 .sidebar ul {
   list-style: none;
+  
 }
 
 .sidebar ul li {
@@ -460,7 +462,7 @@ h4 {
     <h2>WA Engenharia</h2>
     <ul>
       <li><a href="projetos.html">Projetos</a></li>
-      <li><a href="#">Dashboard</a></li>
+      <li><a href="dashboard.html" class="sidebar-link">📊 Dashboard</a></li>
       <li><a href="#">Produtos</a></li>
       <li><a href="#">Investimentos</a></li>
       <li><a href="#">Projeções</a></li>
@@ -771,8 +773,10 @@ h4 {
   </div>
 </div>
 <script>
-let produtos = [];
-let anosAdicionados = [];
+window.produtos = [];
+window.anosAdicionados = [];
+let produtos = window.produtos;
+let anosAdicionados = window.anosAdicionados;
 </script>
 <script>
 
@@ -784,8 +788,9 @@ function fecharModalProduto() {
   document.getElementById("novoProdutoNome").value = '';
   document.getElementById("novoCustoMonetario").value = '';
   // document.getElementById("novoCustoPercentual").value = ''; // Removido pois não existe esse campo
-  document.getElementById("novoPrecoVenda").value = '';
 }
+
+// Corrige: define salvarProduto no escopo global
 function salvarProduto() {
   const nome = document.getElementById("novoProdutoNome").value;
   const custoR = document.getElementById("novoCustoMonetario").value;
@@ -798,12 +803,15 @@ function salvarProduto() {
 
   const novoProduto = { nome, custoR, precoVenda };
 
+  // Garante que window.produtos é sempre o array global
+  if (!window.produtos) window.produtos = [];
   if (indexProdutoEditando !== null) {
-    produtos[indexProdutoEditando] = novoProduto;
+    window.produtos[indexProdutoEditando] = novoProduto;
     indexProdutoEditando = null;
   } else {
-    produtos.push(novoProduto);
+    window.produtos.push(novoProduto);
   }
+  produtos = window.produtos;
 
   atualizarTabelaProdutos();
   fecharModalProduto();
@@ -815,7 +823,6 @@ function salvarProduto() {
   atualizarPontoEquilibrio();
   atualizarCamposCustosVariaveisPorProduto();
   calcularCustosVariaveisEmReais();
-  
 }
 
 
@@ -1813,8 +1820,6 @@ function adicionarAno(dados = null, nomeCustom = null) {
   const container = document.getElementById("containerMatrizes");
   const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
-  
-
   let html = `
     <div class="matriz-bloco" id="${idMatriz}" style="margin-bottom: 40px;">
       <div class="matriz-cabecalho">
@@ -1862,6 +1867,7 @@ function adicionarAno(dados = null, nomeCustom = null) {
           const valor = dados?.[`produto_${i}_mes_${m}`] ?? "";
           return `<td style="text-align: center;">
   <input type="number" id="${idInput}" min="0" 
+    value="${valor}"
     oninput="atualizarTotalAno('${rowID}')" 
     style="width: 60px; text-align: center;" />
 </td>`;
@@ -1876,14 +1882,35 @@ function adicionarAno(dados = null, nomeCustom = null) {
     </div>
   `;
   const wrapper = document.createElement("div");
-wrapper.innerHTML = html;
-container.appendChild(wrapper);
+  wrapper.innerHTML = html;
+  container.appendChild(wrapper);
 
-  calcularReceitaNova();
-  atualizarMargemMensalPorProduto();
-  atualizarResumoPorProduto();
-  calcularCustosVariaveisAnual();
-  atualizarCustosFixosEVariaveis();
+  // Após renderizar, redistribui o valor de Total Ano para os meses se necessário
+  setTimeout(() => {
+    produtos.forEach((p, i) => {
+      const rowID = `${idMatriz}_produto_${i}`;
+      const totalAnoInput = document.getElementById(`${rowID}_totalAno`);
+      // Verifica se há valor em Total Ano e todos os meses estão vazios
+      if (totalAnoInput && totalAnoInput.value) {
+        let todosVazios = true;
+        for (let m = 0; m < 12; m++) {
+          const mesInput = document.getElementById(`${rowID}_mes_${m}`);
+          if (mesInput && mesInput.value && mesInput.value !== "0") {
+            todosVazios = false;
+            break;
+          }
+        }
+        if (todosVazios) {
+          distribuirEntreMeses(rowID);
+        }
+      }
+    });
+    calcularReceitaNova();
+    atualizarMargemMensalPorProduto();
+    atualizarResumoPorProduto();
+    calcularCustosVariaveisAnual();
+    atualizarCustosFixosEVariaveis();
+  }, 0);
 }
 function distribuirEntreMeses(rowID) {
   const totalAnoInput = document.getElementById(`${rowID}_totalAno`);
@@ -4007,23 +4034,19 @@ document.querySelectorAll('input.percent').forEach(input => {
       const telefone = document.getElementById("telefone")?.value || "";
 
       // Produtos cadastrados
-      const produtosSalvos = (window.produtos || []).map((p, idx) => {
-        // Quantidade por ano
-        const quantidades = [];
-        (window.anosAdicionados || []).forEach((anoID, anoIdx) => {
-          let quantidadeAno = 0;
-          for (let m = 0; m < 12; m++) {
-            const input = document.getElementById(`${anoID}_produto_${idx}_mes_${m}`);
-            if (input) quantidadeAno += parseInt(input.value || 0);
-          }
-          quantidades.push({ ano: anoIdx + 1, quantidade: quantidadeAno });
-        });
-        return {
-          nome: p.nome,
-          custoDireto: p.custoR,
-          precoVenda: p.precoVenda,
-          quantidades
-        };
+      // Garante que window.produtos é um array de objetos com nome e precoVenda
+      if (!Array.isArray(window.produtos) || window.produtos.length === 0 || !window.produtos.some(p => p.nome && p.precoVenda)) {
+        alert("Cadastre pelo menos um produto antes de salvar o projeto.");
+        return;
+      }
+      // Estratifica nomes dos produtos como "Produto 1", "Produto 2", etc.
+      // Salva cada produto em uma coluna separada (em vez de array de objetos)
+      // Produtos: salva como objeto { Produto 01: Preço, Produto 02: Preço, ... }
+      const produtosObj = {};
+      window.produtos.forEach((p, idx) => {
+        if (p && p.nome && p.precoVenda) {
+          produtosObj[`Produto ${String(idx + 1).padStart(2, '0')}`] = p.precoVenda;
+        }
       });
 
       // Busca valores dos campos principais
@@ -4034,11 +4057,11 @@ document.querySelectorAll('input.percent').forEach(input => {
         (window.produtos || []).forEach((p, idx) => {
           const bloco = document.querySelectorAll("#blocoCustosVariaveisRS .bloco-produto-custos")[idx];
           if (bloco) {
-            const totalInput = bloco.querySelectorAll("input[readonly]");
-            if (totalInput.length >= 6) {
-              let val = totalInput[5].value || "";
-              total += parseFloat(String(val).replace(/\D/g, '').replace(',', '.')) || 0;
-            }
+        const totalInput = bloco.querySelectorAll("input[readonly]");
+        if (totalInput.length >= 6) {
+          let val = totalInput[5].value || "";
+          total += parseFloat(String(val).replace(/\D/g, '').replace(',', '.')) || 0;
+        }
           }
         });
         return "R$ " + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
@@ -4049,11 +4072,11 @@ document.querySelectorAll('input.percent').forEach(input => {
         if (tabela) {
           const linhas = tabela.querySelectorAll("tbody tr");
           linhas.forEach((linha, idx) => {
-            const celulas = linha.querySelectorAll("td");
-            if (celulas.length > 6) {
-              let val = celulas[6].innerText || "";
-              total += parseFloat(String(val).replace(/\D/g, '').replace(',', '.')) || 0;
-            }
+        const celulas = linha.querySelectorAll("td");
+        if (celulas.length > 6) {
+          let val = celulas[6].innerText || "";
+          total += parseFloat(String(val).replace(/\D/g, '').replace(',', '.')) || 0;
+        }
           });
         }
         return "R$ " + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
@@ -4091,11 +4114,11 @@ document.querySelectorAll('input.percent').forEach(input => {
         if (linhasMargem.length > 1 + idx) {
           const celulas = linhasMargem[1 + idx].querySelectorAll("td");
           if (celulas.length > 5) {
-            part = celulas[1]?.innerText || "";
-            mcuU = celulas[2]?.innerText || "";
-            mcuM = celulas[3]?.innerText || "";
-            mcuA = celulas[4]?.innerText || "";
-            marg = celulas[5]?.innerText || "";
+        part = celulas[1]?.innerText || "";
+        mcuU = celulas[2]?.innerText || "";
+        mcuM = celulas[3]?.innerText || "";
+        mcuA = celulas[4]?.innerText || "";
+        marg = celulas[5]?.innerText || "";
           }
         }
         participacaoReceita.push(part);
@@ -4111,8 +4134,8 @@ document.querySelectorAll('input.percent').forEach(input => {
         let quantidadeTotal = 0;
         (window.anosAdicionados || []).forEach((anoID) => {
           for (let m = 0; m < 12; m++) {
-            const input = document.getElementById(`${anoID}_produto_${idx}_mes_${m}`);
-            if (input) quantidadeTotal += parseInt(input.value || 0);
+        const input = document.getElementById(`${anoID}_produto_${idx}_mes_${m}`);
+        if (input) quantidadeTotal += parseInt(input.value || 0);
           }
         });
         quantidadesPorProduto.push(quantidadeTotal);
@@ -4148,19 +4171,59 @@ document.querySelectorAll('input.percent').forEach(input => {
       const tir = document.getElementById("tir")?.innerText || "";
 
       // Monta objeto com colunas separadas para cada produto
-      const multiProdutoCampos = {
-        produtos: (window.produtos || []).map(p => p.nome),
-        quantidades: quantidadesPorProduto,
-        participacaoReceita,
-        mcuUnit,
-        mcuMensal: mcuMensalCol,
-        mcuAnual: mcuAnualCol,
-        margemContribuicao,
-        peqQuantidade,
-        peqDistribuido
-      };
+      // Monta um array de objetos, cada um representando um produto com todos os seus valores associados
+      // Salva cada indicador em colunas separadas por produto
+      const camposPorProduto = {};
+      (window.produtos || []).forEach((p, idx) => {
+        const n = idx + 1;
+        const nome = p.nome || `Produto ${n}`;
+        camposPorProduto[`produto${n}_nome`] = nome;
+        camposPorProduto[`produto${n}_quantidade`] = quantidadesPorProduto?.[idx] || 0;
+        camposPorProduto[`produto${n}_participacaoReceita`] = participacaoReceita?.[idx] || "";
+        camposPorProduto[`produto${n}_mcuUnit`] = mcuUnit?.[idx] || "";
+        camposPorProduto[`produto${n}_mcuMensal`] = mcuMensalCol?.[idx] || "";
+        camposPorProduto[`produto${n}_mcuAnual`] = mcuAnualCol?.[idx] || "";
+        camposPorProduto[`produto${n}_margemContribuicao`] = margemContribuicao?.[idx] || "";
+        camposPorProduto[`produto${n}_peqQuantidade`] = peqQuantidade?.[idx] || "";
+        camposPorProduto[`produto${n}_peqDistribuido`] = peqDistribuido?.[idx] || "";
+      });
+      console.log("CAMPOS POR PRODUTO:", camposPorProduto);
+
+      // NOVO: Arrays e strings para campos agrupados (A, B, ...)
+      // Qtd Produto A, Qtd Produto B
+      const arrQtdProdutos = quantidadesPorProduto.map(q => String(q));
+      const strQtdProdutos = arrQtdProdutos.join('; ');
+
+      // Participação Receita (%) A, B
+      const arrPartReceita = participacaoReceita.map(q => String(q));
+      const strPartReceita = arrPartReceita.join('; ');
+
+      // MCu (Unitária) A, B
+      const arrMCuUnit = mcuUnit.map(q => String(q));
+      const strMCuUnit = arrMCuUnit.join('; ');
+
+      // MCu Mensal A, B
+      const arrMCuMensal = mcuMensalCol.map(q => String(q));
+      const strMCuMensal = arrMCuMensal.join('; ');
+
+      // MCu Anual A, B
+      const arrMCuAnual = mcuAnualCol.map(q => String(q));
+      const strMCuAnual = arrMCuAnual.join('; ');
+
+      // Margem Contribuição (%) A, B
+      const arrMargemContrib = margemContribuicao.map(q => String(q));
+      const strMargemContrib = arrMargemContrib.join('; ');
+
+      // Ponto de Equilibrio Quantidade A, B
+      const arrPEQQuantidade = peqQuantidade.map(q => String(q));
+      const strPEQQuantidade = arrPEQQuantidade.join('; ');
+
+      // Ponto de Equilíbrio Distribuído A, B
+      const arrPEQDistribuido = peqDistribuido.map(q => String(q));
+      const strPEQDistribuido = arrPEQDistribuido.join('; ');
 
       await addDoc(collection(db, "projetos"), {
+        dataCadastro: new Date(),
         nomeProjeto,
         responsavel,
         tipo,
@@ -4168,7 +4231,18 @@ document.querySelectorAll('input.percent').forEach(input => {
         cidade,
         email,
         telefone,
-        produtos: produtosSalvos,
+
+        // Salva produtos como objeto tipo { "BOP": "2", "OPIM": "4123" }
+        produtos: (() => {
+          const resultado = {};
+          (window.produtos || []).forEach(p => {
+        if (p.nome && p.precoVenda != null) {
+          resultado[p.nome] = String(p.precoVenda);
+        }
+          });
+          return resultado;
+        })(),
+
         investimento,
         custosFixosMensal,
         custosFixosAnual,
@@ -4188,8 +4262,92 @@ document.querySelectorAll('input.percent').forEach(input => {
         mcuPonderada,
         margemLucro,
         precoMedioPond,
-        // Campos multi-produto em colunas separadas
-        multiProdutoCampos,
+
+        // Campos por produto em colunas separadas
+        ...camposPorProduto,
+
+        // Arrays e strings agrupados para campos solicitados
+        
+        qtdProdutos: (() => {
+          const resultado = {};
+          (window.produtos || []).forEach((p, idx) => {
+            resultado[p.nome] = String(quantidadesPorProduto[idx] || 0);
+          });
+          return resultado;
+        })(),
+
+        participacaoReceita: (() => {
+          const resultado = {};
+          (window.produtos || []).forEach((p, idx) => {
+            resultado[p.nome] = String(participacaoReceita[idx] || "");
+          });
+          return resultado;
+        })(),
+
+        mcuUnit: (() => {
+          const resultado = {};
+          (window.produtos || []).forEach((p, idx) => {
+            resultado[p.nome] = String(mcuUnit[idx] || "");
+          });
+          return resultado;
+        })(),
+
+        mcuMensal: (() => {
+          const resultado = {};
+          (window.produtos || []).forEach((p, idx) => {
+            resultado[p.nome] = String(mcuMensalCol[idx] || "");
+          });
+          return resultado;
+        })(),
+
+        mcuAnual: (() => {
+          const resultado = {};
+          (window.produtos || []).forEach((p, idx) => {
+            resultado[p.nome] = String(mcuAnualCol[idx] || "");
+          });
+          return resultado;
+        })(),
+
+        margemContribuicao: (() => {
+          const resultado = {};
+          (window.produtos || []).forEach((p, idx) => {
+            resultado[p.nome] = String(margemContribuicao[idx] || "");
+          });
+          return resultado;
+        })(),
+
+        peqQuantidade: (() => {
+          const resultado = {};
+          (window.produtos || []).forEach((p, idx) => {
+            resultado[p.nome] = String(peqQuantidade[idx] || "");
+          });
+          return resultado;
+        })(),
+
+        peqDistribuido: (() => {
+          const resultado = {};
+          (window.produtos || []).forEach((p, idx) => {
+            resultado[p.nome] = String(peqDistribuido[idx] || "");
+          });
+          return resultado;
+        })(),
+
+        qtdProdutosString: strQtdProdutos,
+        participacaoReceitaString: strPartReceita,
+        mcuUnitArray: arrMCuUnit,
+        mcuUnitString: strMCuUnit,
+        mcuMensalArray: arrMCuMensal,
+        mcuMensalString: strMCuMensal,
+        mcuAnualArray: arrMCuAnual,
+        mcuAnualString: strMCuAnual,
+        margemContribuicaoArray: arrMargemContrib,
+        margemContribuicaoString: strMargemContrib,
+        peqQuantidadeArray: arrPEQQuantidade,
+        peqQuantidadeString: strPEQQuantidade,
+        peqDistribuidoArray: arrPEQDistribuido,
+        peqDistribuidoString: strPEQDistribuido,
+
+        // Indicadores financeiros
         roi: roiPercent,
         roiMensal,
         roiTotal,
@@ -4198,14 +4356,15 @@ document.querySelectorAll('input.percent').forEach(input => {
         vplTotal,
         paybackDescontado,
         paybackDescontadoMes,
-        tir,
-        dataCadastro: new Date()
+        tir
       });
+
       alert("Projeto salvo com sucesso!");
-    } catch (error) {
+        } catch (error) {
       console.error("Erro ao salvar:", error);
-    }
-  }
+        }
+      }
+      
 </script>
 </body>
 </html>
