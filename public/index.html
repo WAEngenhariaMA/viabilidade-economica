@@ -567,13 +567,7 @@ h4 {
   </div>
 </div>
 </div>
-<script>
-  document.getElementById("projetos").addEventListener("click", (e) => {
-    e.preventDefault();
-    window.location.href = "projetos.html";
-  });
-  
-</script>
+
 
 <script>
     // Lista de estados e cidades (exemplo parcial)
@@ -989,18 +983,24 @@ function atualizarCamposCustosVariaveisPorProduto() {
       input.id = `${c.id}_produto_${i}`;
       input.className = "percent"; // Adiciona a classe percent
 
-      // Recupera valor salvo, se houver, exceto para produção (readonly)
+      
+      // Sempre tenta recuperar o valor salvo do sessionStorage ao criar o campo
       if (!c.readonly && custosVariaveisSalvos && custosVariaveisSalvos[i] && custosVariaveisSalvos[i][c.id]) {
         input.value = custosVariaveisSalvos[i][c.id];
-      } else {
+      } else if (c.readonly) {
         input.value = c.valor;
+      } else {
+        input.value = "";
       }
 
       input.placeholder = "%";
       input.style = `background:${c.backgroundColor}; color:${c.color}; border:1px solid #444; width:100%;`;
       if (c.readonly) {
-      input.readOnly = true;
+        input.readOnly = true;
       }
+
+      // Só salva no sessionStorage ao clicar no botão "Voltar"
+      // Remove o salvar automático ao digitar ou blur
 
       // Máscara de percentual
       input.addEventListener('input', () => {
@@ -3998,194 +3998,214 @@ document.querySelectorAll('input.percent').forEach(input => {
     const roi = investimento > 0 ? ((receita - investimento) / investimento) * 100 : 0;
 
     try {
-   // Coleta campos principais
-   const responsavel = document.getElementById("responsavel")?.value || "";
-   const tipo = document.getElementById("tipo")?.value || "";
-   const estado = document.getElementById("estado")?.value || "";
-   const cidade = document.getElementById("cidade")?.value || "";
-   const email = document.getElementById("email")?.value || "";
-   const telefone = document.getElementById("telefone")?.value || "";
+      // Coleta campos principais
+      const responsavel = document.getElementById("responsavel")?.value || "";
+      const tipo = document.getElementById("tipo")?.value || "";
+      const estado = document.getElementById("estado")?.value || "";
+      const cidade = document.getElementById("cidade")?.value || "";
+      const email = document.getElementById("email")?.value || "";
+      const telefone = document.getElementById("telefone")?.value || "";
 
-   // Produtos cadastrados
-   const produtosSalvos = (window.produtos || []).map((p, idx) => {
-     // Quantidade por ano
-     const quantidades = [];
-     (window.anosAdicionados || []).forEach((anoID, anoIdx) => {
-    let quantidadeAno = 0;
-    for (let m = 0; m < 12; m++) {
-      const input = document.getElementById(`${anoID}_produto_${idx}_mes_${m}`);
-      if (input) quantidadeAno += parseInt(input.value || 0);
-    }
-    quantidades.push({ ano: anoIdx + 1, quantidade: quantidadeAno });
-     });
-     return {
-    nome: p.nome,
-    custoDireto: p.custoR,
-    precoVenda: p.precoVenda,
-    quantidades
-     };
-   });
+      // Produtos cadastrados
+      const produtosSalvos = (window.produtos || []).map((p, idx) => {
+        // Quantidade por ano
+        const quantidades = [];
+        (window.anosAdicionados || []).forEach((anoID, anoIdx) => {
+          let quantidadeAno = 0;
+          for (let m = 0; m < 12; m++) {
+            const input = document.getElementById(`${anoID}_produto_${idx}_mes_${m}`);
+            if (input) quantidadeAno += parseInt(input.value || 0);
+          }
+          quantidades.push({ ano: anoIdx + 1, quantidade: quantidadeAno });
+        });
+        return {
+          nome: p.nome,
+          custoDireto: p.custoR,
+          precoVenda: p.precoVenda,
+          quantidades
+        };
+      });
 
-   // Busca valores dos campos principais
-   const custosFixosMensal = document.getElementById("custos_fixos_total")?.value || "";
-   const custosFixosAnual = document.getElementById("custos_fixos_anual")?.value || "";
-   const custosVariaveisMensal = (() => {
-     let total = 0;
-     (window.produtos || []).forEach((p, idx) => {
-    const bloco = document.querySelectorAll("#blocoCustosVariaveisRS .bloco-produto-custos")[idx];
-    if (bloco) {
-      const totalInput = bloco.querySelectorAll("input[readonly]");
-      if (totalInput.length >= 6) {
-        let val = totalInput[5].value || "";
-        total += parseFloat(String(val).replace(/\D/g, '').replace(',', '.')) || 0;
-      }
-    }
-     });
-     return "R$ " + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-   })();
-   const custosVariaveisAnual = (() => {
-     let total = 0;
-     const tabela = document.querySelector("#custos_variaveis_anuais table.resumo-produto");
-     if (tabela) {
-    const linhas = tabela.querySelectorAll("tbody tr");
-    linhas.forEach((linha, idx) => {
-      const celulas = linha.querySelectorAll("td");
-      if (celulas.length > 6) {
-        let val = celulas[6].innerText || "";
-        total += parseFloat(String(val).replace(/\D/g, '').replace(',', '.')) || 0;
-      }
-    });
-     }
-     return "R$ " + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-   })();
+      // Busca valores dos campos principais
+      const custosFixosMensal = document.getElementById("custos_fixos_total")?.value || "";
+      const custosFixosAnual = document.getElementById("custos_fixos_anual")?.value || "";
+      const custosVariaveisMensal = (() => {
+        let total = 0;
+        (window.produtos || []).forEach((p, idx) => {
+          const bloco = document.querySelectorAll("#blocoCustosVariaveisRS .bloco-produto-custos")[idx];
+          if (bloco) {
+            const totalInput = bloco.querySelectorAll("input[readonly]");
+            if (totalInput.length >= 6) {
+              let val = totalInput[5].value || "";
+              total += parseFloat(String(val).replace(/\D/g, '').replace(',', '.')) || 0;
+            }
+          }
+        });
+        return "R$ " + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      })();
+      const custosVariaveisAnual = (() => {
+        let total = 0;
+        const tabela = document.querySelector("#custos_variaveis_anuais table.resumo-produto");
+        if (tabela) {
+          const linhas = tabela.querySelectorAll("tbody tr");
+          linhas.forEach((linha, idx) => {
+            const celulas = linha.querySelectorAll("td");
+            if (celulas.length > 6) {
+              let val = celulas[6].innerText || "";
+              total += parseFloat(String(val).replace(/\D/g, '').replace(',', '.')) || 0;
+            }
+          });
+        }
+        return "R$ " + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      })();
 
-   // Taxas
-   const taxaDescontoMensal = document.getElementById("taxa_desconto_mensal")?.value || "";
-   const taxaDescontoAnual = document.getElementById("taxa_desconto_anual")?.value || "";
-   const taxaEsperada = document.getElementById("taxa_esperada")?.value || "";
-   const taxaTMA = document.getElementById("taxa_tma")?.value || "";
+      // Taxas
+      const taxaDescontoMensal = document.getElementById("taxa_desconto_mensal")?.value || "";
+      const taxaDescontoAnual = document.getElementById("taxa_desconto_anual")?.value || "";
+      const taxaEsperada = document.getElementById("taxa_esperada")?.value || "";
+      const taxaTMA = document.getElementById("taxa_tma")?.value || "";
 
-   // Receitas e lucros
-   const receitaBrutaTotal = document.getElementById("receita_anual")?.value || "";
-   const receitaMediaMensal = document.getElementById("receita_mensal")?.value || "";
-   const lucroMensal = document.getElementById("lucro_mensal")?.value || "";
-   const lucroAnual = document.getElementById("lucro_anual")?.value || "";
+      // Receitas e lucros
+      const receitaBrutaTotal = document.getElementById("receita_anual")?.value || "";
+      const receitaMediaMensal = document.getElementById("receita_mensal")?.value || "";
+      const lucroMensal = document.getElementById("lucro_mensal")?.value || "";
+      const lucroAnual = document.getElementById("lucro_anual")?.value || "";
 
-   // Margens
-   const mcuTotal = document.getElementById("margem_total")?.value || "";
-   const mcuAnual = document.getElementById("mcu_anual")?.value || "";
-   const mcuMensal = document.getElementById("mcu_mensal")?.value || "";
-   const mcuPonderada = document.getElementById("mc_ponderada")?.value || "";
-   const margemLucro = document.getElementById("margem_lucro")?.value || "";
-   const precoMedioPond = document.getElementById("preco_medio_pond")?.value || "";
+      // Margens
+      const mcuTotal = document.getElementById("margem_total")?.value || "";
+      const mcuAnual = document.getElementById("mcu_anual")?.value || "";
+      const mcuMensal = document.getElementById("mcu_mensal")?.value || "";
+      const mcuPonderada = document.getElementById("mc_ponderada")?.value || "";
+      const margemLucro = document.getElementById("margem_lucro")?.value || "";
+      const precoMedioPond = document.getElementById("preco_medio_pond")?.value || "";
 
-   // Participação receita e margem contribuição por produto
-   const participacaoReceita = [];
-   const margemContribuicao = [];
-   const linhasMargem = document.querySelectorAll("#margem_matriz tr");
-   (window.produtos || []).forEach((p, idx) => {
-     let part = "", marg = "";
-     if (linhasMargem.length > idx + 1) {
-    const celulas = linhasMargem[idx + 1].querySelectorAll("td");
-    if (celulas.length > 5) {
-      part = celulas[1].innerText;
-      marg = celulas[5].innerText;
-    }
-     }
-     participacaoReceita.push({ produto: p.nome, valor: part });
-     margemContribuicao.push({ produto: p.nome, valor: marg });
-   });
+      // Participação receita e margem contribuição por produto (em colunas separadas)
+      const linhasMargem = document.querySelectorAll("#margem_matriz tr");
+      const participacaoReceita = [];
+      const margemContribuicao = [];
+      const mcuUnit = [];
+      const mcuMensalCol = [];
+      const mcuAnualCol = [];
+      (window.produtos || []).forEach((p, idx) => {
+        let part = "", marg = "", mcuU = "", mcuM = "", mcuA = "";
+        if (linhasMargem.length > 1 + idx) {
+          const celulas = linhasMargem[1 + idx].querySelectorAll("td");
+          if (celulas.length > 5) {
+            part = celulas[1]?.innerText || "";
+            mcuU = celulas[2]?.innerText || "";
+            mcuM = celulas[3]?.innerText || "";
+            mcuA = celulas[4]?.innerText || "";
+            marg = celulas[5]?.innerText || "";
+          }
+        }
+        participacaoReceita.push(part);
+        margemContribuicao.push(marg);
+        mcuUnit.push(mcuU);
+        mcuMensalCol.push(mcuM);
+        mcuAnualCol.push(mcuA);
+      });
 
-   // Ponto de equilíbrio
-   let receitaNecessaria = "";
-   let mediaPonderada = "";
-   const peqDiv = document.getElementById('peq_individual');
-   if (peqDiv) {
-     const html = peqDiv.innerHTML;
-     const matchReceita = html.match(/Receita Necessária[^:]*:\s*([^<]+)/i);
-     const matchMedia = html.match(/Ponto de Equilibrio Média Ponderada[^:]*:\s*([^<]+)/i);
-     receitaNecessaria = matchReceita ? matchReceita[1].trim() : '';
-     mediaPonderada = matchMedia ? matchMedia[1].trim() : '';
-   }
+      // Quantidade por produto (colunas separadas)
+      const quantidadesPorProduto = [];
+      (window.produtos || []).forEach((p, idx) => {
+        let quantidadeTotal = 0;
+        (window.anosAdicionados || []).forEach((anoID) => {
+          for (let m = 0; m < 12; m++) {
+            const input = document.getElementById(`${anoID}_produto_${idx}_mes_${m}`);
+            if (input) quantidadeTotal += parseInt(input.value || 0);
+          }
+        });
+        quantidadesPorProduto.push(quantidadeTotal);
+      });
 
-   // Quantidade por produto (unitário e distribuído)
-   const quantidadesUnitario = [];
-   const quantidadesDistribuido = [];
-   (window.produtos || []).forEach((p, idx) => {
-     let qtdUnit = "", qtdDist = "";
-     const html = peqDiv?.innerHTML || '';
-     const regexUnit = new RegExp(`<strong>${p.nome}</strong> – Ponto de Equilibrio Quantidade: ([^<]+) unidades`, 'i');
-     const regexDist = new RegExp(`<strong>${p.nome}</strong> – Ponto de Equilíbrio Distribuído: ([^<]+) unidades`, 'i');
-     const matchUnit = html.match(regexUnit);
-     const matchDist = html.match(regexDist);
-     qtdUnit = matchUnit ? matchUnit[1].trim() : '';
-     qtdDist = matchDist ? matchDist[1].trim() : '';
-     quantidadesUnitario.push({ produto: p.nome, valor: qtdUnit });
-     quantidadesDistribuido.push({ produto: p.nome, valor: qtdDist });
-   });
+      // Ponto de equilíbrio por produto (unitário e distribuído, colunas separadas)
+      const peqDiv = document.getElementById('peq_individual');
+      const peqQuantidade = [];
+      const peqDistribuido = [];
+      (window.produtos || []).forEach((p, idx) => {
+        let qtdUnit = "", qtdDist = "";
+        const html = peqDiv?.innerHTML || '';
+        // Aceita Equilíbrio/Equilibrio com ou sem acento
+        const regexUnit = new RegExp(`<strong>${p.nome}</strong> – Ponto de Equil[ií]br[ií]o Quantidade: ([^<]+) unidades`, 'i');
+        const regexDist = new RegExp(`<strong>${p.nome}</strong> – Ponto de Equil[ií]br[ií]o Distribu[ií]do: ([^<]+) unidades`, 'i');
+        const matchUnit = html.match(regexUnit);
+        const matchDist = html.match(regexDist);
+        qtdUnit = matchUnit ? matchUnit[1].trim() : "";
+        qtdDist = matchDist ? matchDist[1].trim() : "";
+        peqQuantidade.push(qtdUnit);
+        peqDistribuido.push(qtdDist);
+      });
 
-   // Indicadores financeiros
-   const roiPercent = document.getElementById("ROI")?.value || "";
-   const roiMensal = document.getElementById("roiMensal")?.value || "";
-   const roiTotal = document.getElementById("roiTotal")?.value || "";
-   const paybackMensal = document.getElementById("paybackSimples")?.value || "";
-   const paybackAnual = document.getElementById("paybackAnual")?.value || "";
-   const vplTotal = document.getElementById("vpl")?.innerText || "";
-   const paybackDescontado = document.getElementById("paybackDescontado")?.value || "";
-   const paybackDescontadoMes = document.getElementById("paybackDescontadoMes")?.innerText || "";
-   const tir = document.getElementById("tir")?.innerText || "";
+      // Indicadores financeiros
+      const roiPercent = document.getElementById("ROI")?.value || "";
+      const roiMensal = document.getElementById("roiMensal")?.value || "";
+      const roiTotal = document.getElementById("roiTotal")?.value || "";
+      const paybackMensal = document.getElementById("paybackSimples")?.value || "";
+      const paybackAnual = document.getElementById("paybackAnual")?.value || "";
+      const vplTotal = document.getElementById("vpl")?.innerText || "";
+      const paybackDescontado = document.getElementById("paybackDescontado")?.value || "";
+      const paybackDescontadoMes = document.getElementById("paybackDescontadoMes")?.innerText || "";
+      const tir = document.getElementById("tir")?.innerText || "";
 
-   await addDoc(collection(db, "projetos"), {
-     nomeProjeto,
-     responsavel,
-     tipo,
-     estado,
-     cidade,
-     email,
-     telefone,
-     produtos: produtosSalvos,
-     investimento,
-     custosFixosMensal,
-     custosFixosAnual,
-     custosVariaveisMensal,
-     custosVariaveisAnual,
-     taxaDescontoMensal,
-     taxaDescontoAnual,
-     taxaEsperada,
-     taxaTMA,
-     receitaBrutaTotal,
-     receitaMediaMensal,
-     lucroMensal,
-     lucroAnual,
-     mcuTotal,
-     mcuAnual,
-     mcuMensal,
-     mcuPonderada,
-     margemLucro,
-     precoMedioPond,
-     participacaoReceita,
-     margemContribuicao,
-     receitaNecessaria,
-     mediaPonderada,
-     quantidadesUnitario,
-     quantidadesDistribuido,
-     roi: roiPercent,
-     roiMensal,
-     roiTotal,
-     paybackMensal,
-     paybackAnual,
-     vplTotal,
-     paybackDescontado,
-     paybackDescontadoMes,
-     tir,
-     dataCadastro: new Date()
-   });
-   alert("Projeto salvo com sucesso!");
+      // Monta objeto com colunas separadas para cada produto
+      const multiProdutoCampos = {
+        produtos: (window.produtos || []).map(p => p.nome),
+        quantidades: quantidadesPorProduto,
+        participacaoReceita,
+        mcuUnit,
+        mcuMensal: mcuMensalCol,
+        mcuAnual: mcuAnualCol,
+        margemContribuicao,
+        peqQuantidade,
+        peqDistribuido
+      };
+
+      await addDoc(collection(db, "projetos"), {
+        nomeProjeto,
+        responsavel,
+        tipo,
+        estado,
+        cidade,
+        email,
+        telefone,
+        produtos: produtosSalvos,
+        investimento,
+        custosFixosMensal,
+        custosFixosAnual,
+        custosVariaveisMensal,
+        custosVariaveisAnual,
+        taxaDescontoMensal,
+        taxaDescontoAnual,
+        taxaEsperada,
+        taxaTMA,
+        receitaBrutaTotal,
+        receitaMediaMensal,
+        lucroMensal,
+        lucroAnual,
+        mcuTotal,
+        mcuAnual,
+        mcuMensal,
+        mcuPonderada,
+        margemLucro,
+        precoMedioPond,
+        // Campos multi-produto em colunas separadas
+        multiProdutoCampos,
+        roi: roiPercent,
+        roiMensal,
+        roiTotal,
+        paybackMensal,
+        paybackAnual,
+        vplTotal,
+        paybackDescontado,
+        paybackDescontadoMes,
+        tir,
+        dataCadastro: new Date()
+      });
+      alert("Projeto salvo com sucesso!");
     } catch (error) {
-   console.error("Erro ao salvar:", error);
+      console.error("Erro ao salvar:", error);
     }
   }
-  
 </script>
 </body>
 </html>

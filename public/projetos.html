@@ -21,8 +21,7 @@
     <table class="table table-striped" id="projetosTable">
       <thead>
         <tr>
-          <th>Nome do Projeto</th>
-          <th>Data de Criação</th>
+          <!-- O cabeçalho será preenchido dinamicamente pelo JS -->
           <th>Ações</th>
         </tr>
       </thead>
@@ -70,17 +69,18 @@
       };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
       import {
         getFirestore,
         collection,
+        addDoc,
         getDocs,
         deleteDoc,
         doc,
         query,
         orderBy,
-        updateDoc,
       } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
       const firebaseConfig = {
@@ -93,136 +93,153 @@
         measurementId: "G-GMQSJW9JE2",
       };
 
+      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
 
-      let projetosFirebase = [];
-      let editProjetoId = null;
-
-      // Campos a serem exibidos na tabela, na ordem desejada
-      const camposTabela = [
-        { key: "nomeProjeto", label: "Projeto" },
-        { key: "dataCadastro", label: "Data de Criação" },
-        { key: "email", label: "Email" },
-        { key: "responsavel", label: "Responsável" },
-        { key: "telefone", label: "Telefone" },
-      ];
-
-      // Atualiza o cabeçalho da tabela conforme os campos definidos
-      function atualizarCabecalhoTabela() {
-        const thead = document.querySelector("#projetosTable thead tr");
-        // Remove todas as colunas exceto a de ações
-        while (thead.children.length > 1) {
-          thead.removeChild(thead.firstChild);
-        }
-        camposTabela.forEach((campo) => {
-          const th = document.createElement("th");
-          th.textContent = campo.label;
-          thead.insertBefore(
-            th,
-            thead.children[thead.children.length - 1] || null
-          );
-        });
-      }
-
-      async function renderProjetos() {
-        atualizarCabecalhoTabela();
+      async function carregarProjetos() {
         const projetosRef = collection(db, "projetos");
         const q = query(projetosRef, orderBy("dataCadastro", "desc"));
         const querySnapshot = await getDocs(q);
-        projetosFirebase = [];
-        const tbody = document.querySelector("#projetosTable tbody");
-        tbody.innerHTML = "";
-        querySnapshot.forEach((docSnap, idx) => {
+
+        // Cabeçalho da tabela
+        const headers = [
+          "Nome do Projeto",
+          "Responsável",
+          "Tipo",
+          "Estado",
+          "Cidade",
+          "Email",
+          "Telefone",
+          "Produtos",
+          "Investimento",
+          "Custos Fixos Mensal",
+          "Custos Fixos Anual",
+          "Custos Variáveis Mensal",
+          "Custos Variáveis Anual",
+          "Taxa Desconto Mensal",
+          "Taxa Desconto Anual",
+          "Taxa Esperada",
+          "Taxa TMA",
+          "Receita Bruta Total",
+          "Receita Média Mensal",
+          "Lucro Mensal",
+          "Lucro Anual",
+          "MCU Total",
+          "MCU Anual",
+          "MCU Mensal",
+          "MCU Ponderada",
+          "Margem Lucro",
+          "Preço Médio Pond.",
+          "Participação Receita",
+          "Margem Contribuição",
+          "Receita Necessária",
+          "Média Ponderada",
+          "Quantidades Unitário",
+          "Quantidades Distribuído",
+          "ROI (%)",
+          "ROI Mensal",
+          "ROI Total",
+          "Payback Mensal",
+          "Payback Anual",
+          "VPL Total",
+          "Payback Descontado",
+          "Payback Desc. Mês",
+          "TIR",
+          "Data Cadastro",
+          "Ações",
+        ];
+
+        // Monta o cabeçalho da tabela
+        let theadHtml = "<tr>";
+        headers.forEach((h) => (theadHtml += `<th>${h}</th>`));
+        theadHtml += "</tr>";
+        document.querySelector("#projetosTable thead").innerHTML = theadHtml;
+
+        // Monta as linhas da tabela
+        let html = "";
+        querySnapshot.forEach((docSnap) => {
           const data = docSnap.data();
-          projetosFirebase.push({ id: docSnap.id, ...data });
-          const tr = document.createElement("tr");
-          let colunas = "";
-          camposTabela.forEach((campo) => {
-            if (campo.key === "dataCadastro") {
-              colunas += `<td>${
-                data.dataCadastro
-                  ? new Date(
-                      data.dataCadastro.seconds * 1000
-                    ).toLocaleDateString()
-                  : ""
-              }</td>`;
-            } else {
-              colunas += `<td>${data[campo.key] || ""}</td>`;
-            }
-          });
-          tr.innerHTML = `
-                ${colunas}
-                <td class="actions">
-                    <button class="btn btn-sm btn-warning" onclick="editarProjetoFirebase(${idx})">Editar</button>
-                    <button class="btn btn-sm btn-danger" onclick="excluirProjetoFirebase(${idx})">Excluir</button>
-                    <button class="btn btn-sm btn-success" onclick="baixarPDFFirebase(${idx})">Baixar PDF</button>
-                </td>
-            `;
-          tbody.appendChild(tr);
+          html += `<tr>
+            <td>${
+              data.dataCadastro
+                ? new Date(
+                    data.dataCadastro.seconds
+                      ? data.dataCadastro.seconds * 1000
+                      : data.dataCadastro
+                  ).toLocaleString()
+                : ""
+            }</td>
+          <td>${data.nomeProjeto || ""}</td>
+          <td>${data.responsavel || ""}</td>
+          <td>${data.tipo || ""}</td>
+          <td>${data.estado || ""}</td>
+          <td>${data.cidade || ""}</td>
+          <td>${data.email || ""}</td>
+          <td>${data.telefone || ""}</td>
+          <td>${
+            Array.isArray(data.produtosSalvos)
+              ? data.produtosSalvos.join(", ")
+              : data.produtosSalvos || ""
+          }</td>
+          <td>${data.investimento || ""}</td>
+          <td>${data.custosFixosMensal || ""}</td>
+          <td>${data.custosFixosAnual || ""}</td>
+          <td>${data.custosVariaveisMensal || ""}</td>
+          <td>${data.custosVariaveisAnual || ""}</td>
+          <td>${data.taxaDescontoMensal || ""}</td>
+          <td>${data.taxaDescontoAnual || ""}</td>
+          <td>${data.taxaEsperada || ""}</td>
+          <td>${data.taxaTMA || ""}</td>
+          <td>${data.receitaBrutaTotal || ""}</td>
+          <td>${data.receitaMediaMensal || ""}</td>
+          <td>${data.lucroMensal || ""}</td>
+          <td>${data.lucroAnual || ""}</td>
+          <td>${data.mcuTotal || ""}</td>
+          <td>${data.mcuAnual || ""}</td>
+          <td>${data.mcuMensal || ""}</td>
+          <td>${data.mcuPonderada || ""}</td>
+          <td>${data.margemLucro || ""}</td>
+          <td>${data.precoMedioPond || ""}</td>
+          <td>${data.participacaoReceita || ""}</td>
+          <td>${data.margemContribuicao || ""}</td>
+          <td>${data.receitaNecessaria || ""}</td>
+          <td>${data.mediaPonderada || ""}</td>
+          <td>${data.quantidadesUnitario || ""}</td>
+          <td>${data.quantidadesDistribuido || ""}</td>
+          <td>${data.roiPercent || ""}</td>
+          <td>${data.roiMensal || ""}</td>
+          <td>${data.roiTotal || ""}</td>
+          <td>${data.paybackMensal || ""}</td>
+          <td>${data.paybackAnual || ""}</td>
+          <td>${data.vplTotal || ""}</td>
+          <td>${data.paybackDescontado || ""}</td>
+          <td>${data.paybackDescontadoMes || ""}</td>
+          <td>${data.tir || ""}</td>
+          
+          <td>
+            <button class="btn btn-danger btn-sm" onclick="deletarProjeto('${
+              docSnap.id
+            }')">Excluir</button>
+          </td>
+          </tr>`;
         });
+        document.querySelector("#projetosTable tbody").innerHTML = html;
       }
-
-      window.editarProjetoFirebase = function (idx) {
-        editProjetoId = projetosFirebase[idx].id;
-        document.getElementById("editIndex").value = idx;
-        document.getElementById("editNome").value =
-          projetosFirebase[idx].nomeProjeto || "";
-        new bootstrap.Modal(document.getElementById("editModal")).show();
-      };
-
-      document.getElementById("editForm").onsubmit = async function (e) {
-        e.preventDefault();
-        const idx = document.getElementById("editIndex").value;
-        const novoNome = document.getElementById("editNome").value;
-        if (editProjetoId) {
-          await updateDoc(doc(db, "projetos", editProjetoId), {
-            nomeProjeto: novoNome,
-          });
-          editProjetoId = null;
-          await renderProjetos();
-          bootstrap.Modal.getInstance(
-            document.getElementById("editModal")
-          ).hide();
-        }
-      };
-
-      window.excluirProjetoFirebase = async function (idx) {
+      window.deletarProjeto = async function deletarProjeto(id) {
         if (confirm("Tem certeza que deseja excluir este projeto?")) {
-          const id = projetosFirebase[idx].id;
-          await deleteDoc(doc(db, "projetos", id));
-          await renderProjetos();
+          try {
+            await deleteDoc(doc(db, "projetos", id));
+            alert("Projeto excluído!");
+            carregarProjetos();
+          } catch (error) {
+            console.error("Erro ao excluir:", error);
+          }
         }
       };
 
-      window.baixarPDFFirebase = function (idx) {
-        const projeto = projetosFirebase[idx];
-        let conteudo = "";
-        camposTabela.forEach((campo) => {
-          let valor = "";
-          if (campo.key === "dataCadastro") {
-            valor = projeto.dataCadastro
-              ? new Date(
-                  projeto.dataCadastro.seconds * 1000
-                ).toLocaleDateString()
-              : "";
-          } else {
-            valor = projeto[campo.key] || "";
-          }
-          conteudo += `${campo.label}: ${valor}\n`;
-        });
-        const blob = new Blob([conteudo], { type: "application/pdf" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${projeto.nomeProjeto || "projeto"}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-      };
-
-      window.addEventListener("DOMContentLoaded", renderProjetos);
-
-      window.addEventListener("DOMContentLoaded", renderProjetos);
+      // Carrega os dados ao abrir a página
+      window.addEventListener("DOMContentLoaded", carregarProjetos);
     </script>
   </body>
 </html>
