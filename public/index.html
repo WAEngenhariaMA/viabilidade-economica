@@ -1738,14 +1738,39 @@ function atualizarCustosFixosEVariaveis() {
     let valor = custosFixos.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
     if (!valor.startsWith("R$")) valor = "R$ " + valor;
     campoFixos.value = valor;
-  }
+  // Novo cálculo de custos fixos anual baseado nos meses preenchidos
   const campoAnual = document.getElementById("custos_fixos_anual");
-if (campoAnual) {
-  const totalMatrizes = Math.max(1, anosAdicionados.length); // garante no mínimo 1
-  const totalAnual = custosFixos * totalMatrizes * 12;
-  campoAnual.value = `R$ ${totalAnual.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+  if (campoAnual) {
+    let totalMeses = 0;
+    // Para cada matriz (ano)
+    anosAdicionados.forEach((anoID, idx) => {
+      let mesesPreenchidos = new Set();
+      // Para cada produto
+      produtos.forEach((p, i) => {
+        for (let m = 0; m < 12; m++) {
+          const input = document.getElementById(`${anoID}_produto_${i}_mes_${m}`);
+          if (input && input.value && !isNaN(input.value) && input.value !== "") {
+            mesesPreenchidos.add(m);
+          }
+        }
+      });
+      if (idx === 0) {
+        // Para o primeiro ano, só conta a partir do segundo mês preenchido
+        const mesesArray = Array.from(mesesPreenchidos).sort((a, b) => a - b);
+        if (mesesArray.length > 1) {
+          // Conta do segundo mês preenchido até dezembro
+          totalMeses += 12 - mesesArray[1];
+        }
+        // Se só um mês preenchido, não soma nada
+      } else {
+        // Para os próximos anos, soma todos os meses preenchidos
+        totalMeses += mesesPreenchidos.size;
+      }
+    });
+    const totalAnual = custosFixos * totalMeses;
+    campoAnual.value = `R$ ${totalAnual.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+  }
 }
-
   if (campoInvestimento) {
     campoInvestimento.value = `R$ ${investimento.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
   }
