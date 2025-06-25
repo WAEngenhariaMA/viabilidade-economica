@@ -1390,7 +1390,8 @@ window.onload = () => {
      calcularTaxaDesconto();
      atualizarMargemMensalPorProduto();
      atualizarCamposCustosVariaveisPorProduto();
-      calcularCustosVariaveisEmReais();  // ✅ Executa ao iniciar
+      calcularCustosVariaveisEmReais();
+      distribuirEntreMeses(rowID)  // ✅ Executa ao iniciar
   }, 300);
 };
 function atualizarReceitaProdutos() {
@@ -1885,24 +1886,13 @@ function adicionarAno(dados = null, nomeCustom = null) {
   wrapper.innerHTML = html;
   container.appendChild(wrapper);
 
-  // Após renderizar, redistribui o valor de Total Ano para os meses se necessário
+  // Após renderizar, sempre redistribui o valor de Total Ano para os meses se houver valor preenchido
   setTimeout(() => {
     produtos.forEach((p, i) => {
       const rowID = `${idMatriz}_produto_${i}`;
       const totalAnoInput = document.getElementById(`${rowID}_totalAno`);
-      // Verifica se há valor em Total Ano e todos os meses estão vazios
       if (totalAnoInput && totalAnoInput.value) {
-        let todosVazios = true;
-        for (let m = 0; m < 12; m++) {
-          const mesInput = document.getElementById(`${rowID}_mes_${m}`);
-          if (mesInput && mesInput.value && mesInput.value !== "0") {
-            todosVazios = false;
-            break;
-          }
-        }
-        if (todosVazios) {
-          distribuirEntreMeses(rowID);
-        }
+        distribuirEntreMeses(rowID);
       }
     });
     calcularReceitaNova();
@@ -3848,7 +3838,20 @@ function novaPagina() {
           atualizarCustosFixosEVariaveis();
           atualizarCamposCustosVariaveisPorProduto();
           calcularCustosVariaveisAnual();
-          
+
+          // Distribui os totais de todos os anos/linhas entre os meses
+          document.querySelectorAll('.matriz-bloco').forEach(matriz => {
+            const linhas = matriz.querySelectorAll('tbody tr');
+            linhas.forEach((linha, idx) => {
+              const rowID = `${matriz.id}_produto_${idx}`;
+              const totalAnoInput = document.getElementById(`${rowID}_totalAno`);
+              if (totalAnoInput && totalAnoInput.value) {
+                distribuirEntreMeses(rowID);
+              }
+            });
+          });
+
+          atualizarTotalAno();
         }
 
         if (steps[i + 1].id === 'step4') {
@@ -3858,7 +3861,8 @@ function novaPagina() {
       atualizarMargemUnitáriaPorProduto();
       atualizarPontoEquilibrio(); 
       calcularIndicadoresFinanceiros();
-      atualizarMargemMensalPorProduto(); // ✅ chamada aqui // já chama atualizarReceitaEquilibrioPorProduto() internamente
+      atualizarMargemMensalPorProduto();
+      // ✅ chamada aqui // já chama atualizarReceitaEquilibrioPorProduto() internamente
     }, 100); // Pequeno delay para garantir DOM renderizado
   } else {
     console.warn("Lista de produtos está vazia ao entrar na Etapa 04.");
@@ -3877,6 +3881,8 @@ function novaPagina() {
           if (i - 1 >= 0) {
             steps[i - 1].classList.add("active");
             renderButtons(i - 1);
+               distribuirEntreMeses() ;
+          atualizarTotalAno();
           }
           break;
         }
