@@ -455,6 +455,7 @@ h4 {
   flex-wrap: wrap;
   gap: 20px;
 }
+
   </style>
 </head>
 <body>
@@ -3173,8 +3174,12 @@ setTimeout(calcularMargemSegurancaEIL, 500);
     </button>
   </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
 <script>
 async function carregarImagemBase64(url) {
   const response = await fetch(url);
@@ -3328,9 +3333,26 @@ setTimeout(atualizarChecklistFinal, 500);
 async function gerarPDFPersonalizado() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'mm', 'a4');
-  const imgBase64 = await carregarImagemBase64('layout_canva.png');
+  const imgBase64 = await carregarImagemBase64('novo_layout2.png');
   const margem = 15;
-  let y = 20;
+  let y = 35;
+
+  // CAPA
+  // Carrega uma imagem diferente para a capa
+  const imgCapaBase64 = await carregarImagemBase64('novo_layout.png');
+  doc.addImage(imgCapaBase64, 'PNG', 0, 0, 210, 297);
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'normal');
+  doc.text(document.getElementById('nome')?.value || '', 105, 90, { align: 'center' });
+  doc.setFontSize(12);
+
+
+  // Nova página para os dados
+  doc.addPage();
+  doc.addImage(imgBase64, 'PNG', 0, 0, 210, 297);
+  y = 35;
 
   // Função robusta para converter moeda para número
   function moedaParaNumero(str) {
@@ -3344,13 +3366,14 @@ async function gerarPDFPersonalizado() {
         .replace(/\s/g, '')
     ) || 0;
   }
- function desmascararNumero(valor) {
-  if (!valor) return '0';
-  return valor
-    .replace(/[R$\s%]/g, '')  // remove R$, espaço e %
-    .replace(/\./g, '')       // remove pontos de milhar
-    .replace(',', '.');       // converte vírgula para ponto decimal
-}
+  function desmascararNumero(valor) {
+    if (!valor) return '0';
+    return valor
+      .replace(/[R$\s%]/g, '')  // remove R$, espaço e %
+      .replace(/\./g, '')       // remove pontos de milhar
+      .replace(',', '.');
+  }
+
   // Função para escrever campo (label + valor na mesma linha)
   const escreveCampo = (label, valor) => {
     doc.setFontSize(11);
@@ -3382,7 +3405,7 @@ async function gerarPDFPersonalizado() {
   const novaPagina = () => {
     doc.addPage();
     doc.addImage(imgBase64, 'PNG', 0, 0, 210, 297);
-    y = 20;
+    y = 35;
   };
   // Função para nova página sem fundo
   const novaPaginaSemFundo = () => {
@@ -3417,115 +3440,769 @@ async function gerarPDFPersonalizado() {
 
   // ===== Pagina 02 =====
   novaPagina();
-  escreveTitulo('2. Custos e Investimentos');
+ escreveTitulo('2. Produtos');
 
-  // 2.1 Descrição do Produto
-  escreveSubtitulo('2.1 Descrição do Produto');
-  produtos.forEach((p, idx) => {
-    escreveCampo(`Produto ${String(idx + 1)}`, p.nome);
-    escreveCampo('Custo Direto', p.custoR || 'R$ 0,00');
-    escreveCampo('Preço de Venda', p.precoVenda || 'R$ 0,00');
-    // Quantidade Venda Ano 01, Ano 02, etc.
-    anosAdicionados.forEach((anoID, anoIdx) => {
-      let quantidadeAno = 0;
-      for (let m = 0; m < 12; m++) {
-        const input = document.getElementById(`${anoID}_produto_${idx}_mes_${m}`);
-        if (input) quantidadeAno += parseInt(input.value || 0);
-      }
-      escreveCampo(`Quantidade Venda Ano ${anoIdx + 1}`, `${quantidadeAno} Unidade${quantidadeAno !== 1 ? 's' : ''}`);
-    });
-    y += 2;
+produtos.forEach((p, idx) => {
+  escreveSubtitulo(`${p.nome}`);
+
+  const precoNum = parseFloat(String(p.precoVenda).replace(/\./g, '').replace(',', '.').replace('R$', '').trim()) || 0;
+  const custoNum = parseFloat(String(p.custoR).replace(/\./g, '').replace(',', '.').replace('R$', '').trim()) || 0;
+  const percCusto = precoNum > 0 ? (custoNum / precoNum) * 100 : 0;
+
+  const getPercent = (campo) => {
+    const el = document.getElementById(`${campo}_produto_${idx}`);
+    return el?.value || '0,00%';
+  };
+
+  const getValorRS = (campo) => {
+    const el = document.getElementById(`${campo}_produto_${idx}`);
+    if (!el || !el.value) return 'R$ 0,00';
+    const perc = parseFloat(el.value.replace('%', '').replace(',', '.')) || 0;
+    const valor = precoNum * (perc / 100);
+    return 'R$ ' + valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  };
+
+  // Custos variáveis mensais
+  let custosVarMensal = 0;
+  const blocoCustos = document.querySelectorAll("#blocoCustosVariaveisRS .bloco-produto-custos")[idx];
+  if (blocoCustos) {
+    const totalInput = blocoCustos.querySelectorAll("input[readonly]");
+    if (totalInput.length >= 6) {
+      custosVarMensal = moedaParaNumero(totalInput[5].value);
+    }
+  }
+
+  const corpoTabela = [
+    ['Custo Direto', p.custoR || 'R$ 0,00', percCusto.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + '%'],
+    ['Preço de Venda', p.precoVenda || 'R$ 0,00', '100,00%'],
+    ['Custo de Produção', p.custoR || 'R$ 0,00', percCusto.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + '%'],
+    ['Impostos', getValorRS('imposto'), getPercent('imposto')],
+    ['Comissão', getValorRS('comissao'), getPercent('comissao')],
+    ['Cartão', getValorRS('cartao'), getPercent('cartao')],
+    ['Outros', getValorRS('outros'), getPercent('outros')],
+    ['Custos Variáveis Mensal', 'R$ ' + custosVarMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }), '']
+  ];
+
+  doc.autoTable({
+    head: [['Descrição', 'R$', '%']],
+    body: corpoTabela,
+    startY: y,
+    margin: { left: margem, right: margem },
+    styles: {
+      font: 'helvetica',
+      fontSize: 8,
+      halign: 'center'
+    },
+    headStyles: {
+      fillColor: [230, 230, 230],
+      textColor: 20,
+      fontStyle: 'bold'
+    },
+    columnStyles: {
+      0: { halign: 'left', fontStyle: 'bold' },
+      1: { halign: 'center' },
+      2: { halign: 'center' }
+    }
   });
+
+    y = doc.lastAutoTable.finalY + 8;
+
+});
+  // ===== Pagina 03 =====
 
   // 2.2 Investimento
-  escreveSubtitulo('2.2 Investimento');
-  escreveCampo('Investimento Inicial', document.getElementById('investimento_inicial')?.value || 'R$ 0,00');
-  y += 2;
+  novaPagina();
+  escreveTitulo('2. Investimentos');
+  escreveSubtitulo('2.1 Investimento Inicial');
 
-  // 2.3 Custos
-  escreveSubtitulo('2.3 Custos');
-  escreveCampo('Custos Fixos Mensal', document.getElementById('custos_fixos_total')?.value || 'R$ 0,00');
-  escreveCampo('Custos Fixos Anual', document.getElementById('custos_fixos_anual')?.value || 'R$ 0,00');
-  // Custos Variáveis Mensal e Anual
-  // Mensal: soma dos custos variáveis convertidos por produto
-  let custosVarMensal = 0, custosVarAnual = 0;
-  produtos.forEach((p, idx) => {
-    // Mensal: pega da seção "Custos Variáveis Convertidos por Produto (R$)"
-    const bloco = document.querySelectorAll("#blocoCustosVariaveisRS .bloco-produto-custos")[idx];
-    if (bloco) {
-      const totalInput = bloco.querySelectorAll("input[readonly]");
-      if (totalInput.length >= 6) {
-        custosVarMensal += moedaParaNumero(totalInput[5].value);
-      }
-    }
-    // Anual: pega da tabela resumo-produto (custos_variaveis_anuais)
-    const tabela = document.querySelector("#custos_variaveis_anuais table.resumo-produto");
-    if (tabela) {
-      const linhas = tabela.querySelectorAll("tbody tr");
-      if (linhas.length > idx) {
-        const celulas = linhas[idx].querySelectorAll("td");
-        if (celulas.length > 6) {
-          custosVarAnual += moedaParaNumero(celulas[6].innerText);
-        }
-      }
+// Lista dos campos de investimento
+const camposInvestimento = [
+  "Criação de Marca e Registro (R$):",
+  "Abertura de Empresa e Licenças (R$):",
+  "Consultorias (R$):",
+  "Estoque Inicial (R$):",
+  "Equipamentos (R$):",
+  "Imobilizados (R$):",
+  "Capital de Giro (R$):",
+  "Outros Investimentos (R$):"
+];
+
+// Monta array de valores e soma total
+let valoresInvestimento = [];
+let totalInvestimento = 0;
+// Função auxiliar para obter o valor do input pelo label
+function getInputValueByLabel(label) {
+  let valor = '0';
+  document.querySelectorAll('label').forEach(lab => {
+    if (lab.textContent.trim() === label.trim()) {
+      const input = lab.closest('.form-group')?.querySelector('input');
+      if (input && input.value) valor = input.value;
     }
   });
-  escreveCampo('Custos Variáveis Mensal', `R$ ${custosVarMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
-  escreveCampo('Custos Variáveis Anual', `R$ ${custosVarAnual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
-  y += 2;
+  return valor;
+}
 
-  // 2.4 Taxa de avaliação
-  escreveSubtitulo('2.4 Taxa de avaliação');
-  escreveCampo('Taxa de Desconto Composto Mês', document.getElementById('taxa_desconto_mensal')?.value || '%');
-  escreveCampo('Taxa de Desconto Anual', document.getElementById('taxa_desconto_anual')?.value || '%');
-  escreveCampo('Retorno Esperado', document.getElementById('taxa_esperada')?.value || '%');
-  escreveCampo('Taxa Mínima de Atratividade - TMA', document.getElementById('taxa_tma')?.value || '%');
-  y += 2;
+camposInvestimento.forEach(label => {
+  const valorStr = getInputValueByLabel(label);
+  // Corrige: remove "R$" e pontos de milhar antes de converter
+  const valorNum = parseFloat(
+    String(valorStr)
+      .replace(/R\$\s?/g, '')
+      .replace(/\./g, '')
+      .replace(',', '.')
+      .replace(/\s/g, '')
+  ) || 0;
+  valoresInvestimento.push(valorNum);
+  totalInvestimento += valorNum;
+});
+
+// Corpo da tabela
+const corpoInvestimentos = camposInvestimento.map((label, idx) => {
+  const valor = valoresInvestimento[idx];
+  const perc = totalInvestimento > 0 ? (valor / totalInvestimento * 100) : 0;
+  return [
+    label,
+    'R$ ' + valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
+    perc.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + '%'
+  ];
+});
+
+// Linha de total
+corpoInvestimentos.push([
+  { content: 'Total', styles: { fontStyle: 'bold' } },
+  { content: 'R$ ' + totalInvestimento.toLocaleString('pt-BR', { minimumFractionDigits: 2 }), styles: { fontStyle: 'bold' } },
+  { content: '100,00%', styles: { fontStyle: 'bold' } }
+]);
+
+// Tabela no PDF
+doc.autoTable({
+  head: [['Descrição', 'R$', '%']],
+  body: corpoInvestimentos,
+  startY: y,
+  margin: { left: margem, right: margem },
+  styles: {
+    font: 'helvetica',
+    fontSize: 8,
+    halign: 'center'
+  },
+  headStyles: {
+    fillColor: [230, 230, 230],
+    textColor: 20,
+    fontStyle: 'bold'
+  },
+  columnStyles: {
+    0: { halign: 'left', fontStyle: 'bold' },
+    1: { halign: 'center' },
+    2: { halign: 'center' }
+  }
+});
+
+  y = doc.lastAutoTable.finalY + 8;
+
+
+ 
+try {
+  const canvasId = "graficoPizzaInvestimento";
+  let canvas = document.getElementById(canvasId);
+
+  if (!canvas) {
+    canvas = document.createElement("canvas");
+    canvas.id = canvasId;
+    canvas.width = 400;
+    canvas.height = 400;
+    canvas.style.visibility = "hidden";
+    canvas.style.position = "absolute";
+    canvas.style.left = "-9999px";
+    document.body.appendChild(canvas);
+  }
+
+  const camposInvestimento = [
+    'Criação de Marca e Registro (R$):',
+    'Abertura de Empresa e Licenças (R$):',
+    'Consultorias (R$):',
+    'Estoque Inicial (R$):',
+    'Equipamentos (R$):',
+    'Imobilizados (R$):',
+    'Capital de Giro (R$):',
+    'Outros Investimentos (R$):'
+  ];
+
+  // Só adiciona campos preenchidos (> 0)
+  const labels = [];
+  const valores = [];
+
+  camposInvestimento.forEach(label => {
+    document.querySelectorAll('label').forEach(lab => {
+      if (lab.textContent.trim() === label) {
+        const input = lab.closest('.form-group')?.querySelector('input');
+        if (input && input.value) {
+          // Remove máscara antes de checar se é maior que 0
+          const val = parseFloat(
+            input.value
+              .replace(/R\$\s?/g, '')
+              .replace(/\./g, '')
+              .replace(',', '.')
+              .replace(/\s/g, '')
+          ) || 0;
+          if (val > 0) {
+            labels.push(label.replace(' (R$):', ''));
+            valores.push(val);
+          }
+        }
+      }
+    });
+  });
+
+  // Gera gráfico apenas se houver valores (>0)
+  if (window.Chart && valores.length > 0) {
+    const total = valores.reduce((a, b) => a + b, 0);
+    const ctx = canvas.getContext("2d");
+
+    // Limpa gráfico anterior se houver
+    if (canvas.chartInstance) {
+      canvas.chartInstance.destroy();
+    }
+
+    canvas.chartInstance = new Chart(ctx, {
+      type: "pie",
+      data: {
+        labels: labels,
+        datasets: [{
+          data: valores,
+          backgroundColor: [
+            "#4e79a7", "#f28e2b", "#e15759", "#76b7b2",
+            "#59a14f", "#edc949", "#af7aa1", "#ff9da7"
+          ].slice(0, valores.length)
+        }]
+      },
+      options: {
+        responsive: false,
+        maintainAspectRatio: false,
+        layout: { padding: 5 },
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              font: { size: 12 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const valor = context.parsed;
+                const perc = total > 0 ? (valor / total) * 100 : 0;
+                return `${context.label}: R$ ${valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} (${perc.toFixed(1)}%)`;
+              }
+            }
+          },
+          datalabels: {
+            color: "#fff",
+            font: { size: 12, weight: 'bold' },
+            align: "center",
+            anchor: "center",
+            clip: true,
+            display: function(context) {
+              // Só exibe label se valor > 0 e label não for vazio
+              return context.dataset.data[context.dataIndex] > 0 && context.chart.data.labels[context.dataIndex];
+            },
+            formatter: function (value, context) {
+              const perc = total > 0 ? (value / total) * 100 : 0;
+              return `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}\n(${perc.toFixed(1)}%)`;
+            }
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+  }
+
+  if (canvas && canvas.toDataURL && valores.length > 0) {
+    await new Promise(res => setTimeout(res, 400));
+    const imgData = canvas.toDataURL("image/png");
+
+    // Título
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Distribuição do Investimento Inicial', margem, y);
+    y += 6;
+
+    // Centraliza a imagem
+    const larguraImagem = 80;
+    const paginaLargura = doc.internal.pageSize.getWidth();
+    const xCentro = (paginaLargura - larguraImagem) / 2;
+    doc.addImage(imgData, 'PNG', xCentro, y, larguraImagem, larguraImagem);
+    y += larguraImagem + 4;
+  }
+} catch (e) {
+  console.warn("Erro ao gerar gráfico de investimento:", e);
+}
+
+  // 2.4 Custos
+
+ escreveSubtitulo('2.4 Custos');
+
+// Lista dos campos de custos fixos
+const camposCustosFixos = [
+  "Aluguel",
+  "Energia",
+  "Salários",
+  "Internet",
+  "Outros Custos",
+  "Combustível",
+  "Salários Equipe Comercial",
+  "Despesa 1",
+  "Despesa 2"
+];
+
+// Monta array de valores e soma total
+let valoresCustosFixos = [];
+let totalCustosFixos = 0;
+camposCustosFixos.forEach(label => {
+  const valorStr = getInputValueByLabel(label);
+  const valorNum = moedaParaNumero(valorStr);
+  valoresCustosFixos.push(valorNum);
+  totalCustosFixos += valorNum;
+});
+
+// Monta corpo da tabela
+const corpoCustos = camposCustosFixos.map((label, idx) => {
+  const valor = valoresCustosFixos[idx];
+  const perc = totalCustosFixos > 0 ? (valor / totalCustosFixos * 100) : 0;
+  return [
+    label,
+    'R$ ' + valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
+    perc.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + '%'
+  ];
+});
+
+// Adiciona linha total
+corpoCustos.push([
+  { content: 'Total', styles: { fontStyle: 'bold' } },
+  { content: 'R$ ' + totalCustosFixos.toLocaleString('pt-BR', { minimumFractionDigits: 2 }), styles: { fontStyle: 'bold' } },
+  { content: '100,00%', styles: { fontStyle: 'bold' } }
+]);
+
+// Renderiza a tabela no PDF
+doc.autoTable({
+  head: [['Descrição', 'R$', '%']],
+  body: corpoCustos,
+  startY: y,
+  margin: { left: margem, right: margem },
+  styles: {
+    font: 'helvetica',
+    fontSize: 8,
+    halign: 'center'
+  },
+  headStyles: {
+    fillColor: [230, 230, 230],
+    textColor: 20,
+    fontStyle: 'bold'
+  },
+  columnStyles: {
+    0: { halign: 'left', fontStyle: 'bold' },
+    1: { halign: 'center' },
+    2: { halign: 'center' }
+  }
+});
+
+  y = doc.lastAutoTable.finalY + 8;
+
+
+  // Custos Fixos Mensal total
+  //escreveCampo('Custos Fixos Mensal', document.getElementById('custos_fixos_total')?.value || 'R$ 0,00');
+  //y += 2;
+
+// Gráfico de Pizza do Investimento Inicial
+
+
+  // escreveCampo('Custos Fixos Anual', document.getElementById('custos_fixos_anual')?.value || 'R$ 0,00');
+  // Custos Variáveis Mensal e Anual
+  // Mensal: soma dos custos variáveis convertidos por produto
+  
+  //escreveCampo('Custos Variáveis Anual', `R$ ${custosVarAnual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+  
+
+  // 2.5 Taxa de avaliação
+  //escreveSubtitulo('2.5 Taxa de avaliação');
+  //escreveCampo('Taxa de Desconto Composto Mês', document.getElementById('taxa_desconto_mensal')?.value || '%');
+ // escreveCampo('Taxa de Desconto Anual', document.getElementById('taxa_desconto_anual')?.value || '%');
+  //escreveCampo('Retorno Esperado', document.getElementById('taxa_esperada')?.value || '%');
+ // escreveCampo('Taxa Mínima de Atratividade - TMA', document.getElementById('taxa_tma')?.value || '%');
+ // y += 2;
 
   // 3. Receita e Projeção de Lucro
-  escreveTitulo('3. Receita e Projeção de Lucro');
-  escreveSubtitulo('3.1 Receitas e Lucros');
-  escreveCampo('Receita Bruta Total', document.getElementById('receita_anual')?.value || 'R$ 0,00');
-  escreveCampo('Receita Média Mensal', document.getElementById('receita_mensal')?.value || 'R$ 0,00');
-  escreveCampo('Lucro Mensal', document.getElementById('lucro_mensal')?.value || 'R$ 0,00');
-  escreveCampo('Lucro Anual', document.getElementById('lucro_anual')?.value || 'R$ 0,00');
+  
+  escreveTitulo('3. Análise do Faturamento e Lucro');
+escreveSubtitulo('3.1 Análise Performance por Produto');
+
+produtos.forEach((p, idx) => {
+  escreveSubtitulo(`${p.nome}`);
+
+  // Participação Receita e Margem Contribuição por produto
+  let partReceita = '';
+  let margemContrib = '';
+  const linhas = document.querySelectorAll("#margem_matriz tr");
+  if (linhas.length > idx + 1) {
+    const celulas = linhas[idx + 1].querySelectorAll("td");
+    if (celulas.length > 5) {
+      partReceita = celulas[1].innerText;
+      margemContrib = celulas[5].innerText;
+    }
+  }
+
+  // Margem Contribuição R$
+  const bloco = document.querySelectorAll("#blocoCustosVariaveisRS .bloco-produto-custos")[idx];
+  let margemContribR = '';
+  let precoNum = parseFloat(String(p.precoVenda).replace(/\./g, '').replace(',', '.').replace('R$', '').trim()) || 0;
+  if (bloco) {
+    const totalInput = bloco.querySelectorAll("input[readonly]");
+    if (totalInput.length >= 6) {
+      const totalCustosVar = moedaParaNumero(totalInput[5].value);
+      margemContribR = 'R$ ' + (precoNum - totalCustosVar).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    }
+  }
+
+  // Participação Receita (%)
+  let quantidadeProduto = 0;
+  let quantidadeTotalProdutos = 0;
+  anosAdicionados.forEach((anoID) => {
+    for (let m = 0; m < 12; m++) {
+      const input = document.getElementById(`${anoID}_produto_${idx}_mes_${m}`);
+      if (input) quantidadeProduto += parseInt(input.value || 0);
+    }
+  });
+  produtos.forEach((prod, prodIdx) => {
+    anosAdicionados.forEach((anoID) => {
+      for (let m = 0; m < 12; m++) {
+        const input = document.getElementById(`${anoID}_produto_${prodIdx}_mes_${m}`);
+        if (input) quantidadeTotalProdutos += parseInt(input.value || 0);
+      }
+    });
+  });
+  let participacaoReceitaCalc = quantidadeTotalProdutos > 0 ? (quantidadeProduto / quantidadeTotalProdutos) * 100 : 0;
+
+  // Margem Ponderada
+  let margemPonderada = 0;
+  if (partReceita && margemContrib) {
+    const partReceitaNum = parseFloat((partReceita || "0").replace('%', '').replace(',', '.')) || 0;
+    const margemContribNum = parseFloat((margemContrib || "0").replace('%', '').replace(',', '.')) || 0;
+    margemPonderada = (participacaoReceitaCalc * margemContribNum) / 100;
+  }
+
+  // Monta tabela do produto
+  const dadosProduto = [
+    ['Margem Contribuição', margemContribR || 'R$ 0,00', margemContrib || '%'],
+    ['Participação Receita', '', participacaoReceitaCalc.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + '%'],
+    ['Margem Ponderada', '', margemPonderada.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + '%'],
+  ];
+
+  doc.autoTable({
+    head: [['Descrição', 'R$', '%']],
+    body: dadosProduto,
+    startY: y,
+    margin: { left: margem, right: margem },
+    styles: {
+      font: 'helvetica',
+      fontSize: 8,
+      halign: 'center'
+    },
+    headStyles: {
+      fillColor: [230, 230, 230],
+      textColor: 20,
+      halign: 'center',
+      fontStyle: 'bold'
+    },
+    columnStyles: {
+      0: { halign: 'left', fontStyle: 'bold' },
+      1: { halign: 'center' },
+      2: { halign: 'center' }
+    }
+  });
+
+    y = doc.lastAutoTable.finalY + 8;
+
+});
+
+  // Calcula totais por produto
+  // Calcula totais para o modo tabela
+  // Calcula totais por ano para matriz consolidada
+  let anos = anosAdicionados.length;
+  if (anos === 0) anos = 1;
+
+  // Função para converter moeda para número
+  function moedaParaNumero(str) {
+    if (!str) return 0;
+    return parseFloat(
+      String(str)
+        .replace(/R\$\s?/g, '')
+        .replace(/%/g, '')
+        .replace(/\./g, '')
+        .replace(',', '.')
+        .replace(/\s/g, '')
+    ) || 0;
+  }
+
+  // Calcula Receita Total (todos anos, todos produtos)
+  let receitaTotalGeral = 0;
+  for (let anoIdx = 0; anoIdx < anos; anoIdx++) {
+    let receitaAno = 0;
+    produtos.forEach((p, idx) => {
+      let quantidadeTotal = 0;
+      const anoID = anosAdicionados[anoIdx];
+      if (anoID) {
+        for (let m = 0; m < 12; m++) {
+          const input = document.getElementById(`${anoID}_produto_${idx}_mes_${m}`);
+          if (input) quantidadeTotal += parseFloat(input.value || 0);
+        }
+      }
+      const precoVenda = moedaParaNumero(p.precoVenda);
+      receitaAno += quantidadeTotal * precoVenda;
+    });
+    receitaTotalGeral += receitaAno;
+  }
+
+  // Inicializa arrays para cada linha da matriz
+  const linhasResumo = [
+    { label: 'Receita', valores: [], percentuais: [] },
+    { label: 'Despesas Variáveis', valores: [], percentuais: [] },
+    { label: 'Margem Contribuição', valores: [], percentuais: [] },
+    { label: 'Despesas Fixas', valores: [], percentuais: [] },
+    { label: 'EBITDA', valores: [], percentuais: [] }, // Em branco
+    { label: 'Lucro', valores: [], percentuais: [] },
+  ];
+
+  for (let anoIdx = 0; anoIdx < anos; anoIdx++) {
+    // Receita Ano
+    let receitaAno = 0;
+    // Despesas Variáveis Ano
+    let despesasVariaveisAno = 0;
+    // Margem Contribuição Ano
+    let margemContribAno = 0;
+    // Despesas Fixas Ano
+    let despesasFixasAno = 0;
+    // Lucro Ano
+    let lucroAno = 0;
+
+    // Receita e despesas variáveis por produto
+    produtos.forEach((p, idx) => {
+      let quantidadeTotal = 0;
+      const anoID = anosAdicionados[anoIdx];
+      if (anoID) {
+        for (let m = 0; m < 12; m++) {
+          const input = document.getElementById(`${anoID}_produto_${idx}_mes_${m}`);
+          if (input) quantidadeTotal += parseFloat(input.value || 0);
+        }
+      }
+      const precoVenda = moedaParaNumero(p.precoVenda);
+      receitaAno += quantidadeTotal * precoVenda;
+
+      // Custos variáveis por produto
+      const getPercent = campo => {
+        const el = document.getElementById(`${campo}_produto_${idx}`);
+        if (!el) return 0;
+        return parseFloat(el.value.replace('%', '').replace(',', '.')) || 0;
+      };
+      const prodPerc = getPercent('producao');
+      const impPerc = getPercent('imposto');
+      const comPerc = getPercent('comissao');
+      const cartPerc = getPercent('cartao');
+      const outPerc = getPercent('outros');
+      const custoVariavelUnit = precoVenda * (prodPerc + impPerc + comPerc + cartPerc + outPerc) / 100;
+      despesasVariaveisAno += custoVariavelUnit * quantidadeTotal;
+    });
+
+    // Margem Contribuição Ano
+    margemContribAno = receitaAno - despesasVariaveisAno;
+
+    // Despesas Fixas (mensal * 12)
+    // Calcula despesas fixas anual conforme regra do primeiro ano
+    let despesasFixasMensal = moedaParaNumero(document.getElementById("custos_fixos_total")?.value || "0");
+    if (anoIdx === 0) {
+      // Para o primeiro ano, conta do segundo mês preenchido em diante
+      let mesesPreenchidos = new Set();
+      produtos.forEach((p, i) => {
+        for (let m = 0; m < 12; m++) {
+          const input = document.getElementById(`${anosAdicionados[anoIdx]}_produto_${i}_mes_${m}`);
+          if (input && input.value && !isNaN(input.value) && input.value !== "") {
+            mesesPreenchidos.add(m);
+          }
+        }
+      });
+      const mesesArray = Array.from(mesesPreenchidos).sort((a, b) => a - b);
+      let totalMeses = 0;
+      if (mesesArray.length > 1) {
+        // Conta do segundo mês preenchido até dezembro
+        totalMeses = 12 - mesesArray[1];
+      }
+      // Se só um mês preenchido, não soma nada
+      despesasFixasAno = despesasFixasMensal * totalMeses;
+    } else {
+      // Para os próximos anos, soma todos os meses preenchidos
+      let mesesPreenchidos = new Set();
+      produtos.forEach((p, i) => {
+        for (let m = 0; m < 12; m++) {
+          const input = document.getElementById(`${anosAdicionados[anoIdx]}_produto_${i}_mes_${m}`);
+          if (input && input.value && !isNaN(input.value) && input.value !== "") {
+            mesesPreenchidos.add(m);
+          }
+        }
+      });
+      despesasFixasAno = despesasFixasMensal * mesesPreenchidos.size;
+    }
+
+    // Lucro Ano (Lucro Anual)
+    lucroAno = 0;
+    produtos.forEach((p, idx) => {
+      let quantidade = 0;
+      const anoID = anosAdicionados[anoIdx];
+      if (anoID) {
+        for (let m = 0; m < 12; m++) {
+          const input = document.getElementById(`${anoID}_produto_${idx}_mes_${m}`);
+          if (input) quantidade += parseFloat(input.value || 0);
+        }
+      }
+      // Receita do produto
+      const precoVenda = moedaParaNumero(p.precoVenda);
+      const receita = quantidade * precoVenda;
+
+      // Custos variáveis por produto
+      const getPercent = campo => {
+        const el = document.getElementById(`${campo}_produto_${idx}`);
+        if (!el) return 0;
+        return parseFloat(el.value.replace('%', '').replace(',', '.')) || 0;
+      };
+      const prodPerc = getPercent('producao');
+      const impPerc = getPercent('imposto');
+      const comPerc = getPercent('comissao');
+      const cartPerc = getPercent('cartao');
+      const outPerc = getPercent('outros');
+      const custoVariavelUnit = precoVenda * (prodPerc + impPerc + comPerc + cartPerc + outPerc) / 100;
+      const custoVariavelTotal = custoVariavelUnit * quantidade;
+
+      // Lucro do produto no ano
+      lucroAno += receita - custoVariavelTotal;
+    });
+    // Subtrai custos fixos anuais (calculados acima)
+    lucroAno -= despesasFixasAno;
+
+    // Percentuais
+    const pct = (valor, base) => base > 0 ? (valor / base) * 100 : 0;
+
+    // Receita %
+    linhasResumo[0].valores.push(receitaAno);
+    linhasResumo[0].percentuais.push(receitaTotalGeral > 0 ? (receitaAno / receitaTotalGeral) * 100 : 0);
+
+    // Despesas Variáveis
+    linhasResumo[1].valores.push(despesasVariaveisAno);
+    linhasResumo[1].percentuais.push(pct(despesasVariaveisAno, receitaAno));
+
+    // Margem Contribuição
+    linhasResumo[2].valores.push(margemContribAno);
+    linhasResumo[2].percentuais.push(pct(margemContribAno, receitaAno));
+
+    // Despesas Fixas
+    linhasResumo[3].valores.push(despesasFixasAno);
+    linhasResumo[3].percentuais.push(pct(despesasFixasAno, receitaAno));
+
+    // EBITDA (em branco)
+    linhasResumo[4].valores.push('');
+    linhasResumo[4].percentuais.push('');
+
+    // Lucro
+    linhasResumo[5].valores.push(lucroAno);
+    linhasResumo[5].percentuais.push(pct(lucroAno, receitaAno));
+  }
+
+// Monta a matriz como tabela no PDF - layout otimizado e legível
+// Monta cabeçalho com base nos anos
+const head = [
+  // Linha de agrupamento por ano
+  [
+    { content: 'Item', rowSpan: 2, styles: { valign: 'middle', halign: 'left', fontStyle: 'bold' } },
+    ...anosAdicionados.map((_, i) => ({
+      content: `Ano ${i + 1}`, colSpan: 2, styles: { halign: 'center', fontStyle: 'bold' }
+    }))
+  ],
+  // Linha de colunas individuais (R$ e %)
+  [
+    // A coluna "Item" já está com rowSpan, aqui vem apenas os R$ e %
+    ...anosAdicionados.flatMap(() => [
+      { content: 'R$', styles: { halign: 'center' } },
+      { content: '%', styles: { halign: 'center' } }
+    ])
+  ]
+];
+
+
+// Monta corpo com base nos dados já existentes no seu código
+const body = linhasResumo.map(linha => {
+  const row = [linha.label];
+  for (let i = 0; i < anosAdicionados.length; i++) {
+    const valor = linha.valores[i];
+    const perc = linha.percentuais[i];
+    const textoValor = valor === '' ? '' : `${(valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    const textoPerc = perc === '' ? '' : `${(perc || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}%`;
+    row.push(textoValor, textoPerc);
+  }
+  return row;
+});
+
+// Título antes da tabela
+doc.setFontSize(11);
+doc.setFont('helvetica', 'bold');
+doc.text('Resumo Financeiro', margem, y);
+y += 5;
+
+// Renderiza no PDF com autoTable
+doc.autoTable({
+  head: head,
+  body: body,
+  startY: y,
+  margin: { left: margem, right: margem },
+  styles: {
+    font: 'helvetica',
+    fontSize: 7.5,
+    halign: 'center',
+    valign: 'middle'
+  },
+  headStyles: {
+    fillColor: [230, 230, 230],
+    textColor: 20,
+    halign: 'center'
+  },
+  columnStyles: {
+    0: { halign: 'left', fontStyle: 'bold' } // "Item"
+  }
+});
+
+// Atualiza y para continuar o PDF depois
+  y = doc.lastAutoTable.finalY + 8;
+
+
+
+  //escreveCampo('Receita Bruta Total', document.getElementById('receita_anual')?.value || 'R$ 0,00');
+  //escreveCampo('Receita Média Mensal', document.getElementById('receita_mensal')?.value || 'R$ 0,00');
+  //('Lucro Mensal', document.getElementById('lucro_mensal')?.value || 'R$ 0,00');
+  //escreveCampo('Lucro Anual', document.getElementById('lucro_anual')?.value || 'R$ 0,00');
 
   // ===== Pagina 03 =====
   novaPagina();
-  escreveTitulo('4. Análise Financeira');
-  escreveSubtitulo('4.1 Margem de Contribuição Unitária');
-  escreveCampo('MCu Total', document.getElementById('margem_total')?.value || 'R$ 0,00');
-  escreveCampo('MCu Anual', document.getElementById('mcu_anual')?.value || 'R$ 0,00');
-  escreveCampo('MCu Mensal', document.getElementById('mcu_mensal')?.value || 'R$ 0,00');
-  escreveCampo('MCu Ponderada', document.getElementById('mc_ponderada')?.value || '%');
-  escreveCampo('Margem de Lucro', document.getElementById('margem_lucro')?.value || '%');
-  escreveCampo('Preço Médio Ponderado Venda', document.getElementById('preco_medio_pond')?.value || 'R$ 0,00');
-  // Participação Receita e Margem Contribuição por produto
-  produtos.forEach((p, idx) => {
-    // Participação Receita
-    let partReceita = '';
-    let margemContrib = '';
-    // Busca na matriz de margem (tabela)
-    const linhas = document.querySelectorAll("#margem_matriz tr");
-    if (linhas.length > idx + 1) {
-      const celulas = linhas[idx + 1].querySelectorAll("td");
-      if (celulas.length > 5) {
-        partReceita = celulas[1].innerText;
-        margemContrib = celulas[5].innerText;
-      }
-    }
-    escreveCampo(`Participação Receita - ${p.nome}`, partReceita || '%');
-    escreveCampo(`Margem Contribuição - ${p.nome}`, margemContrib || '%');
-  });
-  y += 2;
+  //escreveTitulo('4. Análise Financeira');
+  //('4.1 Margem de Contribuição Unitária');
+  //escreveCampo('MCu Total', document.getElementById('margem_total')?.value || 'R$ 0,00');
+  //escreveCampo('MCu Anual', document.getElementById('mcu_anual')?.value || 'R$ 0,00');
+  //escreveCampo('MCu Mensal', document.getElementById('mcu_mensal')?.value || 'R$ 0,00');
+  //escreveCampo('MCu Ponderada', document.getElementById('mc_ponderada')?.value || '%');
+  //escreveCampo('Margem de Lucro', document.getElementById('margem_lucro')?.value || '%');
+  //escreveCampo('Preço Médio Ponderado Venda', document.getElementById('preco_medio_pond')?.value || 'R$ 0,00');
+  
 
 
-// 5. Ponto de Equilíbrio
-escreveTitulo('5. Ponto de Equilíbrio');
-escreveSubtitulo('5.1 Ponto de Equilíbrio Receita');
+// 4. Ponto de Equilíbrio
+escreveTitulo('4. Indicadores');
 
-// Calcula Receita Necessária e Média Ponderada diretamente
-function moedaParaNumero(str) {
+// Funções auxiliares
+function desmascararNumero(str) {
   if (!str) return 0;
   return parseFloat(
     String(str)
@@ -3537,57 +4214,34 @@ function moedaParaNumero(str) {
   ) || 0;
 }
 
+function moedaParaNumero(str) {
+  return desmascararNumero(str);
+}
+
+// --- Indicadores Operacionais ---
 let custoFixo = moedaParaNumero(document.getElementById("custos_fixos_total")?.value || "0");
 let mcPonderadaPerc = moedaParaNumero(document.getElementById("mc_ponderada")?.value || "0") / 100;
-let receitaNecessaria = 0;
-if (mcPonderadaPerc > 0) {
-  receitaNecessaria = custoFixo / mcPonderadaPerc;
-}
-escreveCampo('Receita Necessária', receitaNecessaria.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
+let receitaNecessaria = mcPonderadaPerc > 0 ? custoFixo / mcPonderadaPerc : 0;
 
 let precoMedioPonderado = moedaParaNumero(document.getElementById("preco_medio_pond")?.value || "0");
-let mediaPonderada = 0;
-if (precoMedioPonderado > 0) {
-  mediaPonderada = receitaNecessaria / precoMedioPonderado;
-}
-escreveCampo('Média Ponderada', mediaPonderada.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
-y += 2;
+let mediaPonderada = precoMedioPonderado > 0 ? receitaNecessaria / precoMedioPonderado : 0;
 
-// 5.2 Ponto de Equilíbrio Unitário
-escreveSubtitulo('5.2 Ponto de Equilíbrio Unitário');
-  // Obtém o HTML do ponto de equilíbrio individual
-  const htmlPEQ = document.getElementById('peq_individual')?.innerHTML || '';
-  produtos.forEach((p) => {
+const indicadores = [
+  ['Ponto Equilíbrio Receita Necessária', `R$ ${receitaNecessaria.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`]
+];
+
+const htmlPEQ = document.getElementById('peq_individual')?.innerHTML || '';
+produtos.forEach((p) => {
   let qtd = '0';
-  // Corrige para aceitar tanto "Equilíbrio" quanto "Equilibrio" (com ou sem acento)
   const regex = new RegExp(`<strong>${p.nome}</strong> – Ponto de Equil[ií]br[ií]o Quantidade: ([^<]+) unidades`, 'i');
   const matchQtd = htmlPEQ.match(regex);
   if (matchQtd) {
     qtd = desmascararNumero(matchQtd[1]);
   }
-  escreveCampo(`Quantidade - ${p.nome}`, qtd);
+  indicadores.push([`Ponto Equilíbrio Quantidade - ${p.nome}:`, qtd]);
 });
-y += 2;
 
-// 5.3 Ponto de Equilíbrio Distribuído
-escreveSubtitulo('5.3 Ponto de Equilíbrio Distribuído');
-produtos.forEach((p) => {
-  let qtdDist = '0';
-  // Corrige para aceitar tanto "Equilíbrio" quanto "Equilibrio" (com ou sem acento)
-  const regexDist = new RegExp(`<strong>${p.nome}</strong> – Ponto de Equil[ií]br[ií]o Distribu[ií]do: ([^<]+) unidades`, 'i');
-  const matchDist = htmlPEQ.match(regexDist);
-  if (matchDist) {
-    qtdDist = desmascararNumero(matchDist[1]);
-  }
-  escreveCampo(`Quantidade - ${p.nome}`, qtdDist);
-});
-y += 2;
-
-  // 6. Indicadores Financeiros
-escreveTitulo('6. Indicadores Financeiros');
-escreveSubtitulo('6.1 Indicadores');
-
-// ROI (%) = (Lucro Anual / Investimento Inicial) * 100
+// --- Indicadores Financeiros ---
 const investimentoInicial = desmascararNumero(document.getElementById("investimento_inicial")?.value || "0");
 const lucroAnual = desmascararNumero(document.getElementById("lucro_anual")?.value || "0");
 const lucroMensal = desmascararNumero(document.getElementById("lucro_mensal")?.value || "0");
@@ -3596,33 +4250,100 @@ const qtdMatrizes = anosAdicionados.length || 1;
 const roi = investimentoInicial > 0 ? (lucroAnual / investimentoInicial) * 100 : 0;
 const roiMensal = investimentoInicial > 0 ? (lucroMensal / investimentoInicial) * 100 : 0;
 const roiTotal = investimentoInicial > 0 ? (((lucroMensal * 12 * qtdMatrizes) - investimentoInicial) / investimentoInicial) * 100 : 0;
-
-// Payback Mensal Simples = Investimento Inicial / Lucro Mensal
 const paybackMensal = lucroMensal > 0 ? investimentoInicial / lucroMensal : 0;
-// Payback Anual Simples = Investimento Inicial / Lucro Anual
 const paybackAnual = lucroAnual > 0 ? investimentoInicial / lucroAnual : 0;
-
-// VPL Total (já calculado na tela)
 const vplTotal = desmascararNumero(document.getElementById('vpl')?.innerText || '0');
 
-escreveCampo('ROI (%)', roi.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + '%');
-escreveCampo('ROI Mensal (%)', roiMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + '%');
-escreveCampo('ROI Total (%)', roiTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + '%');
-escreveCampo('Payback Mensal Simples', paybackMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + ' meses');
-escreveCampo('Payback Anual Simples', paybackAnual.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + ' anos');
-escreveCampo('VPL Total', 'R$ ' + vplTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
-escreveCampo('Payback Descontado', desmascararNumero(document.getElementById('paybackDescontado')?.value || document.getElementById('paybackDescontado')?.innerText || '') + ' anos');
-escreveCampo('Payback Descontado Mês', desmascararNumero(document.getElementById('paybackDescontadoMes')?.value || document.getElementById('paybackDescontadoMes')?.innerText || '') + ' meses');
-escreveCampo('Taxa Interna de Retorno (TIR)', desmascararNumero(document.getElementById('tir')?.value || document.getElementById('tir')?.innerText || '') + '%');
-escreveCampo('IL', desmascararNumero(document.getElementById('il')?.value || '') + '%');
-escreveCampo('Margem de Segurança (%)', desmascararNumero(document.getElementById('margemSeguranca')?.value || '') + '%');
-escreveCampo('Rentabilidade (%)', desmascararNumero(document.getElementById('rentabilidade')?.value || '') + '%');
-y += 2;
+indicadores.push(['ROI Anual (%)', `${roi.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}%`]);
+indicadores.push(['ROI Mensal (%)', `${roiMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}%`]);
+// indicadores.push(['ROI Total (%)', `${roiTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}%`]);
+indicadores.push(['Payback Mensal Simples', `${paybackMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} meses`]);
+// indicadores.push(['Payback Anual Simples', `${paybackAnual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} anos`]);
+indicadores.push(['VPL Total', `R$ ${vplTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`]);
+
+// --- Indicadores Avançados (com fallback .value || .innerText) ---
+const getValor = (id) => {
+  const el = document.getElementById(id);
+  return desmascararNumero(el?.value || el?.innerText || '');
+};
+
+indicadores.push(['Payback Descontado', `${getValor('paybackDescontado')} anos`]);
+indicadores.push(['Payback Descontado Mês', `${getValor('paybackDescontadoMes')} meses`]);
+indicadores.push(['Taxa Interna de Retorno (TIR)', `${getValor('tir')}%`]);
+indicadores.push(['IL (Índice de Lucratividade)', `${getValor('il')}%`]);
+indicadores.push(['Margem de Segurança (%)', `${getValor('margemSeguranca')}%`]);
+indicadores.push(['Rentabilidade (%)', `${getValor('rentabilidade')}%`]);
+
+// --- Renderiza Tabela Única ---
+doc.autoTable({
+  head: [['Indicador', 'Valor']],
+  body: indicadores,
+  startY: y,
+  margin: { left: margem, right: margem },
+  styles: {
+    font: 'helvetica',
+    fontSize: 8,
+    halign: 'center'
+  },
+  headStyles: {
+    fillColor: [230, 230, 230],
+    textColor: 20,
+    halign: 'center',
+    fontStyle: 'bold'
+  },
+  columnStyles: {
+    0: { halign: 'left', fontStyle: 'bold' },
+    1: { halign: 'right' }
+  }
+});
+
+  y = doc.lastAutoTable.finalY + 8;
+
+
+
+// ===== Pagina 06 =====
+escreveSubtitulo('4.1 Fluxo de Caixa Projetado');
+
+// Copia a matriz do fluxo de caixa da tela (step4)
+const matrizFluxo = document.querySelector("#matriz_fluxo_caixa table.resumo-produto");
+if (matrizFluxo) {
+  const cabecalho = Array.from(matrizFluxo.querySelectorAll("thead th")).map(th => th.innerText.trim());
+
+  const linhas = Array.from(matrizFluxo.querySelectorAll("tbody tr")).map(tr =>
+    Array.from(tr.querySelectorAll("td")).map(td => td.innerText.trim())
+  );
+
+  doc.autoTable({
+    head: [cabecalho],
+    body: linhas,
+    startY: y + 2,
+    margin: { left: margem, right: margem },
+    styles: {
+      font: 'helvetica',
+      fontSize: 8,
+      halign: 'center',
+      valign: 'middle'
+    },
+    headStyles: {
+      fillColor: [230, 230, 230],
+      textColor: 20,
+      halign: 'center',
+      fontStyle: 'bold'
+    },
+    columnStyles: {
+      0: { halign: 'center' } // primeira coluna geralmente é "Mês" ou "Categoria"
+    }
+  });
+
+  // Atualiza y
+    y = doc.lastAutoTable.finalY + 8;
+
+}
 
   // ===== Pagina 04 =====
   novaPagina();
-  escreveTitulo('7. Checklist e Avaliação');
-  escreveSubtitulo('7.1 Checklist');
+  escreveTitulo('5 Checklist e Avaliação');
+  escreveSubtitulo('5.1 Checklist');
   // Checklist: pega da tabela da etapa 5
   const tabelaChecklist = document.querySelector('#step5 table');
   if (tabelaChecklist) {
@@ -3648,7 +4369,7 @@ y += 2;
 
   // ===== Pagina 05 =====
   novaPaginaSemFundo();
-  escreveTitulo('8. Interpretação dos Indicadores');
+  escreveTitulo('6. Interpretação dos Indicadores');
   y += 2;
 
   // Função para remover máscara de percentual e moeda
