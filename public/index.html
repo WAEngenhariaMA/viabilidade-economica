@@ -4,13 +4,32 @@
   <meta charset="UTF-8">
   <title>WA Engenharia – Analisador</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap">
+  <link
+      href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    />
   <style>
    /* Reset básico e fontes */
+   :root {
+  --primary: #ffffff;
+  --accent: #ffffff;
+  --bg: #f7fafc;
+  --card-bg: #262829;
+  --sidebar-bg: linear-gradient(180deg, #232526 0%, #414345 100%);
+  --border: #444;
+  --shadow: 0 2px 12px rgba(44, 62, 80, 0.07);
+  --radius: 14px;
+  --font: "Inter", Arial, sans-serif;
+}
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font);
 }
 
 /* Corpo e layout */
@@ -24,29 +43,48 @@ body {
 
 /* Menu lateral */
 .sidebar {
-  width: 240px;
-  min-height: 100vh;
-  background: linear-gradient(to bottom, #1a1a1a, #333);
+ width: 240px;
+        background: var(--sidebar-bg);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        padding: 32px 0 0 0;
+        min-height: 100vh;
+}
+.sidebar h1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 0 0 32px 32px;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sidebar nav {
+  flex: 1;
+}
+.sidebar nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 32px;
   color: #fff;
-  padding: 30px 20px;
-  
+  text-decoration: none;
+  font-size: 1rem;
+  border-left: 4px solid transparent;
+  transition: background 0.2s, border 0.2s;
 }
-
-.sidebar h2 {
-  margin-bottom: 30px;
-  font-size: 22px;
-  
+.sidebar nav a.active,
+.sidebar nav a:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-left: 4px solid var(--accent);
 }
-
 .sidebar ul {
   list-style: none;
-  
 }
-
 .sidebar ul li {
   margin-bottom: 15px;
 }
-
 .sidebar ul li a {
   color: #ccc;
   text-decoration: none;
@@ -56,12 +94,10 @@ body {
   border-radius: 6px;
   transition: 0.3s;
 }
-
 .sidebar ul li a:hover {
   background: #444;
   color: #fff;
 }
-
 /* Conteúdo principal */
 .main-content {
   flex: 1;
@@ -241,7 +277,7 @@ h2 {
     font-size: 22px;
   font-weight: bold;
   color: #cfd8dc;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
 }
 
 h3 {
@@ -459,17 +495,21 @@ h4 {
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <h2>WA Engenharia</h2>
-    <ul>
-      <li><a href="projetos.html">Projetos</a></li>
-      <li><a href="dashboard.html" class="sidebar-link">📊 Dashboard</a></li>
-      <li><a href="#">Produtos</a></li>
-      <li><a href="#">Investimentos</a></li>
-      <li><a href="#">Projeções</a></li>
-      <li><a href="#">Análise</a></li>
-    </ul>
-  </div>
+  <aside class="sidebar">
+    
+      <h1><i class="bi bi-bar-chart-line"></i> Viabilidade</h1>
+      <nav>
+        <a href="#" class="active"
+         ><i class="bi bi-clipboard-data"></i>Projeto</a
+        >
+        <a href="#"><i class="bi bi-box-seam"></i>Produtos/Serviços</a>
+        <a href="#"><i class="bi bi-cash-stack"></i>Investimentos</a>
+        <a href="#"><i class="bi bi-building"></i>Custos Fixos</a>
+        <a href="#"><i class="bi bi-graph-up"></i>Parâmetros</a>
+        <a href="#"><i class="bi bi-bar-chart"></i>Indicadores</a>
+        <a href="#"><i class="bi bi-check2-circle"></i>Checklist</a>
+      </nav>
+    </aside>
   <div class="titulo-superior">
   <h1>Analisador de Viabilidade Econômica</h1>
 </div>
@@ -478,20 +518,26 @@ h4 {
      
       <!-- ETAPA 01 - DADOS GERAIS DO PROJETO -->
       <div class="step active" id="step1">
-  <h2>Dados Gerais do Projeto</h2>
+  <h2><i class="bi bi-clipboard-data"></i> Dados Gerais do Projeto</h2>
  <div class="row">
   <div class="form-group col-50">
-    <label for="nome">Nome do Projeto/Empresa:</label>
+    <label for="nomeProjeto"
+              ><i class="bi bi-file-earmark-text"></i> Nome do Projeto</label
+            >
     <input type="text" id="nome" name="nome" required>
   </div>
   <div class="form-group col-50">
-    <label for="responsavel">Responsável:</label>
+    <label for="responsavel"
+              ><i class="bi bi-person"></i> Responsável</label
+            >
     <input type="text" id="responsavel" name="responsavel" required>
   </div>
    </div>
   <div class="row">
     <div class="form-group col-33">
-      <label for="tipo">Tipo de Atividade:</label>
+      <label for="tipo"
+              ><i class="bi bi-briefcase"></i> Tipo de Atividade</label
+            >
       <select id="tipo" name="tipo" required>
         <option value="">Selecione...</option>
         <option value="Construção Civil">Construção Civil</option>
@@ -507,22 +553,19 @@ h4 {
     </div>
 
     <div class="form-group col-33">
-      <label for="estado">Estado:</label>
+      <label for="estado"><i class="bi bi-geo-alt"></i> Estado:</label>
       <select id="estado" name="estado" required></select>
     </div>
 
     <div class="form-group col-33">
-      <label for="cidade">Cidade:</label>
+      <label for="cidade"><i class="bi bi-geo-alt"></i> Cidade:</label>
       <select id="cidade" name="cidade" required></select>
     </div>
   </div>
 
   <div class="row">
     <div class="form-group col-33">
-      <label for="estrutura">
-  Estrutura:
-  <span class="tooltip-info" title="Tipo de estrutura do seu negócio: Física (presencial), Virtual (online), ou Híbrida (ambos)">ℹ️</span>
-</label>
+      <label for="estrutura"><i class="bi bi-bar-chart-steps"></i> Estrutura:</label>
 <select id="estrutura" name="estrutura" required>
   <option value="">Selecione...</option>
   <option value="Física">Física</option>
@@ -532,9 +575,9 @@ h4 {
 </div>
 
 <div class="form-group col-33">
-  <label for="regime">
+  <label for="regime"><i class="bi bi-building-check"></i>
     Regime Tributário:
-    <span class="tooltip-info" title="Selecione o regime tributário da empresa, se já tiver CNPJ. Se ainda estiver no planejamento, selecione 'Não definido'.">ℹ️</span>
+    
   </label>
   <select id="regime" name="regime">
     <option value="">Não se aplica / Não definido</option>
@@ -546,7 +589,7 @@ h4 {
 </div>
 
     <div class="form-group col-33">
-      <label for="situacao">Situação Atual:</label>
+      <label for="situacao"><i class="bi bi-tag"></i> Situação Atual:</label>
       <select id="situacao" name="situacao" required>
         <option value="">Selecione...</option>
         <option value="Planejamento">Planejamento</option>
@@ -555,17 +598,14 @@ h4 {
       </select>
     </div>
   </div>
-
-
-
  <div class="row">
   <div class="form-group col-66">
-    <label for="email">E-mail:</label>
+    <label for="email"><i class="bi bi-envelope"></i> E-mail:</label>
     <input type="email" id="email" name="email" required>
   </div>
 
   <div class="form-group col-33">
-    <label for="telefone">Telefone:</label>
+    <label for="telefone"><i class="bi bi-telephone"></i> Telefone:</label>
     <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required>
   </div>
 </div>
@@ -607,6 +647,12 @@ h4 {
   const estadoSelect = document.getElementById('estado');
   const cidadeSelect = document.getElementById('cidade');
 
+  // Adiciona a opção "Selecione..." como primeira opção
+  const optionSelecione = document.createElement('option');
+  optionSelecione.value = '';
+  optionSelecione.textContent = 'Selecione...';
+  estadoSelect.appendChild(optionSelecione);
+
   for (const estado in estadosECidades) {
     const option = document.createElement('option');
     option.value = estado;
@@ -617,6 +663,12 @@ h4 {
   estadoSelect.addEventListener('change', () => {
     const cidades = estadosECidades[estadoSelect.value] || [];
     cidadeSelect.innerHTML = '';
+    // Adiciona "Selecione..." para cidades também
+    const cidadeSelecione = document.createElement('option');
+    cidadeSelecione.value = '';
+    cidadeSelecione.textContent = 'Selecione...';
+    cidadeSelect.appendChild(cidadeSelecione);
+
     cidades.forEach(cidade => {
       const opt = document.createElement('option');
       opt.value = cidade;
@@ -659,8 +711,11 @@ h4 {
 <div id="modalProduto" class="modal-escuro">
   <div class="modal-conteudo">
     <span class="fechar-modal" onclick="fecharModalProduto()">×</span>
-    <h3>Novo Produto</h3>
-
+    <label for="novoProdutoNome">
+      <i class="bi bi-box" style="vertical-align: middle; margin-right: 8px;"></i>
+      <span style="font-size: 1.1em; font-weight: bold; ">Novo Produto</span>
+    </label>
+    
     <label style="margin-bottom: 6px;">Nome do Produto:</label>
     <input type="text" id="novoProdutoNome" style="margin-bottom: 16px;">
 
